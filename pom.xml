@@ -10,6 +10,7 @@
 
 
     <modules>
+        <module>spark-account-service</module>
         <module>spark-authorization</module>
     </modules>
 
