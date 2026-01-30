@@ -20,7 +20,6 @@ package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.account.events.AccountEvent;
-import org.example.spark.account.adapters.PasswordEncoder;
 import org.example.spark.account.aggregates.Account;
 import org.example.spark.authorization.Role;
 import org.example.spark.account.intaractors.AccountDataAccess;

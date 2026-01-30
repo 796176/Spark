@@ -16,7 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.example.spark.account.adapters;
+package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.account.models.Password;
