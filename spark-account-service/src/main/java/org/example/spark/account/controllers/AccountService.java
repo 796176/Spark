@@ -22,11 +22,13 @@ import jakarta.annotation.Nonnull;
 import org.example.spark.account.models.Password;
 import org.example.spark.account.models.RenderableAccount;
 
+import java.util.UUID;
+
 public interface AccountService {
 
-	void createAccount(@Nonnull String name, @Nonnull Password password);
+	void createAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId);
 
-	void createAdminAccount(@Nonnull String name, @Nonnull Password password);
+	void createAdminAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId);
 
 	RenderableAccount getAccount(long id);
 
@@ -38,5 +40,5 @@ public interface AccountService {
 
 	void restoreAccount(long id);
 
-	void changeAccountRoles(long id, long[] roles);
+	void changeAccountRoles(long id, @Nonnull long... roles);
 }

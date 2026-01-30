@@ -27,6 +27,7 @@ import org.example.spark.account.models.Password;
 import org.example.spark.account.models.RenderableAccount;
 
 import java.util.Arrays;
+import java.util.UUID;
 
 public class AccountServiceImpl implements AccountService {
 
@@ -43,13 +44,13 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void createAccount(@Nonnull String name, @Nonnull Password password) {
-		accountDataAccess.createAccount(name, passwordEncoder.encode(password), Role.USER);
+	public void createAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId) {
+		accountDataAccess.createAccount(name, passwordEncoder.encode(password), commandId, Role.USER);
 	}
 
 	@Override
-	public void createAdminAccount(@Nonnull String name, @Nonnull Password password) {
-		accountDataAccess.createAccount(name, passwordEncoder.encode(password), Role.USER, Role.ADMIN);
+	public void createAdminAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId) {
+		accountDataAccess.createAccount(name, passwordEncoder.encode(password), commandId, Role.USER, Role.ADMIN);
 	}
 
 	@Override
@@ -71,27 +72,27 @@ public class AccountServiceImpl implements AccountService {
 	public void deleteAccount(long id) {
 		Account account = accountDataAccess.getAccount(id);
 		AccountEvent accountEvent = account.setStatus(Account.Status.DELETED);
-		accountDataAccess.persist(account, accountEvent);
+		accountDataAccess.persist(account, null, accountEvent);
 	}
 
 	@Override
 	public void suspendAccount(long id) {
 		Account account = accountDataAccess.getAccount(id);
 		AccountEvent accountEvent = account.setStatus(Account.Status.SUSPENDED);
-		accountDataAccess.persist(account, accountEvent);
+		accountDataAccess.persist(account, null, accountEvent);
 	}
 
 	@Override
 	public void restoreAccount(long id) {
 		Account account = accountDataAccess.getAccount(id);
 		AccountEvent accountEvent = account.setStatus(Account.Status.ACTIVE);
-		accountDataAccess.persist(account, accountEvent);
+		accountDataAccess.persist(account, null, accountEvent);
 	}
 
 	@Override
-	public void changeAccountRoles(long id, long[] roles) {
+	public void changeAccountRoles(long id, @Nonnull long... roles) {
 		Account account = accountDataAccess.getAccount(id);
 		AccountEvent accountEvent = account.setRoles(Arrays.stream(roles).mapToObj(Role::fromId).toArray(Role[]::new));
-		accountDataAccess.persist(account, accountEvent);
+		accountDataAccess.persist(account, null, accountEvent);
 	}
 }

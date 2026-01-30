@@ -19,6 +19,7 @@
 package org.example.spark.account.persistence;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.TypedQuery;
@@ -37,10 +38,7 @@ import org.example.spark.account.models.*;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.stream.Stream;
 
@@ -100,10 +98,16 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 
 	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 	@Override
-	public void persist(@Nonnull Account account, @Nonnull AccountEvent... events) {
+	public void persist(@Nonnull Account account, @Nullable UUID idempotenceToken, @Nonnull AccountEvent... events) {
 		entityManagerFactory.runInTransaction(entityManager -> {
-			AccountEntity accountEntity = entityManager.find(AccountEntity.class, account.getId());
+			if (idempotenceToken != null) {
+				if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) return;
 
+				ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
+				entityManager.persist(processedMessage);
+			}
+
+			AccountEntity accountEntity = entityManager.find(AccountEntity.class, account.getId());
 			for (AssignedRole assignedRole: accountEntity.getAssignedRoles()) {
 				assignedRole.setActive(false);
 			}
@@ -135,9 +139,27 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 
 	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 	@Override
-	public Account createAccount(@Nonnull String name, @Nonnull String encodedPassword, @Nonnull Role... roles) {
+	public Account createAccount(
+		@Nonnull String name, @Nonnull String encodedPassword, @Nonnull UUID idempotenceToken, @Nonnull Role... roles
+	) {
 		AtomicLong atomicLong = new AtomicLong();
 		entityManagerFactory.runInTransaction(entityManager -> {
+			if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {
+				//SELECT id FROM accounts WHERE accounts.name = name;
+				CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+				CriteriaQuery<Long> q = cb.createQuery(Long.class);
+				Root<AccountEntity> account = q.from(AccountEntity.class);
+				q.where(cb.equal(account.get(AccountEntity_.name), name));
+				q.select(account.get(AccountEntity_.ID));
+				TypedQuery<Long> typedQuery = entityManager.createQuery(q);
+				long accountEntityId = typedQuery.getSingleResultOrNull();
+				atomicLong.set(accountEntityId);
+				return;
+			}
+
+			ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
+			entityManager.persist(processedMessage);
+
 			AccountEntity accountEntity = new AccountEntity(
 				name, encodedPassword, List.of(), entityManager.find(AccountStatus.class, Account.Status.ACTIVE.getId())
 			);

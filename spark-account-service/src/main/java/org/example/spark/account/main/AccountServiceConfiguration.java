@@ -26,19 +26,17 @@ import org.example.spark.account.controllers.SpringPasswordEncoder;
 import org.example.spark.account.controllers.AccountService;
 import org.example.spark.account.controllers.AccountServiceImpl;
 import org.example.spark.account.intaractors.AccountDataAccess;
-import org.example.spark.account.models.Password;
 import org.example.spark.account.persistence.JPAAccountDataAccess;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.RollbackOn;
 
-import java.nio.charset.StandardCharsets;
 
 @SpringBootApplication
 @EnableTransactionManagement(proxyTargetClass = true, rollbackOn = RollbackOn.ALL_EXCEPTIONS)
@@ -56,7 +54,9 @@ public class AccountServiceConfiguration {
 	}
 
 	@Bean
-	AccountDataAccess accountDataAccess(EntityManagerFactory entityManagerFactory, AccountEventConverter<String> accountEventConverter) {
+	AccountDataAccess accountDataAccess(
+		EntityManagerFactory entityManagerFactory, AccountEventConverter<String> accountEventConverter
+	) {
 		return new JPAAccountDataAccess(entityManagerFactory, accountEventConverter);
 	}
 
@@ -69,35 +69,6 @@ public class AccountServiceConfiguration {
 	AccountService accountService(AccountDataAccess accountDataAccess, PasswordEncoder passwordEncoder) {
 		return new AccountServiceImpl(accountDataAccess, passwordEncoder);
 	}
-
-	@Bean(initMethod = "run")
-	MainThread mainThread(AccountService accountService) {
-		return new MainThread(accountService);
-	}
-
-	static class MainThread extends Thread {
-
-		private AccountService accountService;
-
-		public MainThread(AccountService accountService) {
-			this.accountService = accountService;
-		}
-		@Override
-		public void run() {
-			accountService.createAdminAccount("betty", new Password() {
-				@Override
-				public byte[] getPassword() {
-					return "pass".getBytes(StandardCharsets.UTF_8);
-				}
-
-				@Override
-				public void destroy() {
-
-				}
-			});
-		}
-	}
-
 
 	static void main(String[] args) {
 		SpringApplication.run(AccountServiceConfiguration.class, args);

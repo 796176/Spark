@@ -16,25 +16,34 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.example.spark.account.intaractors;
+package org.example.spark.account.models;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import org.example.spark.account.events.AccountEvent;
-import org.example.spark.account.aggregates.Account;
-import org.example.spark.authorization.Role;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
 
 import java.util.UUID;
 
-public interface AccountDataAccess {
+@Entity
+@Table(name = "processed_messages")
+public class ProcessedMessage {
 
-	Account getAccount(long id);
+	private UUID id;
 
-	Account[] getAccounts();
+	public ProcessedMessage() { }
 
-	void persist(@Nonnull Account account, @Nullable UUID idempotenceToken, @Nonnull AccountEvent... events);
+	public ProcessedMessage(UUID id) {
+		this();
+		this.setId(id);
+	}
 
-	Account createAccount(
-		@Nonnull String name, @Nonnull String encodedPassword, @Nonnull UUID idempotenceToken, @Nonnull Role... roles
-	);
+	@Id
+	public UUID getId() {
+		return id;
+	}
+
+	public void setId(@Nonnull UUID id) {
+		this.id = id;
+	}
 }
