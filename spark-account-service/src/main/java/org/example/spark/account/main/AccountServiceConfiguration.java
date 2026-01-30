@@ -42,7 +42,7 @@ import java.nio.charset.StandardCharsets;
 
 @SpringBootApplication
 @EnableTransactionManagement(proxyTargetClass = true, rollbackOn = RollbackOn.ALL_EXCEPTIONS)
-@ComponentScan({"org.example.models"})
+@EntityScan({"org.example.spark.account.models"})
 public class AccountServiceConfiguration {
 
 	@Bean
