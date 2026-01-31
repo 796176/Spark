@@ -18,11 +18,18 @@
 
 package org.example.spark.account.events;
 
-public interface AccountEventConverter <T> {
+public abstract class AccountEventConverter <T> {
 
-	<S extends AccountEvent> S convert(String s, Class<S> c);
+	public abstract class EncodedEventProperties {
 
-	T convert(AccountEvent accountEvent);
+		public abstract String getEncodingFormat();
 
-	String getEncodingFormat();
+		public abstract String getVersion();
+
+		public abstract T getBody();
+	}
+
+	public abstract <S extends AccountEvent> S convert(String s, Class<S> c);
+
+	public abstract EncodedEventProperties convert(AccountEvent accountEvent);
 }

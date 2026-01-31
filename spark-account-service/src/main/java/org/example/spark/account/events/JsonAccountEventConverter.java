@@ -24,7 +24,38 @@ import tools.jackson.core.json.JsonFactory;
 import java.io.ByteArrayOutputStream;
 import java.util.*;
 
-public class JsonAccountEventConverter implements AccountEventConverter<String> {
+public class JsonAccountEventConverter extends AccountEventConverter<String> {
+
+	public class JsonEncodedEventProperties extends EncodedEventProperties {
+
+		private final String encodingFormat;
+
+		private final String version;
+
+		private final String body;
+
+		public JsonEncodedEventProperties(String encodedFormat, String version, String body) {
+			this.encodingFormat = encodedFormat;
+			this.version = version;
+			this.body = body;
+		}
+
+		@Override
+		public String getEncodingFormat() {
+			return encodingFormat;
+		}
+
+		@Override
+		public String getVersion() {
+			return version;
+		}
+
+		@Override
+		public String getBody() {
+			return body;
+		}
+	}
+
 	@Override
 	public <S extends AccountEvent> S convert(String s, Class<S> c) {
 		JsonParser jsonParser = new JsonFactory().createParser(ObjectReadContext.empty(), s);
@@ -136,12 +167,11 @@ public class JsonAccountEventConverter implements AccountEventConverter<String> 
 	}
 
 	@Override
-	public String convert(AccountEvent accountEvent) {
+	public JsonEncodedEventProperties convert(AccountEvent accountEvent) {
 		JsonFactory jsonFactory = new JsonFactory();
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os);
 		jsonGenerator.writeStartObject();
-		jsonGenerator.writeStringProperty("version", "1.0");
 		if (accountEvent instanceof AccountCreated accountCreated) {
 			jsonGenerator.writeStringProperty("account_id", Long.toString(accountCreated.getAccountId()));
 			jsonGenerator.writeStringProperty("name", accountCreated.getName());
@@ -174,11 +204,6 @@ public class JsonAccountEventConverter implements AccountEventConverter<String> 
 		jsonGenerator.writeEndObject();
 		jsonGenerator.flush();
 
-		return os.toString();
-	}
-
-	@Override
-	public String getEncodingFormat() {
-		return "application/json";
+		return new JsonEncodedEventProperties("application/json", "1.0", os.toString());
 	}
 }

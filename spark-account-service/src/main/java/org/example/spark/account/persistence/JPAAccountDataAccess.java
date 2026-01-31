@@ -127,10 +127,12 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 			accountEntity.setAccountStatus(entityManager.find(AccountStatus.class, account.getStatus().getId()));
 
 			for (AccountEvent event: events) {
+				AccountEventConverter<String>.EncodedEventProperties properties = accountEventConverter.convert(event);
 				EventEntity eventEntity = new EventEntity(
 					event.getType(),
-					accountEventConverter.getEncodingFormat(),
-					accountEventConverter.convert(event)
+					properties.getEncodingFormat(),
+					properties.getVersion(),
+					properties.getBody()
 				);
 				entityManager.persist(eventEntity);
 			}
@@ -175,10 +177,13 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 			AccountCreated accountCreatedEvent = new AccountCreatedImpl(
 				accountEntity.getId(), name, encodedPassword, Arrays.stream(roles).mapToLong(Role::getId).toArray()
 			);
+			AccountEventConverter<String>.EncodedEventProperties properties =
+				accountEventConverter.convert(accountCreatedEvent);
 			EventEntity event = new EventEntity(
 				accountCreatedEvent.getType(),
-				accountEventConverter.getEncodingFormat(),
-				accountEventConverter.convert(accountCreatedEvent)
+				properties.getEncodingFormat(),
+				properties.getVersion(),
+				properties.getBody()
 			);
 			entityManager.persist(event);
 
