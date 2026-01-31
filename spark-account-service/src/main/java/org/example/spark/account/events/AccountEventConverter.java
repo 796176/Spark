@@ -29,7 +29,7 @@ public abstract class AccountEventConverter <T> {
 		public abstract T getBody();
 	}
 
-	public abstract <S extends AccountEvent> S convert(String s, Class<S> c);
+	public abstract <S extends AccountEvent> S convert(String encodingFormat, String version, String s, Class<S> c);
 
 	public abstract EncodedEventProperties convert(AccountEvent accountEvent);
 }

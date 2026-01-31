@@ -57,15 +57,16 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 	}
 
 	@Override
-	public <S extends AccountEvent> S convert(String s, Class<S> c) {
+	public <S extends AccountEvent> S convert(String encodingFormat, String version, String s, Class<S> c) {
+		if (!(encodingFormat.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
+
 		JsonParser jsonParser = new JsonFactory().createParser(ObjectReadContext.empty(), s);
 		if (c.equals(AccountCreated.class)) {
-			String version = null, accountId = null, name = null, encodedPassword = null;
+			String accountId = null, name = null, encodedPassword = null;
 			String[] roles = null;
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
 				String key = jsonParser.currentName();
 				switch (Objects.requireNonNullElse(key, "")) {
-					case "version" -> version = jsonParser.getValueAsString();
 					case "account_id" -> accountId = jsonParser.getValueAsString();
 					case "name" -> name = jsonParser.getValueAsString();
 					case "encoded_password" -> encodedPassword = jsonParser.getValueAsString();
@@ -79,9 +80,8 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 					}
 				}
 			}
-			if (anyNull(version, accountId, name, encodedPassword, roles)) throw new IllegalArgumentException();
+			if (anyNull(accountId, name, encodedPassword, roles)) throw new IllegalArgumentException();
 
-			if (!version.equals("1.0")) throw new IllegalArgumentException();
 			return c.cast(new AccountCreatedImpl(
 				Long.parseLong(accountId),
 				name,
@@ -89,51 +89,44 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 				Arrays.stream(roles).mapToLong(Long::parseLong).toArray()
 			));
 		} else if (c.equals(AccountDeleted.class)) {
-			String version = null, accountId = null;
+			String accountId = null;
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
 				String key = jsonParser.currentName();
-				switch (Objects.requireNonNullElse(key, "")) {
-					case "version" -> version = jsonParser.getString();
-					case "account_id" -> accountId = jsonParser.getString();
+				if (Objects.equals(key, "account_id")) {
+					accountId = jsonParser.getString();
 				}
 			}
-			if (anyNull(version, accountId)) throw new IllegalArgumentException();
+			if (accountId == null) throw new IllegalArgumentException();
 
-			if (!version.equals("1.0")) throw new IllegalArgumentException();
 			return c.cast(new AccountDeletedImpl(Long.parseLong(accountId)));
 		} else if (c.equals(AccountSuspended.class)) {
-			String version = null, accountId = null;
+			String accountId = null;
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
 				String key = jsonParser.currentName();
-				switch (Objects.requireNonNullElse(key, "")) {
-					case "version" -> version = jsonParser.getValueAsString();
-					case "account_id" -> accountId = jsonParser.getValueAsString();
+				if (Objects.equals(key, "account_id")) {
+					accountId = jsonParser.getValueAsString();
 				}
 			}
-			if (anyNull(version, accountId)) throw new IllegalArgumentException();
+			if (accountId == null) throw new IllegalArgumentException();
 
-			if (!version.equals("1.0")) throw new IllegalArgumentException();
 			return c.cast(new AccountSuspendedImpl(Long.parseLong(accountId)));
 		} else if (c.equals(AccountRestored.class)) {
-			String version = null, accountId = null;
+			String accountId = null;
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
 				String key = jsonParser.currentName();
-				switch (Objects.requireNonNullElse(key, "")) {
-					case "version" -> version = jsonParser.getValueAsString();
-					case "account_id" -> accountId = jsonParser.getValueAsString();
+				if (Objects.equals(key, "account_id")) {
+					accountId = jsonParser.getValueAsString();
 				}
 			}
-			if (anyNull(version, accountId)) throw new IllegalArgumentException();
+			if (accountId == null) throw new IllegalArgumentException();
 
-			if (!version.equals("1.0")) throw new IllegalArgumentException();
 			return c.cast(new AccountRestoredImpl(Long.parseLong(accountId)));
 		} else if (c.equals(AccountRolesUpdated.class)) {
-			String version = null, accountId = null;
+			String accountId = null;
 			String[] roles = null;
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
 				String key = jsonParser.currentName();
 				switch (Objects.requireNonNullElse(key, "")) {
-					case "version" -> version = jsonParser.getValueAsString();
 					case "account_id" -> accountId = jsonParser.getValueAsString();
 					case "roles" -> {
 						jsonParser.nextToken();
@@ -145,9 +138,8 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 					}
 				}
 			}
-			if (anyNull(version, accountId, roles)) throw new IllegalArgumentException();
+			if (anyNull(accountId, roles)) throw new IllegalArgumentException();
 
-			if (!version.equals("1.0")) throw new IllegalArgumentException();
 			return c.cast(
 				new AccountRolesUpdatedImpl(
 					Long.parseLong(accountId),
