@@ -56,7 +56,9 @@ public class AccountServiceImpl implements AccountService {
 	@Override
 	public RenderableAccount getAccount(long id) {
 		Account account = accountDataAccess.getAccount(id);
-		return new RenderableAccount(account.getId(), account.getName(), account.getRoles());
+		return new RenderableAccount(
+			account.getId(), account.getName(), account.getRoles(), account.getStatus().toString()
+		);
 	}
 
 	@Override
@@ -64,7 +66,11 @@ public class AccountServiceImpl implements AccountService {
 		Account[] accounts = accountDataAccess.getAccounts();
 		return Arrays
 			.stream(accounts)
-			.map(account -> new RenderableAccount(account.getId(), account.getName(), account.getRoles()))
+			.map(account -> {
+				return new RenderableAccount(
+					account.getId(), account.getName(), account.getRoles(), account.getStatus().toString()
+				);
+			})
 			.toArray(RenderableAccount[]::new);
 	}
 

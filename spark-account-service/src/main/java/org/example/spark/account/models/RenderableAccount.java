@@ -31,10 +31,13 @@ public class RenderableAccount {
 
 	private final long[] roles;
 
-	public RenderableAccount(long id, @Nonnull String name, @Nonnull Role[] roles) {
+	private final String status;
+
+	public RenderableAccount(long id, @Nonnull String name, @Nonnull Role[] roles, @Nonnull String status) {
 		this.id = Long.toString(id);
 		this.name = name;
 		this.roles = Arrays.stream(roles).mapToLong(Role::getId).toArray();
+		this.status = status;
 	}
 
 	public String getId() {
@@ -47,5 +50,9 @@ public class RenderableAccount {
 
 	public long[] getRoles() {
 		return roles;
+	}
+
+	public String getStatus() {
+		return status;
 	}
 }
