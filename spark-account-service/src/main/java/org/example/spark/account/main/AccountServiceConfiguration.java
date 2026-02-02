@@ -18,24 +18,32 @@
 
 package org.example.spark.account.main;
 
+import com.rabbitmq.client.BuiltinExchangeType;
+import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
+import com.rabbitmq.client.ConnectionFactory;
 import jakarta.persistence.EntityManagerFactory;
+import org.example.spark.account.controllers.*;
 import org.example.spark.account.events.AccountEventConverter;
 import org.example.spark.account.events.JsonAccountEventConverter;
-import org.example.spark.account.controllers.PasswordEncoder;
-import org.example.spark.account.controllers.SpringPasswordEncoder;
-import org.example.spark.account.controllers.AccountService;
-import org.example.spark.account.controllers.AccountServiceImpl;
 import org.example.spark.account.intaractors.AccountDataAccess;
 import org.example.spark.account.persistence.JPAAccountDataAccess;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Scope;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.RollbackOn;
+
+import java.io.IOException;
+import java.util.Map;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeoutException;
 
 
 @SpringBootApplication
@@ -68,6 +76,50 @@ public class AccountServiceConfiguration {
 	@Bean
 	AccountService accountService(AccountDataAccess accountDataAccess, PasswordEncoder passwordEncoder) {
 		return new AccountServiceImpl(accountDataAccess, passwordEncoder);
+	}
+
+	@Bean
+	ConnectionFactory connectionFactory(
+		@Value("${org.example.spark.rmq.address}") String address,
+		@Value("${org.example.spark.rmq.port}") int port,
+		@Value("${org.example.spark.rmq.username}") String username,
+		@Value("${org.example.spark.rmq.password}") String password
+	) {
+		ConnectionFactory connectionFactory = new ConnectionFactory();
+		connectionFactory.setHost(address);
+		connectionFactory.setPort(port);
+		connectionFactory.setUsername(username);
+		connectionFactory.setPassword(password);
+		return connectionFactory;
+	}
+
+	@Bean
+	CommandParser commandParser() {
+		return new JsonCommandParser();
+	}
+
+	@Bean
+	CommandProcessor commandProcessor(
+		Executor executor, CommandParser commandParser, AccountService accountService
+	) {
+		return new AuthorizedCommandProcessor(executor, commandParser, accountService);
+	}
+
+	@Bean
+	CommandController commandController(CommandProcessor commandProcessor, Connection connection) throws IOException {
+		Channel ch = connection.createChannel();
+		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true);
+		ch.queueDeclare("spark-account-service", true, false, false, Map.of());
+		ch.queueBind("spark-account-service", "commands", "spark-account-service");
+		CommandController commandController = new CommandController(commandProcessor, connection, ch);
+		ch.basicConsume("spark-account-service", false, commandController);
+		return commandController;
+	}
+
+	@Bean
+	@Scope("prototype")
+	Connection connection(ConnectionFactory connectionFactory) throws IOException, TimeoutException {
+		return connectionFactory.newConnection();
 	}
 
 	static void main(String[] args) {
