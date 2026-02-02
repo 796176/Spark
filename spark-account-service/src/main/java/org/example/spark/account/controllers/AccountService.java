@@ -21,6 +21,7 @@ package org.example.spark.account.controllers;
 import jakarta.annotation.Nonnull;
 import org.example.spark.account.models.Password;
 import org.example.spark.account.models.RenderableAccount;
+import org.example.spark.authorization.Role;
 
 import java.util.UUID;
 
@@ -40,5 +41,5 @@ public interface AccountService {
 
 	void restoreAccount(long id);
 
-	void changeAccountRoles(long id, @Nonnull long... roles);
+	void changeAccountRoles(long id, @Nonnull Role... roles);
 }

@@ -96,9 +96,9 @@ public class AccountServiceImpl implements AccountService {
 	}
 
 	@Override
-	public void changeAccountRoles(long id, @Nonnull long... roles) {
+	public void changeAccountRoles(long id, @Nonnull Role... roles) {
 		Account account = accountDataAccess.getAccount(id);
-		AccountEvent accountEvent = account.setRoles(Arrays.stream(roles).mapToObj(Role::fromId).toArray(Role[]::new));
+		AccountEvent accountEvent = account.setRoles(roles);
 		accountDataAccess.persist(account, null, accountEvent);
 	}
 }
