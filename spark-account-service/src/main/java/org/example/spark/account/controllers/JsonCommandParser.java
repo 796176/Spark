@@ -72,8 +72,9 @@ public class JsonCommandParser implements CommandParser {
 			if (Objects.equals(key, "password")) {
 				jsonParser.nextToken();
 				Password password = new PasswordImpl(
-					new String(jsonParser.getStringCharacters(), jsonParser.getStringOffset(), jsonParser.getStringLength())
-						.getBytes()
+					Arrays.copyOfRange(
+						jsonParser.getStringCharacters(), jsonParser.getStringOffset(), jsonParser.getStringLength()
+					)
 				);
 				parsedMessage.setPassword(password);
 			} else if (key != null) {

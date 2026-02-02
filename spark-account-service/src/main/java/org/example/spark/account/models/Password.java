@@ -18,11 +18,10 @@
 
 package org.example.spark.account.models;
 
-import java.nio.charset.Charset;
 
 public interface Password {
 
-	byte[] getPassword();
+	char[] getPassword();
 
 	void destroy();
 }

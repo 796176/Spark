@@ -39,16 +39,6 @@ public class SpringPasswordEncoder implements PasswordEncoder {
 
 	@Override
 	public String encode(Password password) {
-		char[] chars = new char[password.getPassword().length];
-		CharBuffer charBuffer = CharBuffer.wrap(chars);
-		CharsetDecoder charsetDecoder = Charset.defaultCharset().newDecoder();
-		CoderResult result = charsetDecoder.decode(ByteBuffer.wrap(password.getPassword()), charBuffer, true);
-		if (result.isError()) throw new IllegalArgumentException();
-
-		charBuffer.flip();
-		String encodedPassword = encoder.encode(charBuffer);
-		Arrays.fill(chars, '\u0000');
-
-		return encodedPassword;
+		return encoder.encode(CharBuffer.wrap(password.getPassword()));
 	}
 }

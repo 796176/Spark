@@ -24,19 +24,19 @@ import java.util.Arrays;
 
 public class PasswordImpl implements Password {
 
-	private final byte[] bytes;
+	private final char[] password;
 
-	public PasswordImpl(@Nonnull byte[] bytes) {
-		this.bytes = bytes;
+	public PasswordImpl(@Nonnull char[] password) {
+		this.password = password;
 	}
 
 	@Override
-	public byte[] getPassword() {
-		return bytes;
+	public char[] getPassword() {
+		return password;
 	}
 
 	@Override
 	public void destroy() {
-		Arrays.fill(bytes, (byte) 0);
+		Arrays.fill(password, '\u0000');
 	}
 }
