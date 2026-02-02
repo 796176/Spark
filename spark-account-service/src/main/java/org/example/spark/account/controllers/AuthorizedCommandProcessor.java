@@ -31,9 +31,12 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 	private final AccountService accountService;
 
 	public AuthorizedCommandProcessor(
-		@Nonnull Executor executor, @Nonnull CommandParser converter, @Nonnull AccountService accountService
+		@Nonnull Executor executor,
+		@Nonnull CommandParser converter,
+		@Nonnull ResponseEncoder responseEncoder,
+		@Nonnull AccountService accountService
 	) {
-		super(executor, converter);
+		super(executor, converter, responseEncoder);
 
 		this.accountService = accountService;
 	}

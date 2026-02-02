@@ -99,10 +99,15 @@ public class AccountServiceConfiguration {
 	}
 
 	@Bean
+	ResponseEncoder responseEncoder() {
+		return new JsonResponseEncoder();
+	}
+
+	@Bean
 	CommandProcessor commandProcessor(
-		Executor executor, CommandParser commandParser, AccountService accountService
+		Executor executor, CommandParser commandParser, ResponseEncoder responseEncoder, AccountService accountService
 	) {
-		return new AuthorizedCommandProcessor(executor, commandParser, accountService);
+		return new AuthorizedCommandProcessor(executor, commandParser, responseEncoder, accountService);
 	}
 
 	@Bean

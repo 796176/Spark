@@ -22,12 +22,7 @@ import jakarta.annotation.Nonnull;
 import org.example.spark.account.models.Password;
 import org.example.spark.account.models.RenderableAccount;
 import org.example.spark.authorization.Role;
-import tools.jackson.core.JsonGenerator;
-import tools.jackson.core.ObjectWriteContext;
-import tools.jackson.core.json.JsonFactory;
 
-import java.io.ByteArrayOutputStream;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.UUID;
@@ -39,9 +34,14 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 
 	private final CommandParser parser;
 
-	public AbstractCommandProcessor(@Nonnull Executor executor, @Nonnull CommandParser commandParser) {
+	private final ResponseEncoder responseEncoder;
+
+	public AbstractCommandProcessor(
+		@Nonnull Executor executor, @Nonnull CommandParser commandParser, @Nonnull ResponseEncoder responseEncoder
+	) {
 		this.executor = executor;
 		this.parser = commandParser;
+		this.responseEncoder = responseEncoder;
 	}
 
 	@Override
@@ -59,7 +59,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 			Role[] roles = Arrays.stream(callerRoles).mapToObj(Role::fromId).toArray(Role[]::new);
 			CommandParser.ParsedCommand parsedCommand = parser.parse(bodyEncodingFormat, version, body);
 			try {
-				byte[] emptyJson = "{}".getBytes(StandardCharsets.UTF_8);
+				ResponseEncoder.EncodedResponseProperties emptyResponse = responseEncoder.emptyResponse();
 				switch (commandType) {
 					case "org.example.spark.account.create-account" -> {
 						createAccount(
@@ -69,7 +69,12 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							Objects.requireNonNull(parsedCommand.getPassword()),
 							UUID.fromString(commandId)
 						);
-						callback.send(0, "application/json", "1.0", emptyJson);
+						callback.send(
+							0,
+							emptyResponse.getEncodingFormat(),
+							emptyResponse.getVersion(),
+							emptyResponse.getBody()
+						);
 					}
 					case "org.example.spark.account.create-admin-account" -> {
 						createAdminAccount(
@@ -79,7 +84,12 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							Objects.requireNonNull(parsedCommand.getPassword()),
 							UUID.fromString(commandId)
 						);
-						callback.send(0, "application/json", "1.0", emptyJson);
+						callback.send(
+							0,
+							emptyResponse.getEncodingFormat(),
+							emptyResponse.getVersion(),
+							emptyResponse.getBody()
+						);
 					}
 					case "org.example.spark.account.delete-account" -> {
 						deleteAccount(
@@ -87,7 +97,12 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							roles,
 							Long.parseLong(Objects.requireNonNull(parsedCommand.getValue("account_id")))
 						);
-						callback.send(0, "application/json", "1.0", emptyJson);
+						callback.send(
+							0,
+							emptyResponse.getEncodingFormat(),
+							emptyResponse.getVersion(),
+							emptyResponse.getBody()
+						);
 					}
 					case "org.example.spark.account.suspend-account" -> {
 						suspendAccount(
@@ -95,7 +110,12 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							roles,
 							Long.parseLong(Objects.requireNonNull(parsedCommand.getValue("account_id")))
 						);
-						callback.send(0, "application/json", "1.0", emptyJson);
+						callback.send(
+							0,
+							emptyResponse.getEncodingFormat(),
+							emptyResponse.getVersion(),
+							emptyResponse.getBody()
+						);
 					}
 					case "org.example.spark.account.restore-account" -> {
 						restoreAccount(
@@ -103,7 +123,12 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							roles,
 							Long.parseLong(Objects.requireNonNull(parsedCommand.getValue("account_id")))
 						);
-						callback.send(0, "application/json", "1.0", emptyJson);
+						callback.send(
+							0,
+							emptyResponse.getEncodingFormat(),
+							emptyResponse.getVersion(),
+							emptyResponse.getBody()
+						);
 					}
 					case "org.example.spark.account.get-account" -> {
 						RenderableAccount renderableAccount = getAccount(
@@ -111,22 +136,33 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							roles,
 							Long.parseLong(Objects.requireNonNull(parsedCommand.getValue("account_id")))
 						);
-						byte[] jsonOutput = toJson(renderableAccount).getBytes(StandardCharsets.UTF_8);
-						callback.send(0, "application/json", "1.0", jsonOutput);
+						ResponseEncoder.EncodedResponseProperties response =
+							responseEncoder.encodeRenderableAccounts(renderableAccount);
+						callback.send(
+							0, response.getEncodingFormat(), response.getVersion(), response.getBody()
+						);
 					}
 					case "org.example.spark.account.get-accounts" -> {
 						RenderableAccount[] renderableAccounts = getAccounts(
 							callerId,
 							roles
 						);
-						byte[] jsonOutput = toJson(renderableAccounts).getBytes(StandardCharsets.UTF_8);
-						callback.send(0, "application/json", "1.0", jsonOutput);
+						ResponseEncoder.EncodedResponseProperties response =
+							responseEncoder.encodeRenderableAccounts(renderableAccounts);
+						callback.send(
+							0, response.getEncodingFormat(), response.getVersion(), response.getBody()
+						);
 					}
 				}
 			} catch (Exception e) {
 				try {
-					byte[] jsonOutput = toJson(e).getBytes(StandardCharsets.UTF_8);
-					callback.send(1, "application/json", "1.0", jsonOutput);
+					ResponseEncoder.EncodedResponseProperties exceptionResponse = responseEncoder.encodeThrowable(e);
+					callback.send(
+						1,
+						exceptionResponse.getEncodingFormat(),
+						exceptionResponse.getVersion(),
+						exceptionResponse.getBody()
+					);
 				} catch (Exception ignored) { }
 				e.printStackTrace();
 			} finally {
@@ -134,44 +170,6 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 				if (parsedCommand.getPassword() != null) parsedCommand.getPassword().destroy();
 			}
 		});
-	}
-
-	private String toJson(Exception e) {
-		JsonFactory jsonFactory = new JsonFactory();
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os);
-		jsonGenerator.writeStartObject();
-		jsonGenerator.writeStringProperty("exception-type", e.getClass().getName());
-		jsonGenerator.writeStringProperty("exception-message", e.getMessage());
-		jsonGenerator.writeEndObject();
-		jsonGenerator.flush();
-		return os.toString();
-	}
-
-	private String toJson(RenderableAccount... renderableAccounts) {
-		JsonFactory jsonFactory = new JsonFactory();
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
-		JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os);
-		jsonGenerator.writeStartObject();
-		jsonGenerator.writeName("accounts");
-		jsonGenerator.writeStartArray();
-		for (RenderableAccount renderableAccount: renderableAccounts) {
-			jsonGenerator.writeStartObject();
-			jsonGenerator.writeStringProperty("account_id", renderableAccount.getId());
-			jsonGenerator.writeStringProperty("account_name", renderableAccount.getName());
-			jsonGenerator.writeName("roles");
-			String[] roles = Arrays
-				.stream(renderableAccount.getRoles())
-				.mapToObj(Long::toString)
-				.toArray(String[]::new);
-			jsonGenerator.writeArray(roles, 0, roles.length);
-			jsonGenerator.writeStringProperty("account_status", renderableAccount.getStatus());
-			jsonGenerator.writeEndObject();
-		}
-		jsonGenerator.writeEndArray();
-		jsonGenerator.writeEndObject();
-		jsonGenerator.flush();
-		return os.toString();
 	}
 
 	protected abstract void createAccount(
