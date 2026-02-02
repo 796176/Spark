@@ -68,7 +68,7 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 				String key = jsonParser.currentName();
 				switch (Objects.requireNonNullElse(key, "")) {
 					case "account_id" -> accountId = jsonParser.getValueAsString();
-					case "name" -> name = jsonParser.getValueAsString();
+					case "account_name" -> name = jsonParser.getValueAsString();
 					case "encoded_password" -> encodedPassword = jsonParser.getValueAsString();
 					case "roles" -> {
 						jsonParser.nextToken();
@@ -166,7 +166,7 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 		jsonGenerator.writeStartObject();
 		if (accountEvent instanceof AccountCreated accountCreated) {
 			jsonGenerator.writeStringProperty("account_id", Long.toString(accountCreated.getAccountId()));
-			jsonGenerator.writeStringProperty("name", accountCreated.getName());
+			jsonGenerator.writeStringProperty("account_name", accountCreated.getName());
 			jsonGenerator.writeStringProperty("encoded_password", accountCreated.getEncodedPassword());
 			jsonGenerator.writeName("roles");
 			jsonGenerator.writeArray(

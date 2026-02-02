@@ -65,7 +65,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						createAccount(
 							callerId,
 							roles,
-							Objects.requireNonNull(parsedCommand.getValue("name")),
+							Objects.requireNonNull(parsedCommand.getValue("account_name")),
 							Objects.requireNonNull(parsedCommand.getPassword()),
 							UUID.fromString(commandId)
 						);
@@ -75,7 +75,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						createAdminAccount(
 							callerId,
 							roles,
-							Objects.requireNonNull(parsedCommand.getValue("name")),
+							Objects.requireNonNull(parsedCommand.getValue("account_name")),
 							Objects.requireNonNull(parsedCommand.getPassword()),
 							UUID.fromString(commandId)
 						);
@@ -158,7 +158,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		for (RenderableAccount renderableAccount: renderableAccounts) {
 			jsonGenerator.writeStartObject();
 			jsonGenerator.writeStringProperty("account_id", renderableAccount.getId());
-			jsonGenerator.writeStringProperty("name", renderableAccount.getName());
+			jsonGenerator.writeStringProperty("account_name", renderableAccount.getName());
 			jsonGenerator.writeName("roles");
 			String[] roles = Arrays
 				.stream(renderableAccount.getRoles())
