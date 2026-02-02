@@ -74,10 +74,10 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 		q.select(accountEntityRoot);
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
 		TypedQuery<AccountEntity> typedQuery = entityManager.createQuery(q);
-		Stream<AccountEntity> accountEntityStream = typedQuery.getResultStream();
+		List<AccountEntity> accountEntityList = typedQuery.getResultList();
 		entityManager.clear();
 		entityManager.close();
-		return accountEntityStream.map(this::toAccount).toArray(Account[]::new);
+		return accountEntityList.stream().map(this::toAccount).toArray(Account[]::new);
 	}
 
 	private Account toAccount(AccountEntity accountEntity) {
