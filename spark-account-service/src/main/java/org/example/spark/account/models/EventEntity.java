@@ -33,7 +33,7 @@ public class EventEntity {
 
 	private String eventType;
 
-	private String encodingFormat;
+	private String contentType;
 
 	private String version;
 
@@ -43,14 +43,14 @@ public class EventEntity {
 
 	public EventEntity(
 		@Nonnull String eventType,
-		@Nonnull String encodingFormat,
+		@Nonnull String contentType,
 		@Nonnull String version,
 		@Nonnull String eventBody
 	) {
 		this();
 		this.setId(UUID.randomUUID());
 		this.setEventType(eventType);
-		this.setEncodingFormat(encodingFormat);
+		this.setContentType(contentType);
 		this.setVersion(version);
 		this.setEventBody(eventBody);
 	}
@@ -81,12 +81,12 @@ public class EventEntity {
 		this.eventType = eventType;
 	}
 
-	public String getEncodingFormat() {
-		return encodingFormat;
+	public String getContentType() {
+		return contentType;
 	}
 
-	public void setEncodingFormat(@Nonnull String encodingFormat) {
-		this.encodingFormat = encodingFormat;
+	public void setContentType(@Nonnull String contentType) {
+		this.contentType = contentType;
 	}
 
 	public String getVersion() {

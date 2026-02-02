@@ -29,13 +29,13 @@ public interface CommandProcessor {
 		long callerId,
 		@Nonnull long[] callerRoles,
 		@Nonnull String commandId,
-		@Nonnull String bodyEncodingFormat,
+		@Nonnull String bodyContentType,
 		@Nonnull String version,
 		@Nonnull byte[] body,
 		@Nonnull Response callback
 	);
 
 	interface Response {
-		void send(int statusCode, String encodingFormat, String version, byte[] body) throws Exception;
+		void send(int statusCode, String contentType, String version, byte[] body) throws Exception;
 	}
 }

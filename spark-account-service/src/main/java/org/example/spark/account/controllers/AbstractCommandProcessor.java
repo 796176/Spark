@@ -50,14 +50,14 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		long callerId,
 		@Nonnull long[] callerRoles,
 		@Nonnull String commandId,
-		@Nonnull String bodyEncodingFormat,
+		@Nonnull String bodyContentType,
 		@Nonnull String version,
 		@Nonnull byte[] body,
 		@Nonnull Response callback
 	) {
 		executor.execute(() -> {
 			Role[] roles = Arrays.stream(callerRoles).mapToObj(Role::fromId).toArray(Role[]::new);
-			CommandParser.ParsedCommand parsedCommand = parser.parse(bodyEncodingFormat, version, body);
+			CommandParser.ParsedCommand parsedCommand = parser.parse(bodyContentType, version, body);
 			try {
 				ResponseEncoder.EncodedResponseProperties emptyResponse = responseEncoder.emptyResponse();
 				switch (commandType) {
@@ -71,7 +71,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 						callback.send(
 							0,
-							emptyResponse.getEncodingFormat(),
+							emptyResponse.getContentType(),
 							emptyResponse.getVersion(),
 							emptyResponse.getBody()
 						);
@@ -86,7 +86,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 						callback.send(
 							0,
-							emptyResponse.getEncodingFormat(),
+							emptyResponse.getContentType(),
 							emptyResponse.getVersion(),
 							emptyResponse.getBody()
 						);
@@ -99,7 +99,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 						callback.send(
 							0,
-							emptyResponse.getEncodingFormat(),
+							emptyResponse.getContentType(),
 							emptyResponse.getVersion(),
 							emptyResponse.getBody()
 						);
@@ -112,7 +112,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 						callback.send(
 							0,
-							emptyResponse.getEncodingFormat(),
+							emptyResponse.getContentType(),
 							emptyResponse.getVersion(),
 							emptyResponse.getBody()
 						);
@@ -125,7 +125,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 						callback.send(
 							0,
-							emptyResponse.getEncodingFormat(),
+							emptyResponse.getContentType(),
 							emptyResponse.getVersion(),
 							emptyResponse.getBody()
 						);
@@ -139,7 +139,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						ResponseEncoder.EncodedResponseProperties response =
 							responseEncoder.encodeRenderableAccounts(renderableAccount);
 						callback.send(
-							0, response.getEncodingFormat(), response.getVersion(), response.getBody()
+							0, response.getContentType(), response.getVersion(), response.getBody()
 						);
 					}
 					case "org.example.spark.account.get-accounts" -> {
@@ -150,7 +150,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						ResponseEncoder.EncodedResponseProperties response =
 							responseEncoder.encodeRenderableAccounts(renderableAccounts);
 						callback.send(
-							0, response.getEncodingFormat(), response.getVersion(), response.getBody()
+							0, response.getContentType(), response.getVersion(), response.getBody()
 						);
 					}
 				}
@@ -159,7 +159,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 					ResponseEncoder.EncodedResponseProperties exceptionResponse = responseEncoder.encodeThrowable(e);
 					callback.send(
 						1,
-						exceptionResponse.getEncodingFormat(),
+						exceptionResponse.getContentType(),
 						exceptionResponse.getVersion(),
 						exceptionResponse.getBody()
 					);

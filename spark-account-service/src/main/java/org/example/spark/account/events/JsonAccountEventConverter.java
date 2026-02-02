@@ -28,21 +28,21 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 
 	public class JsonEncodedEventProperties extends EncodedEventProperties {
 
-		private final String encodingFormat;
+		private final String contentType;
 
 		private final String version;
 
 		private final String body;
 
-		public JsonEncodedEventProperties(String encodedFormat, String version, String body) {
-			this.encodingFormat = encodedFormat;
+		public JsonEncodedEventProperties(String contentType, String version, String body) {
+			this.contentType = contentType;
 			this.version = version;
 			this.body = body;
 		}
 
 		@Override
-		public String getEncodingFormat() {
-			return encodingFormat;
+		public String getContentType() {
+			return contentType;
 		}
 
 		@Override
@@ -57,8 +57,8 @@ public class JsonAccountEventConverter extends AccountEventConverter<String> {
 	}
 
 	@Override
-	public <S extends AccountEvent> S convert(String encodingFormat, String version, String s, Class<S> c) {
-		if (!(encodingFormat.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
+	public <S extends AccountEvent> S convert(String contentType, String version, String s, Class<S> c) {
+		if (!(contentType.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
 
 		JsonParser jsonParser = new JsonFactory().createParser(ObjectReadContext.empty(), s);
 		if (c.equals(AccountCreated.class)) {

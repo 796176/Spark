@@ -130,7 +130,7 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 				AccountEventConverter<String>.EncodedEventProperties properties = accountEventConverter.convert(event);
 				EventEntity eventEntity = new EventEntity(
 					event.getType(),
-					properties.getEncodingFormat(),
+					properties.getContentType(),
 					properties.getVersion(),
 					properties.getBody()
 				);
@@ -181,7 +181,7 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 				accountEventConverter.convert(accountCreatedEvent);
 			EventEntity event = new EventEntity(
 				accountCreatedEvent.getType(),
-				properties.getEncodingFormat(),
+				properties.getContentType(),
 				properties.getVersion(),
 				properties.getBody()
 			);

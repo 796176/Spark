@@ -24,7 +24,7 @@ public interface ResponseEncoder {
 
 	interface EncodedResponseProperties {
 
-		String getEncodingFormat();
+		String getContentType();
 
 		String getVersion();
 

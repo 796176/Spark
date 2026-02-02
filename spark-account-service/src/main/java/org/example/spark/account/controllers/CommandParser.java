@@ -34,5 +34,5 @@ public interface CommandParser {
 		void destroy();
 	}
 
-	ParsedCommand parse(@Nonnull String encodingFormat, @Nonnull String version, @Nonnull byte[] body);
+	ParsedCommand parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body);
 }

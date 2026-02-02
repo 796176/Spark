@@ -31,11 +31,11 @@ import java.util.Arrays;
 public class JsonResponseEncoder implements ResponseEncoder {
 
 	public record JsonEncodedResponseProperties(
-		String encodingFormat, String version, byte[] responseBody
+		String contentType, String version, byte[] responseBody
 	) implements EncodedResponseProperties {
 		@Override
-		public String getEncodingFormat() {
-			return encodingFormat;
+		public String getContentType() {
+			return contentType;
 		}
 
 		@Override

@@ -79,13 +79,13 @@ public class CommandController implements Consumer {
 				.mapToLong(Long::parseLong)
 				.toArray(),
 			basicProperties.getMessageId(),
-			basicProperties.getContentEncoding(),
+			basicProperties.getContentType(),
 			basicProperties.getHeaders().get("Version").toString(),
 			bytes,
-			(statusCode, encodingFormat, version, body) -> {
+			(statusCode, contentType, version, body) -> {
 				AMQP.BasicProperties replyProperties = new AMQP.BasicProperties.Builder()
 					.deliveryMode(2)
-					.contentEncoding(encodingFormat)
+					.contentType(contentType)
 					.correlationId(basicProperties.getCorrelationId())
 					.headers(Map.of("Status-Code", Integer.toString(statusCode), "Version", version))
 					.build();

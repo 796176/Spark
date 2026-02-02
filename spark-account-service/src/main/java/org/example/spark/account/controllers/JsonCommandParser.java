@@ -73,8 +73,8 @@ public class JsonCommandParser implements CommandParser {
 	}
 
 	@Override
-	public ParsedCommand parse(@Nonnull String encodingFormat, @Nonnull String version, @Nonnull byte[] body) {
-		if (!(encodingFormat.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
+	public ParsedCommand parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body) {
+		if (!(contentType.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
 
 		ParsedCommandImpl parsedMessage = new ParsedCommandImpl(body);
 		JsonFactory jsonFactory = new JsonFactory();
