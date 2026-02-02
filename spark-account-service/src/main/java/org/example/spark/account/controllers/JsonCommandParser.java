@@ -27,6 +27,7 @@ import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.json.JsonFactory;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -35,9 +36,15 @@ public class JsonCommandParser implements CommandParser {
 
 	public static class ParsedCommandImpl implements ParsedCommand {
 
+		private final byte[] commandBody;
+
 		private final HashMap<String, String> properties = new HashMap<>();
 
 		private Password password;
+
+		public ParsedCommandImpl(@Nonnull byte[] commandBody) {
+			this.commandBody = commandBody;
+		}
 
 		public Map<String, String> getProperties() {
 			return properties;
@@ -58,13 +65,18 @@ public class JsonCommandParser implements CommandParser {
 		public void setPassword(Password password) {
 			this.password = password;
 		}
+
+		@Override
+		public void destroy() {
+			Arrays.fill(commandBody, (byte) 0);
+		}
 	}
 
 	@Override
 	public ParsedCommand parse(@Nonnull String encodingFormat, @Nonnull String version, @Nonnull byte[] body) {
 		if (!(encodingFormat.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
 
-		ParsedCommandImpl parsedMessage = new ParsedCommandImpl();
+		ParsedCommandImpl parsedMessage = new ParsedCommandImpl(body);
 		JsonFactory jsonFactory = new JsonFactory();
 		JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body);
 		while (jsonParser.nextToken() != JsonToken.END_OBJECT) {

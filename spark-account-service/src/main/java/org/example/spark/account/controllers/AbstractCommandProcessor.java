@@ -129,6 +129,9 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 					callback.send(1, "application/json", "1.0", jsonOutput);
 				} catch (Exception ignored) { }
 				e.printStackTrace();
+			} finally {
+				parsedCommand.destroy();
+				if (parsedCommand.getPassword() != null) parsedCommand.getPassword().destroy();
 			}
 		});
 	}

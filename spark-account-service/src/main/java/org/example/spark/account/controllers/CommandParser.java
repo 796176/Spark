@@ -30,6 +30,8 @@ public interface CommandParser {
 
 		@Nullable
 		Password getPassword();
+
+		void destroy();
 	}
 
 	ParsedCommand parse(@Nonnull String encodingFormat, @Nonnull String version, @Nonnull byte[] body);
