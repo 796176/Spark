@@ -1,0 +1,53 @@
+/*
+ * Spark - The inventory management application
+ * Copyright (C) 2026 Yegore Vlussove
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package org.example.spark.account.controllers;
+
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import jakarta.annotation.Nonnull;
+import org.example.spark.account.models.PublishableAccountEvent;
+
+import java.util.Map;
+
+public class RMQEventPublisher implements EventPublisher {
+
+	private final Channel channel;
+
+	public RMQEventPublisher(@Nonnull Channel channel) {
+		this.channel = channel;
+	}
+
+	@Override
+	public void publish(@Nonnull PublishableAccountEvent... publishableAccountEvents) throws Exception {
+		if (publishableAccountEvents.length == 0) return;
+
+		do {
+			for (PublishableAccountEvent event: publishableAccountEvents) {
+				AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
+					.deliveryMode(2)
+					.contentType(event.getContentType())
+					.type(event.getEventType())
+					.messageId(event.getEventId())
+					.headers(Map.of("Version", event.getVersion()))
+					.build();
+				channel.basicPublish("spark-account-service-events", "", properties, event.getBody());
+			}
+		} while (!channel.waitForConfirms());
+	}
+}

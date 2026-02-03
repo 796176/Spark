@@ -27,7 +27,9 @@ import org.example.spark.account.controllers.*;
 import org.example.spark.account.events.AccountEventConverter;
 import org.example.spark.account.events.JsonAccountEventConverter;
 import org.example.spark.account.intaractors.AccountDataAccess;
+import org.example.spark.account.intaractors.PublishableEventDataAccess;
 import org.example.spark.account.persistence.JPAAccountDataAccess;
+import org.example.spark.account.persistence.JPAPublishableEventDataAccess;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -42,8 +44,7 @@ import org.springframework.transaction.annotation.RollbackOn;
 
 import java.io.IOException;
 import java.util.Map;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 
 @SpringBootApplication
@@ -125,6 +126,31 @@ public class AccountServiceConfiguration {
 	@Scope("prototype")
 	Connection connection(ConnectionFactory connectionFactory) throws IOException, TimeoutException {
 		return connectionFactory.newConnection();
+	}
+
+	@Bean
+	PublishableEventDataAccess publishableEventDataAccess(EntityManagerFactory entityManagerFactory) {
+		return new JPAPublishableEventDataAccess(entityManagerFactory);
+	}
+
+	@Bean
+	EventPublisher eventPublisher(Connection connection) throws IOException {
+		Channel ch = connection.createChannel();
+		ch.exchangeDeclare("spark-account-service-events", BuiltinExchangeType.FANOUT, true, false, null);
+		ch.confirmSelect();
+		return new RMQEventPublisher(ch);
+	}
+
+	@Bean
+	ScheduledEventPublisher scheduledEventPublisher(
+		PublishableEventDataAccess publishableEventDataAccess,
+		EventPublisher eventPublisher,
+		@Value("${org.example.spark.eventPublishingInterval}") long eventPublishingInterval
+	) {
+		ScheduledExecutorService scheduledExecutorService = Executors.newSingleThreadScheduledExecutor();
+		return new ScheduledEventPublisher(
+			scheduledExecutorService, publishableEventDataAccess, eventPublisher, eventPublishingInterval
+		);
 	}
 
 	static void main(String[] args) {
