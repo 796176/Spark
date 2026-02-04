@@ -24,6 +24,27 @@ import org.example.spark.inventory.models.Money;
 
 public interface ItemAggregate {
 
+	enum Status {
+		CREATED(0), DELETED(1), BUSY(2);
+
+		private long id;
+
+		Status(long id) {
+			this.id = id;
+		}
+
+		public long getId() {
+			return id;
+		}
+
+		public static Status fromId(long id) {
+			if (id == 0) return CREATED;
+			if (id == 1) return DELETED;
+			if (id == 2) return BUSY;
+			throw new IllegalArgumentException();
+		}
+	}
+
 	long getId();
 
 	Money getPrice();
@@ -31,6 +52,10 @@ public interface ItemAggregate {
 	int getAmount();
 
 	ItemAmountUpdated setAmount(int amount);
+
+	Status getStatus();
+
+	void setStatus(Status status);
 
 	ItemDeleted delete();
 }
