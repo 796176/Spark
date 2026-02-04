@@ -6,7 +6,7 @@
     <packaging>jar</packaging>
 
     <parent>
-        <groupId>org.example</groupId>
+        <groupId>org.example.spark</groupId>
         <artifactId>spark-parent</artifactId>
         <version>1.0.0</version>
     </parent>
@@ -33,7 +33,7 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.example</groupId>
+            <groupId>org.example.spark</groupId>
             <artifactId>spark-authorization</artifactId>
             <version>1.0.0</version>
         </dependency>
