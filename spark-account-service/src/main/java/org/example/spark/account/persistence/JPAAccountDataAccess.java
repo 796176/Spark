@@ -152,7 +152,7 @@ public class JPAAccountDataAccess implements AccountDataAccess {
 				CriteriaQuery<Long> q = cb.createQuery(Long.class);
 				Root<AccountEntity> account = q.from(AccountEntity.class);
 				q.where(cb.equal(account.get(AccountEntity_.name), name));
-				q.select(account.get(AccountEntity_.ID));
+				q.select(account.get(AccountEntity_.id));
 				TypedQuery<Long> typedQuery = entityManager.createQuery(q);
 				long accountEntityId = typedQuery.getSingleResultOrNull();
 				atomicLong.set(accountEntityId);
