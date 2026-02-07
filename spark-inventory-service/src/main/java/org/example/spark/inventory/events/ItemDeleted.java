@@ -21,7 +21,7 @@ package org.example.spark.inventory.events;
 public interface ItemDeleted extends ItemEvent {
 
 	default String getType() {
-		return "org.example.spark.item.deleted";
+		return "org.example.spark.item-deleted";
 	}
 
 	long getItemId();
