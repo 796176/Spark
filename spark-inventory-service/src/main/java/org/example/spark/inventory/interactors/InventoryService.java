@@ -30,7 +30,7 @@ public interface InventoryService {
 
 	void updateAmount(long itemId, int amount);
 
-	RenderableItem getItem(int itemId);
+	RenderableItem getItem(long itemId);
 
 	RenderableItem[] getItems();
 }
