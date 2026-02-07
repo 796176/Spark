@@ -115,7 +115,9 @@ public class JPAItemDataAccess implements ItemDataAccess {
 	}
 
 	@Override
-	public ItemAggregate addItem(@Nonnull String name, @Nonnull String idempotenceToken, @Nonnull Money price, int amount) {
+	public ItemAggregate addItem(
+		@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken
+	) {
 		AtomicLong atomicLong = new AtomicLong();
 		entityManagerFactory.runInTransaction(entityManager -> {
 			if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {

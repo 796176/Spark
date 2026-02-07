@@ -32,5 +32,5 @@ public interface ItemDataAccess {
 
 	void persist(@Nonnull ItemAggregate item, @Nullable String idempotenceToken, @Nonnull ItemEvent... itemEvents);
 
-	ItemAggregate addItem(@Nonnull String name, @Nonnull String idempotenceToken, @Nonnull Money price, int amount);
+	ItemAggregate addItem(@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken);
 }
