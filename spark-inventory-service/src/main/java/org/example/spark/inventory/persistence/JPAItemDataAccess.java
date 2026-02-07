@@ -81,6 +81,7 @@ public class JPAItemDataAccess implements ItemDataAccess {
 	private ItemAggregate toItemAggregate(ItemEntity item) {
 		return new ItemAggregateImpl(
 			item.getId(),
+			item.getName(),
 			new Money(item.getEmbeddablePrice().getCurrencyAmount(), item.getEmbeddablePrice().getCentAmount()),
 			item.getAmount(),
 			ItemAggregate.Status.fromId(item.getItemStatus().getId())
@@ -147,6 +148,6 @@ public class JPAItemDataAccess implements ItemDataAccess {
 			entityManager.persist(event);
 		});
 
-		return new ItemAggregateImpl(atomicLong.get(), price, amount, ItemAggregate.Status.CREATED);
+		return new ItemAggregateImpl(atomicLong.get(), name, price, amount, ItemAggregate.Status.CREATED);
 	}
 }

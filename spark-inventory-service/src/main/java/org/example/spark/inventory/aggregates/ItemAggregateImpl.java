@@ -29,14 +29,19 @@ public class ItemAggregateImpl implements ItemAggregate {
 
 	private final long itemId;
 
+	private final String name;
+
 	private final Money price;
 
 	private int amount;
 
 	private Status status;
 
-	public ItemAggregateImpl(long itemId, @Nonnull Money price, int amount, @Nonnull Status status) {
+	public ItemAggregateImpl(
+		long itemId, @Nonnull String name, @Nonnull Money price, int amount, @Nonnull Status status
+	) {
 		this.itemId = itemId;
+		this.name = name;
 		this.price = price;
 		this.amount = amount;
 		this.status = status;
@@ -45,6 +50,11 @@ public class ItemAggregateImpl implements ItemAggregate {
 	@Override
 	public long getId() {
 		return itemId;
+	}
+
+	@Override
+	public String getName() {
+		return name;
 	}
 
 	@Override

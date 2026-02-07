@@ -47,6 +47,8 @@ public interface ItemAggregate {
 
 	long getId();
 
+	String getName();
+
 	Money getPrice();
 
 	int getAmount();
