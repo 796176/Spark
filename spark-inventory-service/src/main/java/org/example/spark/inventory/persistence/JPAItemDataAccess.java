@@ -58,7 +58,11 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		ItemEntity item = entityManager.find(ItemEntity.class, id);
 		entityManager.clear();
 		entityManager.close();
-		return toItemAggregate(item);
+		ItemAggregate itemAggregate = toItemAggregate(item);
+		if (itemAggregate.getStatus() == ItemAggregate.Status.CREATED) {
+			return itemAggregate;
+		}
+		throw new IllegalArgumentException();
 	}
 
 	@Override
@@ -75,7 +79,13 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		entityManager.clear();
 		entityManager.close();
 
-		return itemEntityList.stream().map(this::toItemAggregate).toArray(ItemAggregate[]::new);
+		return itemEntityList
+			.stream()
+			.map(this::toItemAggregate)
+			.filter(itemAggregate -> {
+				return itemAggregate.getStatus() == ItemAggregate.Status.CREATED;
+			})
+			.toArray(ItemAggregate[]::new);
 	}
 
 	private ItemAggregate toItemAggregate(ItemEntity item) {
