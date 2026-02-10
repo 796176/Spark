@@ -1,0 +1,60 @@
+/*
+ * Spark - The inventory management application
+ * Copyright (C) 2026 Yegore Vlussove
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package org.example.spark.inventory.controllers;
+
+import com.rabbitmq.client.AMQP;
+import com.rabbitmq.client.Channel;
+import jakarta.annotation.Nonnull;
+import org.example.spark.inventory.sagas.OrderServiceProxy;
+import org.example.spark.inventory.sagas.SagaState;
+
+import java.util.Map;
+
+public class RMQOrderService implements OrderServiceProxy {
+
+	private final Channel channel;
+
+	private final String replyChannel;
+
+	public RMQOrderService(@Nonnull Channel channel, @Nonnull String replyChannel) {
+		this.channel = channel;
+		this.replyChannel = replyChannel;
+	}
+
+	@Override
+	public void invalidateItem(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) throws Exception {
+		AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder()
+			.deliveryMode(2)
+			.contentType("application/json")
+			.correlationId(correlationId)
+			.messageId(state.getIdempotenceToken())
+			.type("org.example.spark.invalidate-item")
+			.replyTo(replyChannel)
+			.headers(Map.of("Version", "1.0", "Caller-Roles", "3"))
+			.build();
+		// TODO decouple this service proxy from command formating
+		channel.basicPublish(
+			"commands",
+			"spark-order-service",
+			basicProperties,
+			("{\"item_id\": \"" + itemId + "\"}").getBytes()
+		);
+		channel.waitForConfirms();
+	}
+}
