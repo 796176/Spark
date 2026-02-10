@@ -24,13 +24,15 @@ import org.example.spark.inventory.models.RenderableItem;
 
 public interface InventoryService {
 
-	void addItem(@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken);
+	void addItem(
+		@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken
+	) throws Exception;
 
-	void deleteItem(long itemId, @Nonnull String idempotenceToken);
+	void deleteItem(long itemId, @Nonnull String idempotenceToken) throws Exception;
 
-	void updateAmount(long itemId, int amount);
+	void updateAmount(long itemId, int amount) throws Exception;
 
-	RenderableItem getItem(long itemId);
+	RenderableItem getItem(long itemId) throws Exception;
 
-	RenderableItem[] getItems();
+	RenderableItem[] getItems() throws Exception;
 }
