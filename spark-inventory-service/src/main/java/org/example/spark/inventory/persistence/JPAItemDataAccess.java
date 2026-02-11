@@ -62,11 +62,7 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		ItemEntity item = entityManager.find(ItemEntity.class, id);
 		entityManager.clear();
 		entityManager.close();
-		ItemAggregate itemAggregate = toItemAggregate(item);
-		if (itemAggregate.getStatus() == ItemAggregate.Status.CREATED) {
-			return itemAggregate;
-		}
-		throw new IllegalArgumentException();
+		return toItemAggregate(item);
 	}
 
 	@Override
@@ -75,11 +71,7 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		ItemEntity item = entityManager.find(ItemEntity.class, id);
 		entityManager.clear();
 		entityManager.close();
-		VersionedItemAggregate versionedItemAggregate = toVersionedItemAggregate(item);
-		if (versionedItemAggregate.item().getStatus() == ItemAggregate.Status.CREATED) {
-			return versionedItemAggregate;
-		}
-		throw new IllegalArgumentException();
+		return toVersionedItemAggregate(item);
 	}
 
 	@Override
@@ -99,9 +91,6 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		return itemEntityList
 			.stream()
 			.map(this::toVersionedItemAggregate)
-			.filter(itemAggregate -> {
-				return itemAggregate.item().getStatus() == ItemAggregate.Status.CREATED;
-			})
 			.toArray(VersionedItemAggregate[]::new);
 	}
 

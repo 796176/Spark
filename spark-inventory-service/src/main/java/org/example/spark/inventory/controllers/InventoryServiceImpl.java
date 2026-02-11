@@ -49,12 +49,16 @@ public class InventoryServiceImpl implements InventoryService {
 	@Override
 	public void deleteItem(long itemId, @Nonnull String idempotenceToken) throws Exception {
 		ItemAggregate itemAggregate = itemDataAccess.getItem(itemId);
+		if (itemAggregate.getStatus() == ItemAggregate.Status.DELETED) return;
+		if (itemAggregate.getStatus() == ItemAggregate.Status.BUSY) throw new IllegalStateException();
 		sagaManager.newDeleteItemSaga(itemAggregate, idempotenceToken);
 	}
 
 	@Override
 	public void updateAmount(long itemId, int amount, long version, @Nonnull String idempotenceToken) {
 		ItemAggregate item = itemDataAccess.getItem(itemId);
+		if (item.getStatus() == ItemAggregate.Status.DELETED) throw new IllegalArgumentException();
+		if (item.getStatus() == ItemAggregate.Status.BUSY) throw new IllegalStateException();
 		ItemAmountUpdated event = item.setAmount(amount);
 		itemDataAccess.persist(item, version, idempotenceToken, event);
 	}
@@ -62,6 +66,7 @@ public class InventoryServiceImpl implements InventoryService {
 	@Override
 	public RenderableItem getItem(long itemId) {
 		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(itemId);
+		if (versionedItem.item().getStatus() != ItemAggregate.Status.CREATED) throw new IllegalArgumentException();
 		return new RenderableItem(
 			versionedItem.item().getId(),
 			versionedItem.item().getName(),
@@ -76,6 +81,9 @@ public class InventoryServiceImpl implements InventoryService {
 		VersionedItemAggregate[] items = itemDataAccess.getVersionedItems();
 		return Arrays
 			.stream(items)
+			.filter(versionedItem -> {
+				return versionedItem.item().getStatus() == ItemAggregate.Status.CREATED;
+			})
 			.map(versionedItem -> {
 				return new RenderableItem(
 					versionedItem.item().getId(),
