@@ -22,25 +22,25 @@ import jakarta.annotation.Nonnull;
 
 public class RenderableItem {
 
-	private final String id;
+	private final long id;
 
 	private final String name;
 
-	private final String price;
+	private final Money price;
 
 	private final int amount;
 
 	private final long version;
 
 	public RenderableItem(long id, @Nonnull String name, @Nonnull Money price, int amount, long version) {
-		this.id = Long.toString(id);
+		this.id = id;
 		this.name = name;
-		this.price = price.toString();
+		this.price = price;
 		this.amount = amount;
 		this.version = version;
 	}
 
-	public String getId() {
+	public long getId() {
 		return id;
 	}
 
@@ -48,7 +48,7 @@ public class RenderableItem {
 		return name;
 	}
 
-	public String getPrice() {
+	public Money getPrice() {
 		return price;
 	}
 
