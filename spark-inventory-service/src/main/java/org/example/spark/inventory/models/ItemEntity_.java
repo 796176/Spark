@@ -29,10 +29,12 @@ public class ItemEntity_ {
 	public static volatile String EMBEDDABLE_PRICE = "embeddablePrice";
 	public static volatile String AMOUNT = "amount";
 	public static volatile String ITEM_STATUS = "itemStatus";
+	public static volatile String VERSION = "version";
 
 	public static volatile SingularAttribute<ItemEntity, Long> id;
 	public static volatile SingularAttribute<ItemEntity, String> name;
 	public static volatile SingularAttribute<ItemEntity, EmbeddablePrice> embeddablePrice;
 	public static volatile SingularAttribute<ItemEntity, Integer> amount;
 	public static volatile SingularAttribute<ItemEntity, ItemStatus> itemStatus;
+	public static volatile SingularAttribute<ItemEntity, Long> version;
 }

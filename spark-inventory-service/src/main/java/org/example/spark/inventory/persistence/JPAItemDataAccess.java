@@ -28,6 +28,7 @@ import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.example.spark.inventory.aggregates.ItemAggregate;
 import org.example.spark.inventory.aggregates.ItemAggregateImpl;
+import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.controllers.ItemEventConverter;
 import org.example.spark.inventory.events.ItemCreated;
 import org.example.spark.inventory.events.ItemCreatedImpl;
@@ -66,7 +67,20 @@ public class JPAItemDataAccess implements ItemDataAccess {
 	}
 
 	@Override
-	public ItemAggregate[] getItems() {
+	public VersionedItemAggregate getVersionedItem(long id) {
+		EntityManager entityManager = entityManagerFactory.createEntityManager();
+		ItemEntity item = entityManager.find(ItemEntity.class, id);
+		entityManager.clear();
+		entityManager.close();
+		VersionedItemAggregate versionedItemAggregate = toVersionedItemAggregate(item);
+		if (versionedItemAggregate.item().getStatus() == ItemAggregate.Status.CREATED) {
+			return versionedItemAggregate;
+		}
+		throw new IllegalArgumentException();
+	}
+
+	@Override
+	public VersionedItemAggregate[] getVersionedItems() {
 		// SELECT * FROM items;
 		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<ItemEntity> q = cb.createQuery(ItemEntity.class);
@@ -81,11 +95,15 @@ public class JPAItemDataAccess implements ItemDataAccess {
 
 		return itemEntityList
 			.stream()
-			.map(this::toItemAggregate)
+			.map(this::toVersionedItemAggregate)
 			.filter(itemAggregate -> {
-				return itemAggregate.getStatus() == ItemAggregate.Status.CREATED;
+				return itemAggregate.item().getStatus() == ItemAggregate.Status.CREATED;
 			})
-			.toArray(ItemAggregate[]::new);
+			.toArray(VersionedItemAggregate[]::new);
+	}
+
+	private VersionedItemAggregate toVersionedItemAggregate(ItemEntity item) {
+		return new VersionedItemAggregate(toItemAggregate(item), item.getVersion());
 	}
 
 	private ItemAggregate toItemAggregate(ItemEntity item) {
@@ -100,7 +118,7 @@ public class JPAItemDataAccess implements ItemDataAccess {
 
 	@Override
 	public void persist(
-		@Nonnull ItemAggregate item, @Nullable String idempotenceToken, @Nonnull ItemEvent... itemEvents
+		@Nonnull ItemAggregate item, long version, @Nullable String idempotenceToken, @Nonnull ItemEvent... itemEvents
 	) {
 		entityManagerFactory.runInTransaction(entityManager -> {
 			if (idempotenceToken != null) {
@@ -111,8 +129,10 @@ public class JPAItemDataAccess implements ItemDataAccess {
 			}
 
 			ItemEntity itemEntity = entityManager.find(ItemEntity.class, item.getId());
+			if (itemEntity.getVersion() != version) throw new IllegalStateException();
 			itemEntity.setAmount(item.getAmount());
 			itemEntity.setItemStatus(entityManager.find(ItemStatus.class, item.getStatus().getId()));
+			itemEntity.setVersion(itemEntity.getVersion() + 1);
 
 			for (ItemEvent event: itemEvents) {
 				ItemEventConverter<String>.EncodedEventProperties properties = converter.convert(event);

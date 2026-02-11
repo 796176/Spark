@@ -30,7 +30,7 @@ public interface InventoryService {
 
 	void deleteItem(long itemId, @Nonnull String idempotenceToken) throws Exception;
 
-	void updateAmount(long itemId, int amount) throws Exception;
+	void updateAmount(long itemId, int amount, long version, @Nonnull String idempotenceToken) throws Exception;
 
 	RenderableItem getItem(long itemId) throws Exception;
 

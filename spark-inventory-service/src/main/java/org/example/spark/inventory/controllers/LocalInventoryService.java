@@ -20,6 +20,7 @@ package org.example.spark.inventory.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.inventory.aggregates.ItemAggregate;
+import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.events.ItemDeleted;
 import org.example.spark.inventory.interactors.ItemDataAccess;
 import org.example.spark.inventory.sagas.InventoryServiceProxy;
@@ -39,17 +40,17 @@ public class LocalInventoryService implements InventoryServiceProxy {
 
 	@Override
 	public void confirmDeletion( @Nonnull SagaState state, long itemId, @Nonnull String correlationId ) {
-		ItemAggregate item = itemDataAccess.getItem(itemId);
-		ItemDeleted event = item.delete();
-		itemDataAccess.persist(item, state.getIdempotenceToken(), event);
+		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(itemId);
+		ItemDeleted event = versionedItem.item().delete();
+		itemDataAccess.persist(versionedItem.item(), versionedItem.version(), state.getIdempotenceToken(), event);
 		sagaManager.deleteSaga(state.getSagaId());
 	}
 
 	@Override
 	public void abortDeletion(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) {
-		ItemAggregate item = itemDataAccess.getItem(itemId);
-		item.setStatus(ItemAggregate.Status.CREATED);
-		itemDataAccess.persist(item, null);
+		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(itemId);
+		versionedItem.item().setStatus(ItemAggregate.Status.CREATED);
+		itemDataAccess.persist(versionedItem.item(), versionedItem.version(), null);
 		sagaManager.deleteSaga(state.getSagaId());
 	}
 }

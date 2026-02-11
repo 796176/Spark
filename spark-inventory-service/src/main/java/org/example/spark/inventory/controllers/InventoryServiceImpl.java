@@ -20,6 +20,7 @@ package org.example.spark.inventory.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.inventory.aggregates.ItemAggregate;
+import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.events.ItemAmountUpdated;
 import org.example.spark.inventory.interactors.InventoryService;
 import org.example.spark.inventory.interactors.ItemDataAccess;
@@ -52,25 +53,38 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public void updateAmount(long itemId, int amount) {
-		//TODO implement positive locking
+	public void updateAmount(long itemId, int amount, long version, @Nonnull String idempotenceToken) {
 		ItemAggregate item = itemDataAccess.getItem(itemId);
 		ItemAmountUpdated event = item.setAmount(amount);
-		itemDataAccess.persist(item, null, event);
+		itemDataAccess.persist(item, version, idempotenceToken, event);
 	}
 
 	@Override
 	public RenderableItem getItem(long itemId) {
-		ItemAggregate item = itemDataAccess.getItem(itemId);
-		return new RenderableItem(item.getId(), item.getName(), item.getPrice(), item.getAmount());
+		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(itemId);
+		return new RenderableItem(
+			versionedItem.item().getId(),
+			versionedItem.item().getName(),
+			versionedItem.item().getPrice(),
+			versionedItem.item().getAmount(),
+			versionedItem.version()
+		);
 	}
 
 	@Override
 	public RenderableItem[] getItems() {
-		ItemAggregate[] items = itemDataAccess.getItems();
+		VersionedItemAggregate[] items = itemDataAccess.getVersionedItems();
 		return Arrays
 			.stream(items)
-			.map(i -> new RenderableItem(i.getId(), i.getName(), i.getPrice(), i.getAmount()))
+			.map(versionedItem -> {
+				return new RenderableItem(
+					versionedItem.item().getId(),
+					versionedItem.item().getName(),
+					versionedItem.item().getPrice(),
+					versionedItem.item().getAmount(),
+					versionedItem.version()
+				);
+			})
 			.toArray(RenderableItem[]::new);
 	}
 }

@@ -27,6 +27,7 @@ import jakarta.persistence.criteria.CriteriaDelete;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.example.spark.inventory.aggregates.ItemAggregate;
+import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.sagas.Saga;
 import org.example.spark.inventory.interactors.SagaDataAccess;
 import org.example.spark.inventory.models.*;
@@ -116,8 +117,9 @@ public class JPASagaDataAccess implements SagaDataAccess {
 			ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
 			entityManager.persist(processedMessage);
 
-			item.setStatus(ItemAggregate.Status.BUSY);
-			itemDataAccess.persist(item, null);
+			VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(item.getId());
+			versionedItem.item().setStatus(ItemAggregate.Status.BUSY);
+			itemDataAccess.persist(versionedItem.item(), versionedItem.version(),null);
 
 			SagaEntity saga = new SagaEntity(initialState, entityManager.find(ItemEntity.class, item.getId()), clazz);
 			entityManager.persist(saga);

@@ -21,6 +21,7 @@ package org.example.spark.inventory.interactors;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.example.spark.inventory.aggregates.ItemAggregate;
+import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.events.ItemEvent;
 import org.example.spark.inventory.models.Money;
 
@@ -28,9 +29,13 @@ public interface ItemDataAccess {
 
 	ItemAggregate getItem(long id);
 
-	ItemAggregate[] getItems();
+	VersionedItemAggregate getVersionedItem(long id);
 
-	void persist(@Nonnull ItemAggregate item, @Nullable String idempotenceToken, @Nonnull ItemEvent... itemEvents);
+	VersionedItemAggregate[] getVersionedItems();
+
+	void persist(
+		@Nonnull ItemAggregate item, long version, @Nullable String idempotenceToken, @Nonnull ItemEvent... itemEvents
+	);
 
 	ItemAggregate addItem(@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken);
 }

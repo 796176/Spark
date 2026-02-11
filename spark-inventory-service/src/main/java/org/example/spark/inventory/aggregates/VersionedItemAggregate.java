@@ -16,47 +16,8 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.example.spark.inventory.models;
+package org.example.spark.inventory.aggregates;
 
 import jakarta.annotation.Nonnull;
 
-public class RenderableItem {
-
-	private final String id;
-
-	private final String name;
-
-	private final String price;
-
-	private final int amount;
-
-	private final long version;
-
-	public RenderableItem(long id, @Nonnull String name, @Nonnull Money price, int amount, long version) {
-		this.id = Long.toString(id);
-		this.name = name;
-		this.price = price.toString();
-		this.amount = amount;
-		this.version = version;
-	}
-
-	public String getId() {
-		return id;
-	}
-
-	public String getName() {
-		return name;
-	}
-
-	public String getPrice() {
-		return price;
-	}
-
-	public int getAmount() {
-		return amount;
-	}
-
-	public long getVersion() {
-		return version;
-	}
-}
+public record VersionedItemAggregate(@Nonnull ItemAggregate item, long version) { }

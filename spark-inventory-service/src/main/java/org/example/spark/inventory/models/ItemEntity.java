@@ -35,6 +35,8 @@ public class ItemEntity {
 
 	private ItemStatus itemStatus;
 
+	private long version;
+
 	public ItemEntity() { }
 
 	public ItemEntity(@Nonnull String name, @Nonnull Money price, int amount, @Nonnull ItemStatus status) {
@@ -43,6 +45,7 @@ public class ItemEntity {
 		this.setEmbeddablePrice(new EmbeddablePrice(price.getCurrencyAmount(), price.getCentAmount()));
 		this.setAmount(amount);
 		this.setItemStatus(status);
+		this.setVersion(0L);
 	}
 
 	@Id
@@ -91,5 +94,13 @@ public class ItemEntity {
 
 	public void setItemStatus(@Nonnull ItemStatus itemStatus) {
 		this.itemStatus = itemStatus;
+	}
+
+	public long getVersion() {
+		return version;
+	}
+
+	public void setVersion(long version) {
+		this.version = version;
 	}
 }
