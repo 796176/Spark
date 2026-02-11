@@ -35,10 +35,13 @@ import org.example.spark.inventory.events.ItemCreatedImpl;
 import org.example.spark.inventory.events.ItemEvent;
 import org.example.spark.inventory.interactors.ItemDataAccess;
 import org.example.spark.inventory.models.*;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicLong;
 
+@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
 public class JPAItemDataAccess implements ItemDataAccess {
 
 	private final EntityManagerFactory entityManagerFactory;
@@ -116,6 +119,7 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		);
 	}
 
+	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 	@Override
 	public void persist(
 		@Nonnull ItemAggregate item, long version, @Nullable String idempotenceToken, @Nonnull ItemEvent... itemEvents
@@ -144,6 +148,7 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		});
 	}
 
+	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 	@Override
 	public ItemAggregate addItem(
 		@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken

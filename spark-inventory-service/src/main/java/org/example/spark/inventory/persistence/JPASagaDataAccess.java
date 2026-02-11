@@ -31,11 +31,14 @@ import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.sagas.Saga;
 import org.example.spark.inventory.interactors.SagaDataAccess;
 import org.example.spark.inventory.models.*;
+import org.springframework.transaction.annotation.Isolation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 
+@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 public class JPASagaDataAccess implements SagaDataAccess {
 
 	private final JPAItemDataAccess itemDataAccess;
@@ -49,6 +52,7 @@ public class JPASagaDataAccess implements SagaDataAccess {
 		this.entityManagerFactory = entityManagerFactory;
 	}
 
+	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
 	@Override
 	public SagaProperties[] getSagas() {
 		// SELECT * FROM sagas;
