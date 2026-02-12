@@ -153,6 +153,9 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							0, response.getContentType(), response.getVersion(), response.getBody()
 						);
 					}
+					default -> {
+						throw new IllegalStateException();
+					}
 				}
 			} catch (Exception e) {
 				try {
