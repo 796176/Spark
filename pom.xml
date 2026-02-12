@@ -13,6 +13,7 @@
         <module>spark-account-service</module>
         <module>spark-authorization</module>
         <module>spark-inventory-service</module>
+        <module>spark-order-service</module>
     </modules>
 
 
