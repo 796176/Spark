@@ -50,7 +50,7 @@ public class JPAPublishableEventDataAccess implements PublishableEventDataAccess
 		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<EventEntity> q = cb.createQuery(EventEntity.class);
 		Root<EventEntity> eventEntity = q.from(EventEntity.class);
-		q.orderBy(cb.asc(eventEntity.get(EventEntity_.id)));
+		q.orderBy(cb.asc(eventEntity.get(EventEntity_.seqnum)));
 		q.select(eventEntity);
 
 		EntityManager entityManager = entityManagerFactory.createEntityManager();
