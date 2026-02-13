@@ -20,6 +20,7 @@ package org.example.spark.order.aggregates;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.order.events.*;
+import org.example.spark.order.models.LineItem;
 
 public interface OrderAggregate {
 
@@ -60,9 +61,13 @@ public interface OrderAggregate {
 
 	long getTimestamp();
 
+	LineItem[] getLineItems();
+
 	Status getStatus();
 
 	void setTransientStatus(@Nonnull Status status);
+
+	OrderCreated confirmPlacement();
 
 	OrderAccepted accept();
 
