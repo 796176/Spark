@@ -71,14 +71,14 @@ public class OrderAggregateImpl implements OrderAggregate {
 
 	@Override
 	public void setTransientStatus(@Nonnull Status status) {
-		if (status != Status.CREATING && status != Status.RESTORING) throw new IllegalArgumentException();
+		if (status != Status.PLACING && status != Status.RESTORING) throw new IllegalArgumentException();
 
 		this.status = status;
 	}
 
 	@Override
 	public OrderCreated confirmPlacement() {
-		status = Status.CREATED;
+		status = Status.PENDING_ACCEPTANCE;
 		return new OrderCreatedImpl(getId(), getAccountId(), getTimestamp(), getLineItems());
 	}
 
@@ -101,8 +101,7 @@ public class OrderAggregateImpl implements OrderAggregate {
 	}
 
 	@Override
-	public OrderRestored restore() {
-		status = Status.RESTORED;
-		return new OrderRestoredImpl(getId());
+	public void abortPlacing() {
+		status = Status.PLACING_ABORTED;
 	}
 }

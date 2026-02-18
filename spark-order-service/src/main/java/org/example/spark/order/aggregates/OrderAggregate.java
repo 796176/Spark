@@ -25,13 +25,13 @@ import org.example.spark.order.models.LineItem;
 public interface OrderAggregate {
 
 	enum Status {
-		CREATING(0L),
-		CREATED(1L),
+		PLACING(0L),
+		PENDING_ACCEPTANCE(1L),
 		ACCEPTED(2L),
 		REJECTED(3L),
 		CANCELLED(4L),
 		RESTORING(5L),
-		RESTORED(6L);
+		PLACING_ABORTED(6L);
 
 		private final long id;
 
@@ -44,13 +44,13 @@ public interface OrderAggregate {
 		}
 
 		public static Status fromId(long id) {
-			if (id == 0) return CREATING;
-			if (id == 1) return CREATED;
+			if (id == 0) return PLACING;
+			if (id == 1) return PENDING_ACCEPTANCE;
 			if (id == 2) return ACCEPTED;
 			if (id == 3) return REJECTED;
 			if (id == 4) return CANCELLED;
 			if (id == 5) return RESTORING;
-			if (id == 6) return RESTORED;
+			if (id == 6) return PLACING_ABORTED;
 			throw new IllegalArgumentException();
 		}
 	}
@@ -75,5 +75,5 @@ public interface OrderAggregate {
 
 	OrderCancelled cancel();
 
-	OrderRestored restore();
+	void abortPlacing();
 }
