@@ -54,10 +54,12 @@ public class DefaultSagaManager implements SagaManager {
 
 		executor.execute(() -> {
 			try {
-				do {
-					if (saga.hasCompleted()) deleteSaga(saga);
-					else updateSagaState(saga, saga.getState());
-				} while (saga.proceedNextState());
+				while (saga.proceedNextState()) {
+					if (saga.hasCompleted()) {
+						deleteSaga(saga);
+						break;
+					} else updateSagaState(saga, saga.getState());
+				}
 			} catch (Exception e) {
 				deleteSaga(saga);
 				e.printStackTrace();
