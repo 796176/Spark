@@ -125,6 +125,7 @@ public class JPASagaDataAccess implements SagaDataAccess {
 
 	@Override
 	public void deleteSaga(long sagaId) {
-
+		SagaEntity saga = entityManagerFactory.find(SagaEntity.class, sagaId);
+		entityManagerFactory.remove(saga);
 	}
 }
