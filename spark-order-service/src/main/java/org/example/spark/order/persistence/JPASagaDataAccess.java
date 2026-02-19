@@ -81,7 +81,6 @@ public class JPASagaDataAccess implements SagaDataAccess {
 
 		SagaEntity saga = new SagaEntity(entityManager.find(OrderEntity.class, order.getId()), stateId, sagaType);
 		entityManager.persist(saga);
-		entityManager.flush();
 		sagaId.set(saga.getId());
 		stateIdempotenceToken.set(saga.getIdempotenceToken());
 
@@ -121,7 +120,6 @@ public class JPASagaDataAccess implements SagaDataAccess {
 		SagaEntity saga = entityManagerFactory.find(SagaEntity.class, sagaId);
 		saga.setState(sagaStateId);
 		saga.generateNewIdempotenceToken();
-		entityManagerFactory.flush();
 		return saga.getIdempotenceToken();
 	}
 
