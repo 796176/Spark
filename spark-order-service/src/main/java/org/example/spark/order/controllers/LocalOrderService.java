@@ -39,7 +39,7 @@ public class LocalOrderService implements OrderServiceProxy {
 		VersionedOrderAggregate versionedOrder = orderDataAccess.getVersionedOrder(orderId);
 		OrderEvent event = versionedOrder.order().confirmPlacement();
 		orderDataAccess.persist(versionedOrder.order(), versionedOrder.version(), state.getIdempotenceToken(), event);
-		saga.hasCompleted();
+		saga.setCompleted();
 		return true;
 	}
 
