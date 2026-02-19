@@ -24,8 +24,7 @@ import org.example.spark.order.aggregates.OrderAggregate;
 import org.example.spark.order.aggregates.VersionedOrderAggregate;
 import org.example.spark.order.events.OrderEvent;
 import org.example.spark.order.models.LineItem;
-import org.example.spark.order.persistence.JPASagaDataAccess;
-import org.example.spark.order.sagas.SagaManager;
+import org.example.spark.order.sagas.Saga;
 
 public interface OrderDataAccess {
 
@@ -39,7 +38,11 @@ public interface OrderDataAccess {
 		@Nonnull OrderAggregate order, long version, @Nullable String idempotenceToken, @Nonnull OrderEvent... events
 	);
 
-	OrderAggregate createOrder(
-		long accountId, long timestamp, @Nonnull String idempotenceToken, @Nonnull SagaManager sagaManager, JPASagaDataAccess sagaDataAccess, @Nonnull LineItem... lineItems
+	Saga placeOrder(
+		long accountId,
+		long timestamp,
+		@Nonnull String idempotenceToken,
+		@Nonnull SagaDataAccess sagaDataAccess,
+		@Nonnull LineItem... lineItems
 	);
 }

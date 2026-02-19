@@ -20,12 +20,18 @@ package org.example.spark.order.sagas;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.example.spark.order.aggregates.OrderAggregate;
-import org.jspecify.annotations.NonNull;
+import org.example.spark.order.interactors.OrderDataAccess;
+import org.example.spark.order.models.LineItem;
 
 public interface SagaManager {
 
-	void newPlaceOrderSaga(@Nonnull OrderAggregate order, @Nullable String idempotenceToken) throws Exception;
+	void newPlaceOrderSaga(
+		long accountId,
+		long timestamp,
+		@Nonnull OrderDataAccess orderDataAccess,
+		@Nonnull String idempotenceToken,
+		@Nonnull LineItem... lineItems
+	) throws Exception;
 
 	void loadSaga(@Nonnull Saga saga);
 

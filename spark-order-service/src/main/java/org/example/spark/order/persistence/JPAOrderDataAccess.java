@@ -31,8 +31,10 @@ import org.example.spark.order.aggregates.VersionedOrderAggregate;
 import org.example.spark.order.converters.OrderEventConverter;
 import org.example.spark.order.events.OrderEvent;
 import org.example.spark.order.interactors.OrderDataAccess;
+import org.example.spark.order.interactors.SagaDataAccess;
 import org.example.spark.order.models.*;
-import org.example.spark.order.sagas.SagaManager;
+import org.example.spark.order.sagas.Saga;
+import org.example.spark.order.sagas.SagaTypes;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -127,47 +129,50 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 	}
 
 	@Override
-	public OrderAggregate createOrder(
-		long accountId, long timestamp, @Nonnull String idempotenceToken, @Nullable SagaManager sagaManager, JPASagaDataAccess sagaDataAccess, @Nonnull LineItem... lineItems
+	public Saga placeOrder(
+		long accountId,
+		long timestamp,
+		@Nonnull String idempotenceToken,
+		@Nonnull SagaDataAccess sagaDataAccess,
+		@Nonnull LineItem... lineItems
 	) {
 		AtomicReference<OrderAggregate> returnedOrder = new AtomicReference<>();
 		var entityManager = entityManagerFactory;
-			if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {
-				// SELECT * FROM orders WHERE orders.timestamp = timestamp;
-				CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
-				CriteriaQuery<OrderEntity> q = cb.createQuery(OrderEntity.class);
-				Root<OrderEntity> order = q.from(OrderEntity.class);
-				q.where(cb.equal(order.get(OrderEntity_.timestamp), timestamp));
-				q.select(order);
+		if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {
+			// SELECT * FROM orders WHERE orders.timestamp = timestamp;
+			CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+			CriteriaQuery<OrderEntity> q = cb.createQuery(OrderEntity.class);
+			Root<OrderEntity> order = q.from(OrderEntity.class);
+			q.where(cb.equal(order.get(OrderEntity_.timestamp), timestamp));
+			q.select(order);
 
-				TypedQuery<OrderEntity> typedQuery = entityManager.createQuery(q);
-				OrderEntity orderEntity = typedQuery.getSingleResultOrNull();
-				returnedOrder.set(toOrderAggregate(orderEntity));
-				return null;
-			}
-
-			ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
-			entityManager.persist(processedMessage);
-
-			OrderEntity orderEntity = new OrderEntity(
-				accountId,
-				timestamp,
-				List.of(),
-				entityManager.find(OrderStatus.class, OrderAggregate.Status.PLACING.getId())
-			);
-			ArrayList<LineItemEntity> lineItemEntities = new ArrayList<>(lineItems.length);
-			for (LineItem lineItem: lineItems) {
-				lineItemEntities.add(new LineItemEntity(orderEntity, lineItem.itemId(), lineItem.amount()));
-			}
-			orderEntity.setLineItems(lineItemEntities);
-			entityManager.persist(orderEntity);
+			TypedQuery<OrderEntity> typedQuery = entityManager.createQuery(q);
+			OrderEntity orderEntity = typedQuery.getSingleResultOrNull();
 			returnedOrder.set(toOrderAggregate(orderEntity));
+			return null;
+		}
 
-			try {
-				sagaManager.newPlaceOrderSaga(returnedOrder.get(), null);
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
-		return null;
+		ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
+		entityManager.persist(processedMessage);
+
+		OrderEntity orderEntity = new OrderEntity(
+			accountId,
+			timestamp,
+			List.of(),
+			entityManager.find(OrderStatus.class, OrderAggregate.Status.PLACING.getId())
+		);
+		ArrayList<LineItemEntity> lineItemEntities = new ArrayList<>(lineItems.length);
+		for (LineItem lineItem: lineItems) {
+			lineItemEntities.add(new LineItemEntity(orderEntity, lineItem.itemId(), lineItem.amount()));
+		}
+		orderEntity.setLineItems(lineItemEntities);
+		entityManager.persist(orderEntity);
+		returnedOrder.set(toOrderAggregate(orderEntity));
+
+		try {
+			return sagaDataAccess.newSaga(returnedOrder.get(), SagaTypes.PLACE_ORDERED, null);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 }
