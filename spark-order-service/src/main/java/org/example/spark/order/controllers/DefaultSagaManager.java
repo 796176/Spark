@@ -57,7 +57,11 @@ public class DefaultSagaManager implements SagaManager {
 
 		Saga saga = orderDataAccess.placeOrder(accountId, timestamp, idempotenceToken, sagaDataAccess, lineItems);
 		loadSaga(saga);
+	}
 
+	@Override
+	public void loadSaga(@Nonnull Saga saga) {
+		synchronized (sagas) { sagas.add(saga); }
 		executor.execute(() -> {
 			try {
 				while (saga.proceedNextState()) {
@@ -71,11 +75,6 @@ public class DefaultSagaManager implements SagaManager {
 				e.printStackTrace();
 			}
 		});
-	}
-
-	@Override
-	public void loadSaga(@Nonnull Saga saga) {
-		synchronized (sagas) { sagas.add(saga); }
 	}
 
 	@Override
