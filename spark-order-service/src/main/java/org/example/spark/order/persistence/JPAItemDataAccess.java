@@ -51,12 +51,22 @@ public class JPAItemDataAccess implements ItemDataAccess {
 		q.where(cb.equal(pendingReductionItem.get(PendingReductionItem_.item).get(ItemEntity_.id), itemId));
 		q.select(pendingReductionItem);
 
-		EntityManager entityManager = entityManagerFactory.createEntityManager();
-		ItemEntity item = entityManager.find(ItemEntity.class, itemId);
-		TypedQuery<PendingReductionItem> typedQuery = entityManager.createQuery(q);
-		List<PendingReductionItem> pendingReductionItemList = typedQuery.getResultList();
-		entityManager.clear();
-		entityManager.close();
+		EntityManager entityManager = null;
+		ItemEntity item;
+		List<PendingReductionItem> pendingReductionItemList;
+		try {
+			entityManager = entityManagerFactory.createEntityManager();
+			item = entityManager.find(ItemEntity.class, itemId);
+			if (item == null) throw new IllegalArgumentException();
+
+			TypedQuery<PendingReductionItem> typedQuery = entityManager.createQuery(q);
+			pendingReductionItemList = typedQuery.getResultList();
+		} finally {
+			if (entityManager != null) {
+				entityManager.clear();
+				entityManager.close();
+			}
+		}
 
 		int itemActualAmount = item.getAmount();
 		for (PendingReductionItem pri: pendingReductionItemList) {

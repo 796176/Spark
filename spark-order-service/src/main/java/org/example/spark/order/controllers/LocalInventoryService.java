@@ -39,9 +39,11 @@ public class LocalInventoryService implements InventoryServiceProxy {
 		@Nonnull SagaState state, @Nonnull Saga saga, @Nonnull LineItem[] lineItems, @Nonnull String correlationId
 	) throws Exception{
 		for (LineItem lineItem: lineItems) {
-			Item item = itemDataAccess.getItem(lineItem.itemId());
-			int availableAmount = item.amount();
-			if (availableAmount < lineItem.amount()) {
+			try {
+				Item item = itemDataAccess.getItem(lineItem.itemId());
+				int availableAmount = item.amount();
+				if (availableAmount < lineItem.amount()) throw new IllegalStateException();
+			} catch (Exception e) {
 				Saga.State nextState = PlaceOrderSaga.State.ABORTING_PLACING;
 				saga.setState(nextState, saga.getStateObjects().get(nextState));
 				return true;
