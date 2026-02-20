@@ -20,6 +20,7 @@ package org.example.spark.order.sagas;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.example.spark.order.aggregates.OrderAggregate;
 import org.example.spark.order.interactors.OrderDataAccess;
 import org.example.spark.order.models.LineItem;
 
@@ -32,6 +33,13 @@ public interface SagaManager {
 		@Nonnull String idempotenceToken,
 		@Nonnull LineItem... lineItems
 	) throws Exception;
+
+	void newRestoreOrderSaga(
+		@Nonnull OrderAggregate order,
+		long version,
+		@Nonnull String idempotenceToken,
+		@Nonnull OrderDataAccess orderDataAccess
+	);
 
 	void loadSaga(@Nonnull Saga saga);
 

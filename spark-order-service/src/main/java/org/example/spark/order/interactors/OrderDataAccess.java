@@ -45,4 +45,11 @@ public interface OrderDataAccess {
 		@Nonnull SagaDataAccess sagaDataAccess,
 		@Nonnull LineItem... lineItems
 	);
+
+	Saga restoreOrder(
+		@Nonnull OrderAggregate order,
+		long version,
+		@Nonnull String idempotenceToken,
+		@Nonnull SagaDataAccess sagaDataAccess
+	);
 }

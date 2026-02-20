@@ -71,7 +71,7 @@ public class OrderAggregateImpl implements OrderAggregate {
 
 	@Override
 	public void setTransientStatus(@Nonnull Status status) {
-		if (status != Status.PLACING && status != Status.RESTORING) throw new IllegalArgumentException();
+		if (status != Status.PLACING) throw new IllegalArgumentException();
 
 		this.status = status;
 	}

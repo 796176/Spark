@@ -20,6 +20,7 @@ package org.example.spark.order.controllers;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.example.spark.order.aggregates.OrderAggregate;
 import org.example.spark.order.interactors.OrderDataAccess;
 import org.example.spark.order.interactors.SagaDataAccess;
 import org.example.spark.order.models.LineItem;
@@ -56,6 +57,19 @@ public class DefaultSagaManager implements SagaManager {
 		if (!isInitializationCompleted) throw new IllegalStateException();
 
 		Saga saga = orderDataAccess.placeOrder(accountId, timestamp, idempotenceToken, sagaDataAccess, lineItems);
+		loadSaga(saga);
+	}
+
+	@Override
+	public void newRestoreOrderSaga(
+		@Nonnull OrderAggregate order,
+		long version,
+		@Nonnull String idempotenceToken,
+		@Nonnull OrderDataAccess orderDataAccess
+	) {
+		if (!isInitializationCompleted) throw new IllegalStateException();
+
+		Saga saga = orderDataAccess.restoreOrder(order, version, idempotenceToken, sagaDataAccess);
 		loadSaga(saga);
 	}
 

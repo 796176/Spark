@@ -26,6 +26,7 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
 import org.example.spark.order.aggregates.OrderAggregate;
+import org.example.spark.order.aggregates.OrderAggregateImpl;
 import org.example.spark.order.interactors.OrderDataAccess;
 import org.example.spark.order.interactors.SagaDataAccess;
 import org.example.spark.order.models.*;
@@ -59,28 +60,14 @@ public class JPASagaDataAccess implements SagaDataAccess {
 		long stateId = sagaFactory.getInitialState(sagaType).getId();
 		AtomicLong sagaId = new AtomicLong();
 		AtomicReference<String> stateIdempotenceToken = new AtomicReference<>();
-		var entityManager = entityManagerFactory;
 		if (idempotenceToken != null) {
-			if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {
-				// SELECT * FROM sagas WHERE sagas.order_id = orderId;
-				CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
-				CriteriaQuery<SagaEntity> q = cb.createQuery(SagaEntity.class);
-				Root<SagaEntity> saga = q.from(SagaEntity.class);
-				q.where(cb.equal(saga.get(SagaEntity_.ORDER).get(OrderEntity_.ID), order.getId()));
-				q.select(saga);
-
-				TypedQuery<SagaEntity> typedQuery = entityManager.createQuery(q);
-				SagaEntity sagaEntity = typedQuery.getSingleResultOrNull();
-				sagaId.set(sagaEntity.getId());
-				stateIdempotenceToken.set(sagaEntity.getIdempotenceToken());
-				return null;
-			}
+			if (entityManagerFactory.find(ProcessedMessage.class, idempotenceToken) != null) return getSagaByOrder(order);
 			ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
-			entityManager.persist(processedMessage);
+			entityManagerFactory.persist(processedMessage);
 		}
 
-		SagaEntity saga = new SagaEntity(entityManager.find(OrderEntity.class, order.getId()), stateId, sagaType);
-		entityManager.persist(saga);
+		SagaEntity saga = new SagaEntity(entityManagerFactory.find(OrderEntity.class, order.getId()), stateId, sagaType);
+		entityManagerFactory.persist(saga);
 		sagaId.set(saga.getId());
 		stateIdempotenceToken.set(saga.getIdempotenceToken());
 
@@ -113,6 +100,45 @@ public class JPASagaDataAccess implements SagaDataAccess {
 			);
 		}
 		return sagas;
+	}
+
+	@Override
+	public Saga getSagaByOrder(@Nonnull OrderAggregate order) {
+		// SELECT * FROM sagas WHERE order.getId() = sagas.order_id;
+		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+		CriteriaQuery<SagaEntity> q = cb.createQuery(SagaEntity.class);
+		Root<SagaEntity> saga = q.from(SagaEntity.class);
+		q.where(cb.equal(saga.get(SagaEntity_.order).get(OrderEntity_.id), order.getId()));
+		q.select(saga);
+
+		TypedQuery<SagaEntity> typedQuery = entityManagerFactory.createQuery(q);
+		SagaEntity sagaEntity = typedQuery.getSingleResultOrNull();
+		try {
+			return sagaFactory.instantiateSaga(
+				sagaEntity.getId(),
+				toOrderAggregate(sagaEntity.getOrder()),
+				sagaEntity.getIdempotenceToken(),
+				sagaEntity.getType(),
+				sagaEntity.getState()
+			);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private OrderAggregate toOrderAggregate(OrderEntity order) {
+		LineItem[] lineItems = order
+			.getLineItems()
+			.stream()
+			.map(lineItemEntity -> new LineItem(lineItemEntity.getItemId(), lineItemEntity.getAmount()))
+			.toArray(LineItem[]::new);
+		return new OrderAggregateImpl(
+			order.getId(),
+			order.getAccountId(),
+			order.getTimestamp(),
+			lineItems,
+			OrderAggregate.Status.fromId(order.getOrderStatus().getId())
+		);
 	}
 
 	@Override

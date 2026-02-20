@@ -175,4 +175,27 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 			throw new RuntimeException(e);
 		}
 	}
+
+	public Saga restoreOrder(
+		@Nonnull OrderAggregate order,
+		long version,
+		@Nonnull String idempotenceToken,
+		@Nonnull SagaDataAccess sagaDataAccess
+	) {
+		if (entityManagerFactory.find(ProcessedMessage.class, idempotenceToken) != null) {
+			return sagaDataAccess.getSagaByOrder(order);
+		}
+
+		ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
+		entityManagerFactory.persist(processedMessage);
+
+		order.setTransientStatus(OrderAggregate.Status.PLACING);
+		persist(order, version, null);
+
+		try {
+			return sagaDataAccess.newSaga(order, SagaTypes.PLACE_ORDERED, null);
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
 }

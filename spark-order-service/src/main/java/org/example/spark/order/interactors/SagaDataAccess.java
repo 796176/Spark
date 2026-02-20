@@ -29,6 +29,8 @@ public interface SagaDataAccess {
 
 	Saga[] getSagas(@Nonnull OrderDataAccess orderDataAccess) throws Exception;
 
+	Saga getSagaByOrder(@Nonnull OrderAggregate order);
+
 	String updateSagaState(long sagaId, long sagaStateId);
 
 	void deleteSaga(long sagaId);

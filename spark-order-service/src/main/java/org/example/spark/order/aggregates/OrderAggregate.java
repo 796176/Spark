@@ -30,8 +30,7 @@ public interface OrderAggregate {
 		ACCEPTED(2L),
 		REJECTED(3L),
 		CANCELLED(4L),
-		RESTORING(5L),
-		PLACING_ABORTED(6L);
+		PLACING_ABORTED(5L);
 
 		private final long id;
 
@@ -49,8 +48,7 @@ public interface OrderAggregate {
 			if (id == 2) return ACCEPTED;
 			if (id == 3) return REJECTED;
 			if (id == 4) return CANCELLED;
-			if (id == 5) return RESTORING;
-			if (id == 6) return PLACING_ABORTED;
+			if (id == 5) return PLACING_ABORTED;
 			throw new IllegalArgumentException();
 		}
 	}
