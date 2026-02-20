@@ -25,6 +25,7 @@ import org.example.spark.order.aggregates.OrderAggregate;
 import org.example.spark.order.controllers.LocalInventoryService;
 import org.example.spark.order.controllers.LocalOrderService;
 import org.example.spark.order.controllers.RMQAccountService;
+import org.example.spark.order.converters.AuthorizingAccountMessageProcessor;
 import org.example.spark.order.interactors.ItemDataAccess;
 import org.example.spark.order.interactors.OrderDataAccess;
 
@@ -40,16 +41,20 @@ public class DefaultSagaFactory implements SagaFactory {
 
 	private final String replyChannel;
 
+	private final AuthorizingAccountMessageProcessor authorizingAccountMessageProcessor;
+
 	public DefaultSagaFactory(
 		@Nonnull ItemDataAccess itemDataAccess,
 		@Nonnull OrderDataAccess orderDataAccess,
 		@Nonnull Connection connection,
-		@Nonnull String replyChannel
+		@Nonnull String replyChannel,
+		@Nonnull AuthorizingAccountMessageProcessor authorizingAccountMessageProcessor
 	) {
 		this.itemDataAccess = itemDataAccess;
 		this.orderDataAccess = orderDataAccess;
 		this.connection = connection;
 		this.replyChannel = replyChannel;
+		this.authorizingAccountMessageProcessor = authorizingAccountMessageProcessor;
 	}
 
 	@Override
@@ -81,9 +86,12 @@ public class DefaultSagaFactory implements SagaFactory {
 
 				Channel ch = connection.createChannel();
 				ch.confirmSelect();
-				RMQAccountService rmqAccountService = new RMQAccountService(ch, replyChannel);
+				RMQAccountService rmqAccountService =
+					new RMQAccountService(ch, replyChannel, authorizingAccountMessageProcessor);
 				AuthorizingAccountState authorizingAccountState =
-					new AuthorizingAccountState(rmqAccountService, sagaId, order.getAccountId());
+					new AuthorizingAccountState(
+						rmqAccountService, sagaId, order.getAccountId(), authorizingAccountMessageProcessor
+					);
 
 				LocalInventoryService localInventoryService = new LocalInventoryService(itemDataAccess);
 				VerifyingOrderDetailsState verifyingOrderDetailsState =

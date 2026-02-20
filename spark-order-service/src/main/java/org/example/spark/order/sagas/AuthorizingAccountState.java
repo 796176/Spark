@@ -19,6 +19,7 @@
 package org.example.spark.order.sagas;
 
 import jakarta.annotation.Nonnull;
+import org.example.spark.order.converters.AuthorizingAccountMessageProcessor;
 
 import java.util.UUID;
 
@@ -30,14 +31,22 @@ public class AuthorizingAccountState implements SagaState {
 
 	private final long accountId;
 
+	private final AuthorizingAccountMessageProcessor authorizingAccountMessageProcessor;
+
 	private final String correlationId;
 
 	private String idempotenceToken;
 
-	public AuthorizingAccountState(@Nonnull AccountServiceProxy accountService, long sagaId, long accountId) {
+	public AuthorizingAccountState(
+		@Nonnull AccountServiceProxy accountService,
+		long sagaId,
+		long accountId,
+		@Nonnull AuthorizingAccountMessageProcessor authorizingAccountMessageProcessor
+	) {
 		this.accountService = accountService;
 		this.sagaId = sagaId;
 		this.accountId = accountId;
+		this.authorizingAccountMessageProcessor = authorizingAccountMessageProcessor;
 		correlationId = UUID.randomUUID().toString();
 	}
 
@@ -90,12 +99,12 @@ public class AuthorizingAccountState implements SagaState {
 			saga.setCompleted();
 		}
 
-		PlaceOrderSaga.State nextState;
-		if ((new String(body)).contains("true")) {
-			nextState = PlaceOrderSaga.State.VERIFYING_ORDER_DETAILS;
-		} else {
-			nextState = PlaceOrderSaga.State.ABORTING_PLACING;
-		}
+		PlaceOrderSaga.State nextState = PlaceOrderSaga.State.ABORTING_PLACING;
+		try {
+			if (authorizingAccountMessageProcessor.isAuthorized(contentType, version, body)) {
+				nextState = PlaceOrderSaga.State.VERIFYING_ORDER_DETAILS;
+			}
+		} catch (Exception ignored) { }
 		saga.setState(nextState, saga.getStateObjects().get(nextState));
 	}
 }
