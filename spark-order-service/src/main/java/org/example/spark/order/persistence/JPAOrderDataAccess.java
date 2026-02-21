@@ -145,8 +145,7 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 
 			TypedQuery<OrderEntity> typedQuery = entityManager.createQuery(q);
 			OrderEntity orderEntity = typedQuery.getSingleResultOrNull();
-			returnedOrder.set(toOrderAggregate(orderEntity));
-			return null;
+			return sagaDataAccess.getSagaByOrder(toOrderAggregate(orderEntity));
 		}
 
 		ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
