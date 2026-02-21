@@ -43,15 +43,12 @@ import java.util.concurrent.atomic.AtomicReference;
 @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 public class JPASagaDataAccess implements SagaDataAccess {
 
-	private final EntityManager entityManagerFactory;
+	private final EntityManager entityManger;
 
 	private final SagaFactory sagaFactory;
 
-	public JPASagaDataAccess(
-		@Nonnull EntityManager entityManagerFactory,
-		@Nonnull SagaFactory sagaFactory
-	) {
-		this.entityManagerFactory = entityManagerFactory;
+	public JPASagaDataAccess(@Nonnull EntityManager entityManger,@Nonnull SagaFactory sagaFactory) {
+		this.entityManger = entityManger;
 		this.sagaFactory = sagaFactory;
 	}
 
@@ -61,13 +58,13 @@ public class JPASagaDataAccess implements SagaDataAccess {
 		AtomicLong sagaId = new AtomicLong();
 		AtomicReference<String> stateIdempotenceToken = new AtomicReference<>();
 		if (idempotenceToken != null) {
-			if (entityManagerFactory.find(ProcessedMessage.class, idempotenceToken) != null) return getSagaByOrder(order);
+			if (entityManger.find(ProcessedMessage.class, idempotenceToken) != null) return getSagaByOrder(order);
 			ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
-			entityManagerFactory.persist(processedMessage);
+			entityManger.persist(processedMessage);
 		}
 
-		SagaEntity saga = new SagaEntity(entityManagerFactory.find(OrderEntity.class, order.getId()), stateId, sagaType);
-		entityManagerFactory.persist(saga);
+		SagaEntity saga = new SagaEntity(entityManger.find(OrderEntity.class, order.getId()), stateId, sagaType);
+		entityManger.persist(saga);
 		sagaId.set(saga.getId());
 		stateIdempotenceToken.set(saga.getIdempotenceToken());
 
@@ -80,12 +77,12 @@ public class JPASagaDataAccess implements SagaDataAccess {
 	@Override
 	public Saga[] getSagas(@Nonnull OrderDataAccess orderDataAccess) throws Exception {
 		// SELECT * FROM sagas;
-		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+		CriteriaBuilder cb = entityManger.getCriteriaBuilder();
 		CriteriaQuery<SagaEntity> q = cb.createQuery(SagaEntity.class);
 		Root<SagaEntity> saga = q.from(SagaEntity.class);
 		q.select(saga);
 
-		TypedQuery<SagaEntity> typedQuery = entityManagerFactory.createQuery(q);
+		TypedQuery<SagaEntity> typedQuery = entityManger.createQuery(q);
 		List<SagaEntity> sagaEntityList = typedQuery.getResultList();
 		Saga[] sagas = new Saga[sagaEntityList.size()];
 		Iterator<SagaEntity> sagaEntityIterator = sagaEntityList.iterator();
@@ -105,13 +102,13 @@ public class JPASagaDataAccess implements SagaDataAccess {
 	@Override
 	public Saga getSagaByOrder(@Nonnull OrderAggregate order) {
 		// SELECT * FROM sagas WHERE order.getId() = sagas.order_id;
-		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+		CriteriaBuilder cb = entityManger.getCriteriaBuilder();
 		CriteriaQuery<SagaEntity> q = cb.createQuery(SagaEntity.class);
 		Root<SagaEntity> saga = q.from(SagaEntity.class);
 		q.where(cb.equal(saga.get(SagaEntity_.order).get(OrderEntity_.id), order.getId()));
 		q.select(saga);
 
-		TypedQuery<SagaEntity> typedQuery = entityManagerFactory.createQuery(q);
+		TypedQuery<SagaEntity> typedQuery = entityManger.createQuery(q);
 		SagaEntity sagaEntity = typedQuery.getSingleResultOrNull();
 		try {
 			return sagaFactory.instantiateSaga(
@@ -143,7 +140,7 @@ public class JPASagaDataAccess implements SagaDataAccess {
 
 	@Override
 	public String updateSagaState(long sagaId, long sagaStateId) {
-		SagaEntity saga = entityManagerFactory.find(SagaEntity.class, sagaId);
+		SagaEntity saga = entityManger.find(SagaEntity.class, sagaId);
 		saga.setState(sagaStateId);
 		saga.generateNewIdempotenceToken();
 		return saga.getIdempotenceToken();
@@ -151,7 +148,7 @@ public class JPASagaDataAccess implements SagaDataAccess {
 
 	@Override
 	public void deleteSaga(long sagaId) {
-		SagaEntity saga = entityManagerFactory.find(SagaEntity.class, sagaId);
-		entityManagerFactory.remove(saga);
+		SagaEntity saga = entityManger.find(SagaEntity.class, sagaId);
+		entityManger.remove(saga);
 	}
 }

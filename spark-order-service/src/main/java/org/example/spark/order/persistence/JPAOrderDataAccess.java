@@ -45,28 +45,26 @@ import java.util.concurrent.atomic.AtomicReference;
 @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 public class JPAOrderDataAccess implements OrderDataAccess {
 
-	private final EntityManager entityManagerFactory;
+	private final EntityManager entityManager;
 
 	private final OrderEventConverter<String> converter;
 
-	public JPAOrderDataAccess(
-		@Nonnull EntityManager entityManagerFactory, @Nonnull OrderEventConverter<String> converter
-	) {
-		this.entityManagerFactory = entityManagerFactory;
+	public JPAOrderDataAccess(@Nonnull EntityManager entityManager, @Nonnull OrderEventConverter<String> converter) {
+		this.entityManager = entityManager;
 		this.converter = converter;
 	}
 
 	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
 	@Override
 	public OrderAggregate getOrder(long id) {
-		OrderEntity order = entityManagerFactory.find(OrderEntity.class, id);
+		OrderEntity order = entityManager.find(OrderEntity.class, id);
 		return toOrderAggregate(order);
 	}
 
 	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
 	@Override
 	public VersionedOrderAggregate getVersionedOrder(long id) {
-		OrderEntity order = entityManagerFactory.find(OrderEntity.class, id);
+		OrderEntity order = entityManager.find(OrderEntity.class, id);
 		return toVersionedOrderAggregate(order);
 	}
 
@@ -74,13 +72,13 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 	@Override
 	public VersionedOrderAggregate[] getVersionedOrdersByAccount(long accountId) {
 		// SELECT * FROM orders WHERE orders.account_id = accountId;
-		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
 		CriteriaQuery<OrderEntity> q = cb.createQuery(OrderEntity.class);
 		Root<OrderEntity> order = q.from(OrderEntity.class);
 		q.where(cb.equal(order.get(OrderEntity_.accountId), accountId));
 		q.select(order);
 
-		TypedQuery<OrderEntity> typedQuery = entityManagerFactory.createQuery(q);
+		TypedQuery<OrderEntity> typedQuery = entityManager.createQuery(q);
 		List<OrderEntity> orderEntityList = typedQuery.getResultList();
 		return orderEntityList.stream().map(this::toVersionedOrderAggregate).toArray(VersionedOrderAggregate[]::new);
 	}
@@ -109,14 +107,14 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 		@Nonnull OrderAggregate order, long version, @Nullable String idempotenceToken, @Nonnull OrderEvent... events
 	) {
 		if (idempotenceToken != null) {
-			if (entityManagerFactory.find(ProcessedMessage.class, idempotenceToken) != null) return;
+			if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) return;
 			ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
-			entityManagerFactory.persist(processedMessage);
+			entityManager.persist(processedMessage);
 		}
 
-		OrderEntity orderEntity = entityManagerFactory.find(OrderEntity.class, order.getId());
+		OrderEntity orderEntity = entityManager.find(OrderEntity.class, order.getId());
 		if (orderEntity.getVersion() != version) throw new IllegalStateException();
-		orderEntity.setOrderStatus(entityManagerFactory.find(OrderStatus.class, order.getStatus().getId()));
+		orderEntity.setOrderStatus(entityManager.find(OrderStatus.class, order.getStatus().getId()));
 		orderEntity.setVersion(orderEntity.getVersion() + 1);
 
 		for (OrderEvent event: events) {
@@ -124,7 +122,7 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 			EventEntity eventEntity = new EventEntity(
 				event.getType(), properties.getContentType(), properties.getVersion(), properties.getBody()
 			);
-			entityManagerFactory.persist(eventEntity);
+			entityManager.persist(eventEntity);
 		}
 	}
 
@@ -137,10 +135,9 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 		@Nonnull LineItem... lineItems
 	) {
 		AtomicReference<OrderAggregate> returnedOrder = new AtomicReference<>();
-		var entityManager = entityManagerFactory;
 		if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {
 			// SELECT * FROM orders WHERE orders.timestamp = timestamp;
-			CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+			CriteriaBuilder cb = this.entityManager.getCriteriaBuilder();
 			CriteriaQuery<OrderEntity> q = cb.createQuery(OrderEntity.class);
 			Root<OrderEntity> order = q.from(OrderEntity.class);
 			q.where(cb.equal(order.get(OrderEntity_.timestamp), timestamp));
@@ -182,12 +179,12 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 		@Nonnull String idempotenceToken,
 		@Nonnull SagaDataAccess sagaDataAccess
 	) {
-		if (entityManagerFactory.find(ProcessedMessage.class, idempotenceToken) != null) {
+		if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {
 			return sagaDataAccess.getSagaByOrder(order);
 		}
 
 		ProcessedMessage processedMessage = new ProcessedMessage(idempotenceToken);
-		entityManagerFactory.persist(processedMessage);
+		entityManager.persist(processedMessage);
 
 		order.setTransientStatus(OrderAggregate.Status.PLACING);
 		persist(order, version, null);
