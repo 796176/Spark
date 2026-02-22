@@ -18,9 +18,16 @@
 
 package org.example.spark.order.events;
 
-public interface OrderCancelled extends OrderStatusUpdated {
+public class OrderCanceledImpl implements OrderCanceled {
 
-	default String getType() {
-		return "org.example.spark.order.order-cancelled";
+	private final long orderId;
+
+	public OrderCanceledImpl(long orderId) {
+		this.orderId = orderId;
+	}
+
+	@Override
+	public long getOrderId() {
+		return orderId;
 	}
 }

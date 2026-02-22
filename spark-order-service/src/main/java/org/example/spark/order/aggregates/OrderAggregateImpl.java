@@ -95,9 +95,9 @@ public class OrderAggregateImpl implements OrderAggregate {
 	}
 
 	@Override
-	public OrderCancelled cancel() {
-		status = Status.CANCELLED;
-		return new OrderCancelledImpl(getId());
+	public OrderCanceled cancel() {
+		status = Status.CANCELED;
+		return new OrderCanceledImpl(getId());
 	}
 
 	@Override

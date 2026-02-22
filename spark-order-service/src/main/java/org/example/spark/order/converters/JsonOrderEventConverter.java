@@ -129,8 +129,8 @@ public class JsonOrderEventConverter extends OrderEventConverter<String> {
 
 			if (c.equals(OrderAccepted.class)) {
 				return c.cast(new OrderAcceptedImpl(Long.parseLong(orderId)));
-			} else if (c.equals(OrderCancelled.class)) {
-				return c.cast(new OrderCancelledImpl(Long.parseLong(orderId)));
+			} else if (c.equals(OrderCanceled.class)) {
+				return c.cast(new OrderCanceledImpl(Long.parseLong(orderId)));
 			} else if (c.equals(OrderRejected.class)) {
 				return c.cast(new OrderRejectedImpl(Long.parseLong(orderId)));
 			} else if (c.equals(OrderRestored.class)) {

@@ -29,7 +29,7 @@ public interface OrderAggregate {
 		PENDING_ACCEPTANCE(1L),
 		ACCEPTED(2L),
 		REJECTED(3L),
-		CANCELLED(4L),
+		CANCELED(4L),
 		PLACING_ABORTED(5L);
 
 		private final long id;
@@ -47,7 +47,7 @@ public interface OrderAggregate {
 			if (id == 1) return PENDING_ACCEPTANCE;
 			if (id == 2) return ACCEPTED;
 			if (id == 3) return REJECTED;
-			if (id == 4) return CANCELLED;
+			if (id == 4) return CANCELED;
 			if (id == 5) return PLACING_ABORTED;
 			throw new IllegalArgumentException();
 		}
@@ -71,7 +71,7 @@ public interface OrderAggregate {
 
 	OrderRejected reject();
 
-	OrderCancelled cancel();
+	OrderCanceled cancel();
 
 	void abortPlacing();
 }
