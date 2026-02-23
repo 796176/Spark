@@ -44,7 +44,7 @@ public class RMQOrderService implements OrderServiceProxy {
 			.contentType("application/json")
 			.correlationId(correlationId)
 			.messageId(state.getIdempotenceToken())
-			.type("org.example.spark.invalidate-item")
+			.type("org.example.spark.order.invalidate-item")
 			.replyTo(replyChannel)
 			.headers(Map.of("Version", "1.0", "Caller-Roles", "3"))
 			.build();
