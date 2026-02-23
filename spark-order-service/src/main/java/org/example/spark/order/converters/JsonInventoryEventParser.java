@@ -1,0 +1,89 @@
+/*
+ * Spark - The inventory management application
+ * Copyright (C) 2026 Yegore Vlussove
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ */
+
+package org.example.spark.order.converters;
+
+import jakarta.annotation.Nonnull;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
+
+import java.util.Objects;
+
+public class JsonInventoryEventParser implements InventoryEventParser {
+	@Override
+	public ItemCreatedEvent parseItemAddedEvent(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
+	) {
+		if (!(contentType.equals("application/json") && version.equals("1.0"))) throw new IllegalStateException();
+
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body)) {
+			String itemId = null, amount = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "item_id" -> {
+						jsonParser.nextToken();
+						itemId = jsonParser.getValueAsString();
+					}
+					case "amount" -> {
+						jsonParser.nextToken();
+						amount = jsonParser.getValueAsString();
+					}
+				}
+			}
+			if (anyNull(itemId, amount)) throw new IllegalArgumentException();
+			return new ItemCreatedEvent(Long.parseLong(itemId), Integer.parseInt(amount));
+		}
+	}
+
+	@Override
+	public ItemAmountUpdatedEvent parseItemAmountUpdatedEvent(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
+	) {
+		if (!(contentType.equals("application/json") && version.equals("1.0"))) throw new IllegalStateException();
+
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body)) {
+			String itemId = null, delta = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "item_id" -> {
+						jsonParser.nextToken();
+						itemId = jsonParser.getValueAsString();
+					}
+					case "delta" -> {
+						jsonParser.nextToken();
+						delta = jsonParser.getValueAsString();
+					}
+				}
+			}
+			if (anyNull(itemId, delta)) throw new IllegalArgumentException();
+			return new ItemAmountUpdatedEvent(Long.parseLong(itemId), Integer.parseInt(delta));
+		}
+	}
+
+	private boolean anyNull(Object... objects) {
+		for (Object o: objects) {
+			if (o == null) return true;
+		}
+		return false;
+	}
+}
