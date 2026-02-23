@@ -142,6 +142,24 @@ public class JsonOrderCommandParser implements OrderCommandParser {
 		}
 	}
 
+	@Override
+	public InvalidatingItemCommand parseInvalidatingItemCommand(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] bytes
+	) {
+		if (!(contentType.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
+
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), bytes)) {
+			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+				if (Objects.equals(jsonParser.currentName(), "item_id")) {
+					jsonParser.nextToken();
+					return new InvalidatingItemCommand(Long.parseLong(jsonParser.getValueAsString()));
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+	}
+
 	private boolean anyNull(Object... objects) {
 		for (Object o: objects) {
 			if (o == null) return true;

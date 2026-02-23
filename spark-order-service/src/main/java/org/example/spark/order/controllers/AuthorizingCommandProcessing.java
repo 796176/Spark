@@ -22,6 +22,8 @@ import jakarta.annotation.Nonnull;
 import org.example.spark.authorization.Role;
 import org.example.spark.order.converters.OrderCommandParser;
 import org.example.spark.order.converters.ResponseConverter;
+import org.example.spark.order.interactors.ItemRepositoryReplicaManager;
+import org.example.spark.order.interactors.OrderDataAccess;
 import org.example.spark.order.interactors.OrderService;
 import org.example.spark.order.models.LineItem;
 import org.example.spark.order.models.RenderableOrder;
@@ -32,15 +34,23 @@ public class AuthorizingCommandProcessing extends AbstractCommandProcessor {
 
 	private final OrderService orderService;
 
+	private final OrderDataAccess orderDataAccess;
+
+	private final ItemRepositoryReplicaManager itemRepositoryReplicaManager;
+
 	public AuthorizingCommandProcessing(
 		@Nonnull Executor executor,
 		@Nonnull OrderCommandParser orderCommandParser,
 		@Nonnull ResponseConverter responseConverter,
-		@Nonnull OrderService orderService
+		@Nonnull OrderService orderService,
+		@Nonnull OrderDataAccess orderDataAccess,
+		@Nonnull ItemRepositoryReplicaManager itemRepositoryReplicaManager
 	) {
 		super(executor, orderCommandParser, responseConverter);
 
 		this.orderService = orderService;
+		this.orderDataAccess = orderDataAccess;
+		this.itemRepositoryReplicaManager = itemRepositoryReplicaManager;
 	}
 
 	@Override
@@ -93,5 +103,11 @@ public class AuthorizingCommandProcessing extends AbstractCommandProcessor {
 		long callerId, @Nonnull Role[] roles, long accountId
 	) throws Exception {
 		return orderService.getOrdersByAccount(accountId);
+	}
+
+	@Override
+	protected void invalidateItem(long callerId, @Nonnull Role[] roles, long itemId) {
+		if (orderDataAccess.isItemOrdered(itemId)) throw new IllegalStateException();
+		itemRepositoryReplicaManager.deleteItem(itemId);
 	}
 }

@@ -52,4 +52,7 @@ public interface OrderDataAccess {
 		@Nonnull String idempotenceToken,
 		@Nonnull SagaDataAccess sagaDataAccess
 	);
+
+	boolean isItemOrdered(long itemId);
+
 }

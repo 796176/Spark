@@ -46,4 +46,10 @@ public interface OrderCommandParser {
 	RetrievingOrdersByAccountCommand parseRetrievingOrdersByAccountCommand(
 		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
 	);
+
+	record InvalidatingItemCommand(long itemId) { }
+
+	InvalidatingItemCommand parseInvalidatingItemCommand(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] bytes
+	);
 }

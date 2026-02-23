@@ -145,6 +145,14 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							0, response.getContentType(), response.getVersion(), response.getBody()
 						);
 					}
+					case "org.example.spark.order.invalidate-item" -> {
+						InvalidatingItemCommand command =
+							parser.parseInvalidatingItemCommand(bodyContentType, version, body);
+						invalidateItem(callerId, roles, command.itemId());
+						callback.send(
+							0, emptyResponse.getContentType(), emptyResponse.getVersion(), emptyResponse.getBody()
+						);
+					}
 					default -> {
 						throw new IllegalArgumentException();
 					}
@@ -194,4 +202,6 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	protected abstract RenderableOrder[] getOrdersByAccount(
 		long callerId, @Nonnull Role[] roles, long accountId
 	) throws Exception;
+
+	protected abstract void invalidateItem(long callerId, @Nonnull Role[] roles, long itemId) throws Exception;
 }

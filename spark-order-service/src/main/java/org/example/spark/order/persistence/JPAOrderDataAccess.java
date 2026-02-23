@@ -41,6 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Stream;
 
 @Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 public class JPAOrderDataAccess implements OrderDataAccess {
@@ -192,6 +193,21 @@ public class JPAOrderDataAccess implements OrderDataAccess {
 			return sagaDataAccess.newSaga(order, SagaTypes.PLACE_ORDERED, null);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
+		}
+	}
+
+	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
+	@Override
+	public boolean isItemOrdered(long itemId) {
+		// SELECT * FROM line_items WHERE line_items.item_id = itemId;
+		CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+		CriteriaQuery<LineItemEntity> q = cb.createQuery(LineItemEntity.class);
+		Root<LineItemEntity> lineItem = q.from(LineItemEntity.class);
+		q.where(cb.equal(lineItem.get(LineItemEntity_.itemId), itemId));
+
+		TypedQuery<LineItemEntity> typedQuery = entityManager.createQuery(q);
+		try (Stream<LineItemEntity> stream = typedQuery.getResultStream()) {
+			return stream.findAny().isPresent();
 		}
 	}
 }
