@@ -59,7 +59,7 @@ public class RMQAccountService implements AccountServiceProxy {
 			.replyTo(replyChannel)
 			.headers(Map.of("Version", messageDetails.getVersion()))
 			.contentType(messageDetails.getContentType())
-			.type("org.example.spark.account.authorize-account")
+			.type("org.example.spark.account.get-account-permissions")
 			.build();
 		channel.basicPublish("commands", "spark-account-service", properties, messageDetails.getBody());
 		channel.waitForConfirms();

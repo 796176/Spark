@@ -65,7 +65,7 @@ public class JsonAuthorizingAccountMessageProcessor implements AuthorizingAccoun
 		JsonFactory jsonFactory = new JsonFactory();
 		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body)) {
 			while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
-				if (Objects.equals(jsonParser.currentName(), "placing_orders_authorization")) {
+				if (Objects.equals(jsonParser.currentName(), "authorized_placing_orders")) {
 					jsonParser.nextToken();
 					return Boolean.parseBoolean(jsonParser.getValueAsString());
 				}
