@@ -21,6 +21,7 @@ package org.example.spark.account.controllers;
 import jakarta.annotation.Nonnull;
 import org.example.spark.account.events.AccountEvent;
 import org.example.spark.account.aggregates.Account;
+import org.example.spark.account.models.PermissionList;
 import org.example.spark.authorization.Role;
 import org.example.spark.account.intaractors.AccountDataAccess;
 import org.example.spark.account.models.Password;
@@ -100,5 +101,13 @@ public class AccountServiceImpl implements AccountService {
 		Account account = accountDataAccess.getAccount(id);
 		AccountEvent accountEvent = account.setRoles(roles);
 		accountDataAccess.persist(account, null, accountEvent);
+	}
+
+	@Override
+	public PermissionList getAccountPermissions(long id) {
+		Account account = accountDataAccess.getAccount(id);
+		PermissionList.Builder permBuilder = new PermissionList.Builder();
+		if (account.getStatus() == Account.Status.ACTIVE) permBuilder.authorizedPlacingOrders();
+		return permBuilder.build();
 	}
 }

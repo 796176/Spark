@@ -20,6 +20,7 @@ package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.account.models.Password;
+import org.example.spark.account.models.PermissionList;
 import org.example.spark.account.models.RenderableAccount;
 import org.example.spark.authorization.Role;
 
@@ -42,4 +43,6 @@ public interface AccountService {
 	void restoreAccount(long id);
 
 	void changeAccountRoles(long id, @Nonnull Role... roles);
+
+	PermissionList getAccountPermissions(long id);
 }

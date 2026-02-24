@@ -19,6 +19,7 @@
 package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
+import org.example.spark.account.models.PermissionList;
 import org.example.spark.account.models.RenderableAccount;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.ObjectWriteContext;
@@ -75,6 +76,21 @@ public class JsonResponseEncoder implements ResponseEncoder {
 		jsonGenerator.flush();
 
 		return new JsonEncodedResponseProperties("application/json", "1.0", os.toByteArray());
+	}
+
+	@Override
+	public EncodedResponseProperties encodePermissionList(@Nonnull PermissionList permissionList) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty(
+				"authorized_placing_orders", Boolean.toString(permissionList.isAuthorizedPlacingOrders())
+			);
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+			return new JsonEncodedResponseProperties("application/json", "1.0", os.toByteArray());
+		}
 	}
 
 	@Override

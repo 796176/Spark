@@ -20,6 +20,7 @@ package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.account.models.Password;
+import org.example.spark.account.models.PermissionList;
 import org.example.spark.account.models.RenderableAccount;
 import org.example.spark.authorization.Role;
 
@@ -91,5 +92,10 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 	@Override
 	protected void changeAccountRoles(long callerId, @Nonnull Role[] callerRoles, long id, @Nonnull Role[] roles) {
 		accountService.changeAccountRoles(id, roles);
+	}
+
+	@Override
+	protected PermissionList getAccountPermissions(long callerId, @Nonnull Role[] callerRoles, long id) {
+		return accountService.getAccountPermissions(id);
 	}
 }

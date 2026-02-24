@@ -16,28 +16,35 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.example.spark.account.controllers;
+package org.example.spark.account.models;
 
-import jakarta.annotation.Nonnull;
-import org.example.spark.account.models.PermissionList;
-import org.example.spark.account.models.RenderableAccount;
+public class PermissionList {
 
-public interface ResponseEncoder {
+	private boolean isAuthorizedPlacingOrders = false;
 
-	interface EncodedResponseProperties {
+	private PermissionList() { }
 
-		String getContentType();
-
-		String getVersion();
-
-		byte[] getBody();
+	public boolean isAuthorizedPlacingOrders() {
+		return isAuthorizedPlacingOrders;
 	}
 
-	EncodedResponseProperties encodeRenderableAccounts(RenderableAccount... renderableAccounts);
+	private PermissionList copy() {
+		PermissionList copy = new PermissionList();
+		copy.isAuthorizedPlacingOrders = isAuthorizedPlacingOrders;
+		return copy;
+	}
 
-	EncodedResponseProperties encodePermissionList(@Nonnull PermissionList permissionList);
+	public static class Builder {
 
-	EncodedResponseProperties encodeThrowable(Throwable t);
+		private final PermissionList permissionList = new PermissionList();
 
-	EncodedResponseProperties emptyResponse();
+		public Builder authorizedPlacingOrders() {
+			permissionList.isAuthorizedPlacingOrders = true;
+			return this;
+		}
+
+		public PermissionList build() {
+			return permissionList.copy();
+		}
+	}
 }

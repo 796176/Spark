@@ -20,6 +20,7 @@ package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.account.models.Password;
+import org.example.spark.account.models.PermissionList;
 import org.example.spark.account.models.RenderableAccount;
 import org.example.spark.authorization.Role;
 
@@ -153,6 +154,18 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							0, response.getContentType(), response.getVersion(), response.getBody()
 						);
 					}
+					case "org.example.spark.account.get-account-permissions" -> {
+						PermissionList permissionList = getAccountPermissions(
+							callerId,
+							roles,
+							Long.parseLong(Objects.requireNonNull(parsedCommand.getValue("account_id")))
+						);
+						ResponseEncoder.EncodedResponseProperties response =
+							responseEncoder.encodePermissionList(permissionList);
+						callback.send(
+							0, response.getContentType(), response.getVersion(), response.getBody()
+						);
+					}
 					default -> {
 						throw new IllegalStateException();
 					}
@@ -204,4 +217,8 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 	protected abstract void changeAccountRoles(
 		long callerId, @Nonnull Role[] callerRoles, long id, @Nonnull Role[] roles
 	);
+
+	protected abstract PermissionList getAccountPermissions(
+		long callerId, @Nonnull Role[] callerRoles, long id
+	) throws Exception;
 }
