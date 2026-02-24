@@ -22,15 +22,13 @@ import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.example.spark.account.models.Password;
 import org.example.spark.account.models.PasswordImpl;
+import org.example.spark.authorization.Role;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.JsonToken;
 import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.json.JsonFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 public class JsonCommandParser implements CommandParser {
 
@@ -79,7 +77,7 @@ public class JsonCommandParser implements CommandParser {
 		ParsedCommandImpl parsedMessage = new ParsedCommandImpl(body);
 		JsonFactory jsonFactory = new JsonFactory();
 		JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body);
-		while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+		while (jsonParser.nextToken() != null) {
 			String key = jsonParser.currentName();
 			if (Objects.equals(key, "password")) {
 				jsonParser.nextToken();
@@ -95,5 +93,44 @@ public class JsonCommandParser implements CommandParser {
 			}
 		}
 		return parsedMessage;
+	}
+
+	@Override
+	public ChangingRolesCommand parseChangingRolesCommand(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] bytes
+	) {
+		if (!(contentType.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
+
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), bytes)) {
+			String accountId = null;
+			ArrayList<Role> roles = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "account_id" -> {
+						jsonParser.nextToken();
+						accountId = jsonParser.getValueAsString();
+					}
+					case "roles" -> {
+						roles = new ArrayList<>();
+						jsonParser.nextToken();
+						while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+							roles.add(Role.fromId(Long.parseLong(jsonParser.getValueAsString())));
+						}
+					}
+				}
+			}
+			if (anyNull(accountId, roles)) throw new IllegalArgumentException();
+
+			return new ChangingRolesCommand(Long.parseLong(accountId), roles.toArray(new Role[0]));
+		}
+	}
+
+	private boolean anyNull(Object... objects) {
+		for (Object o: objects) {
+			if (o == null) return true;
+		}
+		return false;
 	}
 }

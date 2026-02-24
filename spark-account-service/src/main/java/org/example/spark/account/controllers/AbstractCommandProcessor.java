@@ -154,6 +154,17 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							0, response.getContentType(), response.getVersion(), response.getBody()
 						);
 					}
+					case "org.example.spark.account.change-account-roles" -> {
+						CommandParser.ChangingRolesCommand command =
+							parser.parseChangingRolesCommand(bodyContentType, version, body);
+						changeAccountRoles(callerId, roles, command.accountId(), command.newRoleList());
+						callback.send(
+							0,
+							emptyResponse.getContentType(),
+							emptyResponse.getVersion(),
+							emptyResponse.getBody()
+						);
+					}
 					case "org.example.spark.account.get-account-permissions" -> {
 						PermissionList permissionList = getAccountPermissions(
 							callerId,

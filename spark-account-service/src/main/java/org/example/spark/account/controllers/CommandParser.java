@@ -21,6 +21,7 @@ package org.example.spark.account.controllers;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.example.spark.account.models.Password;
+import org.example.spark.authorization.Role;
 
 public interface CommandParser {
 
@@ -35,4 +36,10 @@ public interface CommandParser {
 	}
 
 	ParsedCommand parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body);
+
+	record ChangingRolesCommand(long accountId, @Nonnull Role[] newRoleList) { }
+
+	ChangingRolesCommand parseChangingRolesCommand(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
+	);
 }
