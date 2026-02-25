@@ -284,10 +284,10 @@ public class OrderServiceConfiguration {
 		ch.exchangeDeclare(
 			"spark-order-service-events", BuiltinExchangeType.FANOUT, true, false, false, null
 		);
-		ch.queueDeclare("order-service-event-enricher", true, false, false, null);
-		ch.queueBind("order-service-event-enricher", "spark-order-service-events", "");
+		ch.queueDeclare("spark-order-service-event-enricher", true, false, false, null);
+		ch.queueBind("spark-order-service-event-enricher", "spark-order-service-events", "");
 		RMQOrderEventConsumer rmqOrderEventConsumer = new RMQOrderEventConsumer(orderEventEnricher, ch);
-		ch.basicConsume("order-service-event-enricher", rmqOrderEventConsumer);
+		ch.basicConsume("spark-order-service-event-enricher", rmqOrderEventConsumer);
 		return rmqOrderEventConsumer;
 	}
 
