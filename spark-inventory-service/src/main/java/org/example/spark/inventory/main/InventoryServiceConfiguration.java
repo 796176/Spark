@@ -25,6 +25,8 @@ import com.rabbitmq.client.ConnectionFactory;
 import jakarta.persistence.EntityManagerFactory;
 import org.example.spark.inventory.controllers.*;
 import org.example.spark.inventory.converters.JsonItemEventConverter;
+import org.example.spark.inventory.converters.JsonOrderEventParser;
+import org.example.spark.inventory.converters.OrderEventParser;
 import org.example.spark.inventory.interactors.PublishableEventDataAccess;
 import org.example.spark.inventory.interactors.SagaDataAccess;
 import org.example.spark.inventory.interactors.InventoryService;
@@ -229,6 +231,31 @@ public class InventoryServiceConfiguration {
 		return new ScheduledEventPublisher(
 			scheduledExecutorService, publishableEventDataAccess, eventPublisher, publishingInterval
 		);
+	}
+
+	@Bean
+	OrderEventParser orderEventParser() {
+		return new JsonOrderEventParser();
+	}
+
+	@Bean
+	OrderEventListener orderEventListener(InventoryService inventoryService, OrderEventParser orderEventParser) {
+		return new OrderEventListener(inventoryService, orderEventParser);
+	}
+
+	@Bean
+	RMQOrderEventConsumer rmqOrderEventConsumer(
+		OrderEventListener orderEventListener, Connection connection
+	) throws IOException {
+		Channel ch = connection.createChannel();
+		ch.exchangeDeclare(
+			"spark-order-service-events", BuiltinExchangeType.FANOUT, true, false, false, null
+		);
+		ch.queueDeclare("spark-inventory-service-order-event-listener", true, false, false, null);
+		ch.queueBind("spark-inventory-service-order-event-listener", "spark-order-service-events", "");
+		RMQOrderEventConsumer rmqOrderEventConsumer = new RMQOrderEventConsumer(orderEventListener, ch);
+		ch.basicConsume("spark-inventory-service-order-event-listener", rmqOrderEventConsumer);
+		return rmqOrderEventConsumer;
 	}
 
 	static void main(String[] args) {
