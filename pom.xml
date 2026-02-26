@@ -14,6 +14,7 @@
         <module>spark-authorization</module>
         <module>spark-inventory-service</module>
         <module>spark-order-service</module>
+        <module>spark-web-gateway</module>
     </modules>
 
 
