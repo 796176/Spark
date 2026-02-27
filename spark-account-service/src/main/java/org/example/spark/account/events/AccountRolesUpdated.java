@@ -21,7 +21,7 @@ package org.example.spark.account.events;
 public interface AccountRolesUpdated extends AccountEvent {
 
 	default String getType() {
-		return "org.example.spark.account-roles-updated";
+		return "org.example.spark.account.account-roles-updated";
 	}
 
 	long getAccountId();

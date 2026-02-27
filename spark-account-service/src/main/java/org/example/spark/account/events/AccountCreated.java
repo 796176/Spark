@@ -21,7 +21,7 @@ package org.example.spark.account.events;
 public interface AccountCreated extends AccountEvent {
 
 	default String getType() {
-		return "org.example.spark.account-created";
+		return "org.example.spark.account.account-created";
 	}
 
 	long getAccountId();

@@ -21,6 +21,6 @@ package org.example.spark.account.events;
 public interface AccountRestored extends AccountStatusUpdated {
 
 	default String getType() {
-		return "org.example.spark.account-restored";
+		return "org.example.spark.account.account-restored";
 	}
 }

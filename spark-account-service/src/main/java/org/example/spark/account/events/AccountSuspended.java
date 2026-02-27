@@ -21,6 +21,6 @@ package org.example.spark.account.events;
 public interface AccountSuspended extends AccountStatusUpdated {
 
 	default String getType() {
-		return "org.example.spark.account-suspended";
+		return "org.example.spark.account.account-suspended";
 	}
 }

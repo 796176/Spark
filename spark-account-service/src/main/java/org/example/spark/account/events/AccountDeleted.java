@@ -21,6 +21,6 @@ package org.example.spark.account.events;
 public interface AccountDeleted extends AccountStatusUpdated {
 
 	default String getType() {
-		return "org.example.spark.account-deleted";
+		return "org.example.spark.account.account-deleted";
 	}
 }
