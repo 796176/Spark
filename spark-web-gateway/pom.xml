@@ -32,6 +32,13 @@
 
     <dependencies>
         <dependency>
+            <groupId>org.apache.tomcat.embed</groupId>
+            <artifactId>tomcat-embed-jasper</artifactId>
+            <version>11.0.18</version>
+            <scope>compile</scope>
+        </dependency>
+
+        <dependency>
             <groupId>org.example.spark</groupId>
             <artifactId>spark-authorization</artifactId>
             <version>1.0.0</version>
