@@ -71,7 +71,7 @@ public class JPASessionDataAccess implements SessionDataAccess {
 	public void invalidateSession(@Nonnull Session session) {
 		entityManagerFactory.runInTransaction(entityManager -> {
 			SessionEntity sessionEntity = entityManager.find(SessionEntity.class, session.getId());
-			if (sessionEntity != null) entityManager.remove(entityManager);
+			if (sessionEntity != null) entityManager.remove(sessionEntity);
 		});
 	}
 
