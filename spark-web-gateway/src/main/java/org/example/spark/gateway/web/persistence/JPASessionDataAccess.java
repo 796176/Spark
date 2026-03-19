@@ -23,6 +23,7 @@ import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaDelete;
+import jakarta.persistence.criteria.CriteriaUpdate;
 import jakarta.persistence.criteria.Root;
 import org.example.spark.authorization.Role;
 import org.example.spark.gateway.web.interactors.SessionDataAccess;
@@ -92,5 +93,15 @@ public class JPASessionDataAccess implements SessionDataAccess {
 			);
 			entityManager.persist(sessionEntity);
 		});
+	}
+
+	@Override
+	public void replaceSession(@Nonnull Session oldSession, @Nonnull Session newSession) {
+		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
+		CriteriaUpdate<SessionEntity> q = cb.createCriteriaUpdate(SessionEntity.class);
+		Root<SessionEntity> session = q.from(SessionEntity.class);
+		q.where(cb.equal(session.get(SessionEntity_.id), oldSession.getId()));
+		q.set(SessionEntity_.id, newSession.getId());
+		entityManagerFactory.runInTransaction(entityManager -> entityManager.createQuery(q).executeUpdate());
 	}
 }

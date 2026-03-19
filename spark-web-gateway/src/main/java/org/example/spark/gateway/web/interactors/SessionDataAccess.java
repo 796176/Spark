@@ -30,4 +30,6 @@ public interface SessionDataAccess {
 	void invalidateSessionsForAccount(long accountId);
 
 	void persist(@Nonnull Session session);
+
+	void replaceSession(@Nonnull Session oldSession, @Nonnull Session newSession);
 }
