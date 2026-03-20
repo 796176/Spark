@@ -99,8 +99,8 @@ public class JsonResponseEncoder implements ResponseEncoder {
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os);
 		jsonGenerator.writeStartObject();
-		jsonGenerator.writeStringProperty("exception-type", t.getClass().getName());
-		jsonGenerator.writeStringProperty("exception-message", t.getMessage());
+		jsonGenerator.writeStringProperty("exception_type", t.getClass().getName());
+		jsonGenerator.writeStringProperty("exception_message", t.getMessage());
 		jsonGenerator.writeEndObject();
 		jsonGenerator.flush();
 
