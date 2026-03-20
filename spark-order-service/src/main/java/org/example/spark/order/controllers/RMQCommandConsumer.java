@@ -65,6 +65,7 @@ public class RMQCommandConsumer implements Consumer {
 			Long.parseLong(basicProperties.getHeaders().get("Caller-Id").toString()),
 			Arrays
 				.stream(basicProperties.getHeaders().get("Caller-Roles").toString().split(","))
+				.filter(string -> !string.isBlank())
 				.mapToLong(Long::parseLong)
 				.toArray(),
 			basicProperties.getMessageId(),
