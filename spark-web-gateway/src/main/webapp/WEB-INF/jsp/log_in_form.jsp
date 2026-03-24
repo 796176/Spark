@@ -1,3 +1,4 @@
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <html lang="en-US">
 	<head>
@@ -35,7 +36,9 @@
 		</main>
 
 		<footer>
-			<p>Copyright Notice</p>
+			<p>Copyright © 2026 Yegore Vlussove.</p>
+			<p>The source code is available at <a href="https://github.com/796176/Spark">GitHub</a> under GPL 3</p>
+			<p>The icons used here are property of Google and available under Apache License 2</p>
 		</footer>
 	</body>
 </html>
