@@ -21,6 +21,7 @@ package org.example.spark.gateway.web.controllers;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
 import org.example.spark.authorization.Role;
+import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.Valid;
@@ -93,6 +94,12 @@ public class AccountRequestController {
 			} catch (TimeoutException timeoutException) {
 				signInProcess.cancel(true);
 				return "504";
+			} catch (ExecutionException e) {
+				if (e.getCause() instanceof AuthorizationException) {
+					if (accountRequestProcessor.isLoggedIn(httpServletRequest.getSession(true).getId())) {
+						return "403";
+					} else return "redirect:/login";
+				} else return "500";
 			} catch (Exception e) {
 				model.addAttribute("errorMessage", new ErrorMessage(e.getMessage()));
 				return "sign_in_form_with_error";
@@ -130,6 +137,12 @@ public class AccountRequestController {
 			try {
 				deletingAccountProcess.get(timeout, TimeUnit.MILLISECONDS);
 				return "redirect:/logout";
+			} catch (ExecutionException e) {
+				if (e.getCause() instanceof AuthorizationException) {
+					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
+						return "redirect:/403";
+					} else return "redirect:/login";
+				} else return "redirect:/500";
 			} catch (TimeoutException e) {
 				return "redirect:/504";
 			}

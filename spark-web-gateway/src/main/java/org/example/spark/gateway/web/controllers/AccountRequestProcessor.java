@@ -102,7 +102,14 @@ public class AccountRequestProcessor {
 					} else {
 						String errorMessage =
 							Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
-						completableFuture.completeExceptionally(new ServerError(errorMessage));
+						Class<? extends Exception> errorClass =
+							Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
+						try {
+							Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
+							completableFuture.completeExceptionally(error);
+						} catch (ReflectiveOperationException e) {
+							completableFuture.completeExceptionally(new ServerError(errorMessage));
+						}
 					}
 				});
 			},
@@ -130,8 +137,16 @@ public class AccountRequestProcessor {
 				if (rcr.isSuccessful()) completableFuture.complete(null);
 				else {
 					String errorMessage =
-						Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "ServerError");
-					completableFuture.completeExceptionally(new ServerError(errorMessage));
+						Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
+					Class<? extends Exception> exception =
+						Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
+					try {
+						completableFuture.completeExceptionally(
+							exception.getConstructor(String.class).newInstance(errorMessage)
+						);
+					} catch (ReflectiveOperationException e) {
+						completableFuture.completeExceptionally(new ServerError(errorMessage));
+					}
 				}
 			}
 		);

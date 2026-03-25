@@ -19,6 +19,7 @@
 package org.example.spark.gateway.web.controllers;
 
 import jakarta.servlet.http.HttpSession;
+import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.models.Account;
 import org.example.spark.gateway.web.models.Item;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +29,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.Optional;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 @Controller
 public class InventoryRequestController {
@@ -58,6 +56,13 @@ public class InventoryRequestController {
 				return "inventory";
 			} catch (TimeoutException e) {
 				return "504";
+			} catch (ExecutionException e) {
+				if (e.getCause() instanceof AuthorizationException) {
+					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
+						return "403";
+					} else return "redirect:/login";
+				}
+				else return "500";
 			}
 		};
 	}

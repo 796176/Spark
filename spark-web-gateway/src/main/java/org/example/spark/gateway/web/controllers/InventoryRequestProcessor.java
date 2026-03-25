@@ -56,20 +56,21 @@ public class InventoryRequestProcessor {
 
 		CompletableFuture<Item[]> completableFuture = new CompletableFuture<>();
 		userInventoryServiceProxy.getInventory(accountId, roles, rcr -> {
+		String errorMessage =
+			Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
 			try {
 				if (rcr.isSuccessful()) {
-					completableFuture.complete(
-						inventoryServiceResponseParser.parseGettingItemsResponse(
-							rcr.getContentType(), rcr.getVersion(), rcr.getResultBody()
-						)
+					Item[] inventory = inventoryServiceResponseParser.parseGettingItemsResponse(
+						rcr.getContentType(), rcr.getVersion(), rcr.getResultBody()
 					);
+					completableFuture.complete(inventory);
 				} else {
-					String errorMessage =
-						Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
-					completableFuture.completeExceptionally(new ServerError(errorMessage));
+					Class<? extends Exception> errorClass =
+						Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
+					Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
+					completableFuture.completeExceptionally(error);
 				}
 			} catch (Exception e) {
-				String errorMessage = Objects.requireNonNullElse(e.getMessage(), "Server Error");
 				completableFuture.completeExceptionally(new ServerError(errorMessage));
 			}
 		});
