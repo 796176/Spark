@@ -31,6 +31,8 @@ public class RemoteCallResult {
 
 	private final String contentType;
 
+	private final Class<? extends Exception> errorType;
+
 	private final String errorMessage;
 
 	public RemoteCallResult(
@@ -38,12 +40,14 @@ public class RemoteCallResult {
 		@Nonnull byte[] resultBody,
 		@Nonnull String version,
 		@Nonnull String contentType,
+		@Nullable Class<? extends Exception> errorType,
 		@Nullable String errorMessage
 	) {
 		this.successful = successful;
 		this.resultBody = resultBody;
 		this.version = version;
 		this.contentType = contentType;
+		this.errorType = errorType;
 		this.errorMessage = errorMessage;
 	}
 
@@ -61,6 +65,11 @@ public class RemoteCallResult {
 
 	public String getContentType() {
 		return contentType;
+	}
+
+	@Nullable
+	public Class<? extends Exception> getErrorType() {
+		return errorType;
 	}
 
 	@Nullable

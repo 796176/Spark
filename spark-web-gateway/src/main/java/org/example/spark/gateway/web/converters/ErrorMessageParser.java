@@ -23,6 +23,7 @@ import jakarta.annotation.Nullable;
 
 public interface ErrorMessageParser {
 
-	@Nullable
-	String parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body);
+	record ParsedError(@Nullable Class<? extends Exception> errorType, @Nullable String errorMessage) { }
+
+	ParsedError parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body);
 }

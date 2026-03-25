@@ -67,10 +67,16 @@ public class RMQConsumer implements com.rabbitmq.client.Consumer {
 		try {
 			boolean success = Integer.parseInt(basicProperties.getHeaders().get("Status-Code").toString()) == 0;
 			String version = basicProperties.getHeaders().get("Version").toString();
-			String errorMessage =
-				success ? null : errorMessageParser.parse(basicProperties.getContentType(), version, bytes);
-			RemoteCallResult remoteCallResult =
-				new RemoteCallResult(success, bytes, version, basicProperties.getContentType(), errorMessage);
+			ErrorMessageParser.ParsedError parsedError =
+				errorMessageParser.parse(basicProperties.getContentType(), version, bytes);
+			RemoteCallResult remoteCallResult = new RemoteCallResult(
+				success,
+				bytes,
+				version,
+				basicProperties.getContentType(),
+				parsedError.errorType(),
+				parsedError.errorMessage()
+			);
 			Consumer<RemoteCallResult> callResultConsumer = map.get(basicProperties.getCorrelationId());
 			if (callResultConsumer == null) {
 				acknowledgementChannel.basicAck(envelope.getDeliveryTag(), false);

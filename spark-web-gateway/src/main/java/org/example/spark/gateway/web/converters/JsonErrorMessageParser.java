@@ -19,7 +19,7 @@
 package org.example.spark.gateway.web.converters;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
+import org.example.spark.gateway.web.exceptions.ServerError;
 import tools.jackson.core.JsonParser;
 import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.json.JsonFactory;
@@ -28,18 +28,34 @@ import java.util.Objects;
 
 public class JsonErrorMessageParser implements ErrorMessageParser {
 
-	@Nullable
 	@Override
-	public String parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body) {
+	public ParsedError parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body) {
 		JsonFactory jsonFactory = new JsonFactory();
 		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body)) {
+			String exceptionType = null, exceptionMessage = null;
 			while (jsonParser.nextToken() != null) {
-				if (Objects.equals(jsonParser.currentName(), "exception_message")) {
-					jsonParser.nextToken();
-					return jsonParser.getValueAsString();
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "exception_type" -> {
+						jsonParser.nextToken();
+						exceptionType = jsonParser.getValueAsString();
+					}
+					case "exception_message" -> {
+						jsonParser.nextToken();
+						exceptionMessage = jsonParser.getValueAsString();
+					}
 				}
 			}
+
+			Class<? extends Exception> errorType = null;
+			if (exceptionType != null) {
+				try {
+					errorType = (Class<? extends Exception>) Class.forName(exceptionType);
+				} catch (ClassNotFoundException | ClassCastException ignored) {
+					errorType = ServerError.class;
+				}
+			}
+			return new ParsedError(errorType, exceptionMessage);
 		}
-		return null;
 	}
 }
