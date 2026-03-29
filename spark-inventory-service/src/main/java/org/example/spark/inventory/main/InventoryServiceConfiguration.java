@@ -249,10 +249,10 @@ public class InventoryServiceConfiguration {
 	) throws IOException {
 		Channel ch = connection.createChannel();
 		ch.exchangeDeclare(
-			"spark-order-service-events", BuiltinExchangeType.FANOUT, true, false, false, null
+			"spark-order-service-enriched-events", BuiltinExchangeType.FANOUT, true, false, false, null
 		);
 		ch.queueDeclare("spark-inventory-service-order-event-listener", true, false, false, null);
-		ch.queueBind("spark-inventory-service-order-event-listener", "spark-order-service-events", "");
+		ch.queueBind("spark-inventory-service-order-event-listener", "spark-order-service-enriched-events", "");
 		RMQOrderEventConsumer rmqOrderEventConsumer = new RMQOrderEventConsumer(orderEventListener, ch);
 		ch.basicConsume("spark-inventory-service-order-event-listener", rmqOrderEventConsumer);
 		return rmqOrderEventConsumer;
