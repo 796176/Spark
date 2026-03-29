@@ -57,7 +57,13 @@ public class RMQAccountService implements AccountServiceProxy {
 			.correlationId(correlationId)
 			.messageId(state.getIdempotenceToken())
 			.replyTo(replyChannel)
-			.headers(Map.of("Version", messageDetails.getVersion()))
+			.headers(
+				Map.of(
+					"Version", messageDetails.getVersion(),
+					"Caller-Id", "-1",
+					"Caller-Roles", ""
+				)
+			)
 			.contentType(messageDetails.getContentType())
 			.type("org.example.spark.account.get-account-permissions")
 			.build();
