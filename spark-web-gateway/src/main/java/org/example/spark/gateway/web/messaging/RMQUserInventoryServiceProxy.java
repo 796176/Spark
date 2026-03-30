@@ -50,7 +50,7 @@ public class RMQUserInventoryServiceProxy implements UserInventoryServiceProxy {
 	}
 
 	@Override
-	public void getInventory(
+	public synchronized void getInventory(
 		long callerId, @Nonnull Role[] roles, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception {
 		String correlationId = UUID.randomUUID().toString();
