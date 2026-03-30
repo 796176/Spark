@@ -79,7 +79,6 @@ public class RMQConsumer implements com.rabbitmq.client.Consumer {
 			);
 			Consumer<RemoteCallResult> callResultConsumer = map.get(basicProperties.getCorrelationId());
 			if (callResultConsumer == null) {
-				acknowledgementChannel.basicAck(envelope.getDeliveryTag(), false);
 				return;
 			}
 			callResultConsumer.accept(remoteCallResult);
