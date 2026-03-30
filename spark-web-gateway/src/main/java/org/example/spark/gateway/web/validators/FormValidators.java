@@ -20,8 +20,7 @@ package org.example.spark.gateway.web.validators;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
-import org.example.spark.gateway.web.models.LogInForm;
-import org.example.spark.gateway.web.models.SignInForm;
+import org.example.spark.gateway.web.models.*;
 
 public class FormValidators {
 
@@ -43,6 +42,33 @@ public class FormValidators {
 		}
 		if (logInForm.getPassword().isEmpty()) {
 			return "The password field is empty";
+		}
+		return null;
+	}
+
+	@Nullable
+	public static String validateNewOrderForm(@Nonnull NewOrderForm newOrderForm) {
+		if (newOrderForm.getTimestamp() == null) {
+			return "The order timestamp is not specified";
+		}
+		if (newOrderForm.getLineItems().length == 0) {
+			return "The order has no content";
+		}
+		for (LineItem lineItem: newOrderForm.getLineItems()) {
+			if (lineItem.amount() > 10 || lineItem.amount() < 1) {
+				return "The line item amount is outside the accepted range";
+			}
+		}
+		return null;
+	}
+
+	@Nullable
+	public static String validatePlacedOrderForm(@Nonnull PlacedOrderForm placedOrderForm) {
+		if (placedOrderForm.getOrderId() == null) {
+			return "The order id is not specified";
+		}
+		if (placedOrderForm.getVersion() == null) {
+			return "The order version is not specified";
 		}
 		return null;
 	}

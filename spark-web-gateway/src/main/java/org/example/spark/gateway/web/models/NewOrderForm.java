@@ -19,22 +19,25 @@
 package org.example.spark.gateway.web.models;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
-public record Money(int currencyAmount, int centAmount) {
-	public Money times(int i) {
-		int newCurrencyAmount = currencyAmount * i;
-		int newCentAmount = centAmount * i;
-		newCurrencyAmount += newCentAmount / 100;
-		newCentAmount = newCentAmount % 100;
-		return new Money(newCurrencyAmount, newCentAmount);
+public class NewOrderForm {
+
+	private final Long timestamp;
+
+	private final LineItem[] lineItems;
+
+	public NewOrderForm(@Nullable Long timestamp, @Nonnull LineItem[] lineItems) {
+		this.timestamp = timestamp;
+		this.lineItems = lineItems;
 	}
 
-	public Money plus(@Nonnull Money money) {
-		int newCurrencyAmount = currencyAmount + money.currencyAmount();
-		int newCentAmount = centAmount + money.centAmount();
-		newCurrencyAmount += newCentAmount / 100;
-		newCentAmount = newCentAmount % 100;
-		return new Money(newCurrencyAmount, newCentAmount);
+	@Nullable
+	public Long getTimestamp() {
+		return timestamp;
+	}
+
+	public LineItem[] getLineItems() {
+		return lineItems;
 	}
 }
-
