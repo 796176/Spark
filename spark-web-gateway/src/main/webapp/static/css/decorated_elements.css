@@ -1,0 +1,78 @@
+.decorated_button {
+	font-size: 0.85rem;
+	padding: 0.3rem;
+	color: black;
+	font-weight: bold;
+	background-color: white;
+	border: 0.1rem solid black;	
+	border-radius: 5px;
+}
+
+.decorated_button:hover {
+	background-color: lightgray;
+}
+
+.decorated_button:active {
+	color: white;
+	background-color: black;
+}
+
+.decorated_link {
+	font-size: 0.85rem;
+	padding: 0.3rem;
+	color: black;
+	font-weight: bold;
+	background-color white;
+	text-decoration: none;
+	outline-color: transparent;
+	border: 0.1rem solid black;	
+	border-radius: 5px;
+	display: grid;
+	align-items: center;
+	justify-content: center;
+}
+
+.decorated_link:hover {
+	background-color: lightgray;
+}
+
+.decorated_link:active {
+	color: white;
+	background-color: black;
+}
+
+.decorated_error_message {
+	font-size: 1.2rem;
+	font-weight: bold;
+}
+
+.decorated_list {
+	padding: 0;
+	list-style-type: none;
+	border: 2px solid black;
+	border-radius: 10px;
+}
+
+.decorated_li:nth-child(even) {
+	background-color: silver;
+}
+
+.decorated_li:first-child {
+	border-top-left-radius: 8px;
+	border-top-right-radius: 8px;
+}
+
+.decorated_li:last-child {
+	border-bottom-right-radius: 8px;
+	border-bottom-left-radius: 8px;
+}
+
+.decorated_sli {
+	padding: 0.5rem;
+}
+
+.decorated_number_input {
+	border: 1px solid black;
+	border-radius: 5px;
+	padding: 0.3rem;
+}

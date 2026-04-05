@@ -4,26 +4,37 @@
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Welcome</title>
+		<title>My Account</title>
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
+		<link rel="stylesheet" href="/static/css/general.css"/>
+		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
+		<link rel="stylesheet" href="/static/css/my_account.css"/>
 	</head>
 	<body>
 		<header>
-			<p>Spark</p>
-			<p><a href="/inventory">Inventory</a></p>
-			<p><a href="/orders">Orders</a></p>
-			<p><a href="/myaccount">${account.getName()}</a></p>
+			<div class="left_elements">
+				<a href="/">Spark</a>
+				<a href="/inventory">Inventory</a>
+				<a href="/orders">Orders</a>
+			</div>
+			<div class="right_elements">
+				<a href="/myaccount">${account.getName()}</a>
+			</div>
 		</header>
 
 		<main>
-			<img src="/static/icons/account_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"/>
-			<p>${account.getName()}</p>
-			<form:form action="/logout">
-				<button>Log Out</button>
-			</form:form>
-			<form:form action="/myaccount" method="DELETE">
-				<button>Delete Account</button>
-			</form:form>
+			<div class="personal_info">
+				<img class="profile_pic" src="/static/icons/account_circle_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg"/>
+				<p class="profile_name">${account.getName()}</p>
+			</div>
+			<div class="account_action">
+				<form:form action="/logout">
+					<button class="decorated_button">Log Out</button>
+				</form:form>
+				<form:form action="/myaccount" method="DELETE">
+					<button class="decorated_button">Delete Account</button>
+				</form:form>
+			</div>
 		</main>
 
 		<footer>

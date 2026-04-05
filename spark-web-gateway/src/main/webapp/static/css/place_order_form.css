@@ -1,0 +1,49 @@
+main {
+	margin-left: 3rem;
+	padding-top: 4rem;
+	display: grid;
+	align-content: start;
+}
+
+ol {
+	margin: 0;
+	width: 60%;
+}
+
+input {
+	border: 1px solid black;
+}
+
+.item {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	grid-template-rows: auto auto;
+}
+
+.item_name {
+	grid-column: 1;
+	grid-row: 1;
+	text-align: start;
+	word-break: break-all;
+}
+
+.item_price {
+	grid-column: 2;
+	grid-row: 1;
+	text-align: end;
+}
+
+.item_interactive {
+	grid-column: 1 / 3;
+	grid-row: 2;
+	width: auto;
+	justify-self: end;
+}
+
+li .input {
+	margin: 0.5rem;
+}
+
+button {
+	margin-top: 2rem;
+}

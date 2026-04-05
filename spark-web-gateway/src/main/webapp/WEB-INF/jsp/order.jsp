@@ -5,19 +5,26 @@
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Welcome</title>
+		<title>Placed Order</title>
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
+		<link rel="stylesheet" href="/static/css/general.css"/>
+		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
+		<link rel="stylesheet" href="/static/css/order.css"/>
 	</head>
 	<body>
 		<header>
-			<p>Spark</p>
-			<p><a href="/inventory">Inventory</a></p>
-			<p><a href="/orders">Orders</a></p>
-			<% if (account.isPresent()) { %>
-				<p><a href="/myaccount">${(account.get()).getName()}</a></p>
-			<% } else { %>
-				<p><a href="/login">Log In</a></p>
-			<% } %>
+			<div class="left_elements">
+				<a href="/">Spark</a>
+				<a href="/inventory">Inventory</a>
+				<a href="/orders">Orders</a>
+			</div>
+			<div class="right_elements">
+				<% if (account.isPresent()) { %>
+					<a href="/myaccount">${account.get().getName()}</a>
+				<% } else { %>
+					<a href="/login">Log In</a>
+				<% } %>
+			</div>
 		</header>
 
 		<main>
@@ -26,20 +33,18 @@
 			</h1>
 
 			<h2>Order Content</h2>
-			<ol>
+			<ol class="decorated_list">
 				<% for (var item: detailedOrder.items()) { %>
-					<li>
-						<div>
-							<span>
-								<%= item.name() %>
-							</span>
-							<span>
-								<%= "x" + item.amount() %>
-							</span>
-							<span>
-								<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
-							</span>
-						</div>
+					<li class="item decorated_li">
+						<span class="item_name decorated_sli">
+							<%= item.name() %>
+						</span>
+						<span class="item_amount decorated_sli">
+							<%= "x" + item.amount() %>
+						</span>
+						<span class="item_accumulative_price decorated_sli">
+							<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
+						</span>
 					</li>
 				<% } %>
 			</ol>
@@ -47,7 +52,7 @@
 			<h2>Total Price</h2>
 			<% var totalPrice = new org.example.spark.gateway.web.models.Money(0, 0); %>
 			<% for (var item: detailedOrder.items()) { %>
-				<% totalPrice = totalPrice.plus(item.price()); %>
+				<% totalPrice = totalPrice.plus(item.price().times(item.amount())); %>
 			<% } %>
 			<%= "$" + totalPrice.currencyAmount() + "." + totalPrice.centAmount() %>
 
@@ -58,13 +63,13 @@
 				<form:form action="/cancelorder">
 					<input name="order_id" value="${detailedOrder.orderId()}" type="hidden"/>
 					<input name="version" value="${detailedOrder.version()}" type="hidden"/>
-					<button>Cancel Order</button>
+					<button class="decorated_button">Cancel Order</button>
 				</form:form>
 			<% } else if (detailedOrder.status().equals(org.example.spark.gateway.web.models.Order.Status.CANCELED)) { %>
 				<form:form action="/restoreorder">
 					<input name="order_id" value="${detailedOrder.orderId()}" type="hidden"/>
 					<input name="version" value="${detailedOrder.version()}" type="hidden"/>
-					<button>Restore Order</button>
+					<button class="decorated_button">Restore Order</button>
 				</form:form>
 			<% } %>
 		</main>

@@ -1,0 +1,37 @@
+main {
+	padding-top: 4rem;
+	padding-left: 3rem;
+	display: grid;
+	justify-content: center;
+	align-content: start;
+	row-gap: 6rem;
+}
+
+.personal_info {
+	display: grid;
+	grid-template-rows: auto;
+	width: 11rem;
+}
+
+.account_action {
+	display: grid;
+	justify-items: stretch;
+	align-content: center;
+	row-gap: 2rem;
+}
+
+.profile_pic {
+	width: 100%;
+}
+
+.profile_name {
+	text-align: center;
+	margin: 0;
+	font-size: 1.5rem;
+	font-weight: bold;
+	word-break: break-word;
+}
+
+form button {
+	width: 100%;
+}

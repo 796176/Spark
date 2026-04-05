@@ -1,0 +1,45 @@
+main {
+	display: grid;
+	align-content: start;
+	padding-left: 3rem;
+	padding-top: 4rem;
+}
+
+main a[href="/placeorder"] {
+	width: 10rem;
+}
+
+main p {
+	font-size: 2rem;
+}
+
+ol {
+	width: 50%;
+}
+
+.order a {
+	display: flex;
+}
+
+.order:hover {
+	font-weight: bold;
+}
+
+.order_number {
+	flex: 3;
+}
+
+.order_date {
+	flex: 5;
+}
+
+.order_status {
+	flex: 2;
+}
+
+li a {
+	text-decoration: none;
+	color: black;
+}
+
+

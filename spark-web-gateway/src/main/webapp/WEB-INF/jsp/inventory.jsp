@@ -5,44 +5,46 @@
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Welcome</title>
+		<title>Inventory</title>
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
+		<link rel="stylesheet" href="/static/css/general.css"/>
+		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
+		<link rel="stylesheet" href="/static/css/inventory.css"/>
 	</head>
 	<body>
 		<header>
-			<p>Spark</p>
-			<p><a href="/inventory">Inventory</a></p>
-			<p><a href="/orders">Orders</a></p>
-			<% if (account.isPresent()) { %>
-				<p><a href="/myaccount">${account.get().getName()}</a></p>
-			<% } else { %>
-				<p><a href="/login">Log In</a></p>
-			<% } %>
+			<div class="left_elements">
+				<a href="/">Spark</a>
+				<a href="/inventory">Inventory</a>
+				<a href="/orders">Orders</a>
+			</div>
+			<div class="right_elements">
+				<% if (account.isPresent()) { %>
+					<a href="/myaccount">${account.get().getName()}</a>
+				<% } else { %>
+					<a href="/login">Log In</a>
+				<% } %>
+			</div>
 		</header>
 
 		<main>
 			<% if (items.length == 0) { %>
 				<p>Empty</p>
 			<% } else { %>
-				<ol>
+				<ol class="decorated_list">
 					<% for (var item: items) { %>
-						<li>
-							<div>
-								<span>
-									<%= item.itemId() %>
-								</span>
-								<span>
-									<%= item.name() %>
-								</span>
-								<span>
-									<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
-								</span>
-								<span>
-									<% if (item.amount() <= 0) { %>
-										Out of stock
-									<% } %>
-								</span
-							</div>
+						<li class="item decorated_li">
+							<span class="item_name decorated_sli">
+								<%= item.name() %>
+							</span>
+							<span class="item_price decorated_sli">
+								<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
+							</span>
+							<span class="item_availability decorated_sli">
+								<% if (item.amount() <= 0) { %>
+									Out of stock
+								<% } %>
+							</span>
 						</li>
 					<% } %>
 				</ol>

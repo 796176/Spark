@@ -6,57 +6,65 @@
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Welcome</title>
+		<title>Placing Order</title>
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
+		<link rel="stylesheet" href="/static/css/general.css"/>
+		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
+		<link rel="stylesheet" href="/static/css/place_order_form.css"/>
 	</head>
 	<body>
 		<header>
-			<p>Spark</p>
-			<p><a href="/inventory">Inventory</a></p>
-			<p><a href="/orders">Orders</a></p>
-			<% if (account.isPresent()) { %>
-				<p><a href="/myaccount">${account.get().getName()}</a></p>
-			<% } else { %>
-				<p><a href="/login">Log In</a></p>
-			<% } %>
+			<div class="left_elements">
+				<a href="/">Spark</a>
+				<a href="/inventory">Inventory</a>
+				<a href="/orders">Orders</a>
+			</div>
+			<div class="right_elements">
+				<% if (account.isPresent()) { %>
+					<a href="/myaccount">${account.get().getName()}</a>
+				<% } else { %>
+					<a href="/login">Log In</a>
+				<% } %>
+			</div>
 		</header>
 
 		<main>
 			<% if (items.length > 0) { %>
 				<form:form>
-					<ol>
+					<ol class="decorated_list">
 						<% for (var item: items) { %>
-							<li>
-								<div>
-									<span>
-										<%= item.name() %>
-									</span>
-									<span>
-										<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
-									</span>
-									<% if (item.amount() > 0) { %>
-										<jsp:element name="input">
-											<jsp:attribute name="type">number</jsp:attribute>
-											<jsp:attribute name="name">
-												<%= item.itemId() %>
-											</jsp:attribute>
-											<jsp:attribute name="min">0</jsp:attribute>
-											<jsp:attribute name="value">0</jsp:attribute>
-											<jsp:attribute name="required"></jsp:attribute>
-											<jsp:attribute name="max">10</jsp:attribute>
-										</jsp:element>
-									<% } else { %>
-										<span>Out of Stock</span>
-									<% } %>
-								</div>
+							<li class="item decorated_li">
+								<span class="item_name decorated_sli">
+									<%= item.name() %>
+								</span>
+								<span class="item_price decorated_sli">
+									<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
+								</span>
+								<% if (item.amount() > 0) { %>
+									<jsp:element name="input">
+										<jsp:attribute name="type">number</jsp:attribute>
+										<jsp:attribute name="class">item_interactive decorated_number_input</jsp:attribute>
+										<jsp:attribute name="name">
+											<%= item.itemId() %>
+										</jsp:attribute>
+										<jsp:attribute name="min">0</jsp:attribute>
+										<jsp:attribute name="value">0</jsp:attribute>
+										<jsp:attribute name="required"></jsp:attribute>
+										<jsp:attribute name="max">10</jsp:attribute>
+									</jsp:element>
+								<% } else { %>
+									<span class="item_interactive decorated_sli">Out of Stock</span>
+								<% } %>
 							</li>
 						<% } %>
 					</ol>
 					<input name="timestamp" value="${System.currentTimeMillis()}" type="hidden"/>
-					<button>Place</button>
 					<% if (errorMessage.isPresent()) { %>
-						<%= errorMessage.get() %>
+						<p class="decorated_error_message">
+							<%= errorMessage.get() %>
+						</p>
 					<% } %>
+					<button class="decorated_button">Place</button>
 				</form:form>
 			<% } else { %>
 				<p>The inventory is empty<\p>

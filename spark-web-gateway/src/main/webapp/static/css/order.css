@@ -1,0 +1,45 @@
+main {
+	margin-left: 3rem;
+	padding-top: 4rem;
+	display: grid;
+	align-content: start;
+}
+
+h1,
+h2,
+ol {
+	margin: 0;
+	padding: 0;
+}
+
+ol {
+	width: 80%;
+}
+
+.item {
+	display: flex;
+}
+
+.item_name {
+	flex:4;
+	word-break: break-all;
+	text-align: start;
+}
+
+.item_amount {
+	flex: 3;
+	text-align: end;
+}
+
+.item_accumulative_price {
+	flex: 3;
+	text-align: end;
+}
+
+h2 {
+	margin-top: 1.5rem;
+}
+
+button {
+	margin-top: 1.5rem;
+}

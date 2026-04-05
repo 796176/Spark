@@ -3,37 +3,44 @@
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Sign In</title>
+		<title>Log In</title>
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
+		<link rel="stylesheet" href="/static/css/general.css"/>
+		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
+		<link rel="stylesheet" href="/static/css/log_in_form.css"/>
 	</head>
 	<body>
 		<header>
-			<p>Spark</p>
-			<p><a href="/inventory">Inventory</a></p>
-			<p><a href="/orders">Orders</a></p>
+			<div class="left_elements">
+				<a href="/">Spark</a>
+				<a href="/inventory">Inventory</a>
+				<a href="/orders">Orders</a>
+			</div>
+			<div class="right_elements">
+				<a href="/login">Log In</a>
+			</div>
 		</header>
 
 		<main>
-			<form:form>
-				<p>
-					<label>
-						User name:
-						<input name="username" required/>
-					</label>
-				</p>
-				<p>
-					<label>
-						Password:
-						<input type="password" name="password" required/>
-					</label>
-				</p>
-				<p>${errorMessage.getErrorMessage()}</p>
-				<p>
-					<button>Log In</button>
-				</p>
-			</form:form>
-			<hr/>
-			<a href="/signin">Create Account<a/>
+			<div class="interaction_area">
+				<form:form>
+					<p>
+						<label>
+							<span>User name</span>
+							<input name="username" required/>
+						</label>
+					</p>
+					<p>
+						<label>
+							<span>Password</span>
+							<input type="password" name="password" required/>
+						</label>
+					</p>
+					<p class="decorated_error_message">${errorMessage.getErrorMessage()}</p>
+					<button class="decorated_button">Log In</button>
+				</form:form>
+				<a class="decorated_link" href="/signin">Create Account<a/>
+			</div>
 		</main>
 
 		<footer>
