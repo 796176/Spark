@@ -36,4 +36,8 @@ public enum Role {
 		if (id == 1L) return Role.ADMIN;
 		throw new IllegalArgumentException();
 	}
+
+	public static Role[] assignableRoles() {
+		return new Role[] { USER, ADMIN };
+	}
 }
