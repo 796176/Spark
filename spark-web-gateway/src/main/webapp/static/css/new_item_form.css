@@ -1,0 +1,35 @@
+main {
+	padding-top: 3rem;
+	padding-left: 4rem;
+}
+
+h1 {
+	margin-bottom: 2rem;
+}
+
+form p {
+	margin: 0 0 1.5rem 0;
+}
+
+form p label {
+	display: grid;
+	width: 30%;
+	grid-template-columns: 1fr 2fr;
+	justify-items: start;
+}
+
+textarea {
+	width: 20rem;
+	max-width: 28rem;
+}
+
+input[name="item_price"],
+input[name="item_amount"] {
+	width: 10rem;
+}
+
+form button {
+	margin-top: 4rem;
+	width: 10rem;
+}
+

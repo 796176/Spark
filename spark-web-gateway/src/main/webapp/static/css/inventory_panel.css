@@ -1,0 +1,38 @@
+main {
+	padding-left: 4rem;
+	padding-top: 3rem;
+}
+
+main a[href="/panel/newitem"] {
+	margin-top: 2rem;
+	width: 20rem;
+}
+
+ol {
+	width: 80%;
+}
+
+.decorated_sli {
+	padding: 0.2rem;
+}
+
+.item a {
+	display: grid;
+	grid-template-columns: 1fr 12fr 1fr 1fr;
+	align-items: center;
+	column-gap: 1rem;
+}
+
+.item_id,
+.item_price,
+.item_amount {
+	text-align: end;
+}
+
+.item_amount {
+	margin-right: 2rem;
+}
+
+.item_name {
+	text-align: start;
+}

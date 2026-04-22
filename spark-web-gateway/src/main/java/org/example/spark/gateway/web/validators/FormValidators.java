@@ -129,6 +129,20 @@ public class FormValidators {
 		return null;
 	}
 
+	@Nullable
+	public static String validateItemManagementForm(@Nonnull ItemManagementForm itemManagementForm) {
+		if (itemManagementForm.getPreviousItemAmount() == null) {
+			return "The previous item amount is not specified";
+		}
+		if (itemManagementForm.getCurrentItemAmount() == null) {
+			return "The current item amount is not specified";
+		}
+		if (itemManagementForm.getVersion() == null) {
+			return "The version is not specified";
+		}
+
+		return null;
+	}
 
 	@Nullable
 	public static String validateCreatingAccountForm(@Nonnull CreatingAccountForm creatingAccountForm) {
@@ -144,6 +158,29 @@ public class FormValidators {
 		}
 		if (creatingAccountForm.getPassword().isBlank()) {
 			return "The password is blank";
+		}
+
+		return null;
+	}
+
+	@Nullable
+	public static String validateCreatingItemForm(@Nonnull CreatingItemForm creatingItemForm) {
+		if (creatingItemForm.getItemName() == null) {
+			return "The item name is not specified";
+		}
+		if (creatingItemForm.getItemName().isBlank()) {
+			return "The item name is blank";
+		}
+
+		if (creatingItemForm.getPrice() == null) {
+			return "The price is not specified";
+		}
+		if (creatingItemForm.getPrice().centAmount() < 0 || creatingItemForm.getPrice().currencyAmount() < 0) {
+			return "The price can't be negative";
+		}
+
+		if (creatingItemForm.getAmount() == null) {
+			return "The amount is not specified";
 		}
 
 		return null;
