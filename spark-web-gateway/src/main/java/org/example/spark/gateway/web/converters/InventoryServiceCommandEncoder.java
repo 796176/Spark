@@ -18,9 +18,20 @@
 
 package org.example.spark.gateway.web.converters;
 
+import jakarta.annotation.Nonnull;
+import org.example.spark.gateway.web.models.Money;
+
 public interface InventoryServiceCommandEncoder {
 
 	record EncodedCommand(String contentType, String version, byte[] body) { }
 
 	EncodedCommand encodeGettingItemsCommand();
+
+	EncodedCommand encodeGettingItemCommand(long id);
+
+	EncodedCommand encodeAddingItemCommand(@Nonnull String name, @Nonnull Money price, int amount);
+
+	EncodedCommand encodeDeletingItemCommand(long id);
+
+	EncodedCommand encodeUpdatingItemAmountCommand(long id, int newAmount, @Nonnull String version);
 }
