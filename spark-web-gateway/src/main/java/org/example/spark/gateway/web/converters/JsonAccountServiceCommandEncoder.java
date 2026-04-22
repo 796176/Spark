@@ -19,11 +19,14 @@
 package org.example.spark.gateway.web.converters;
 
 import jakarta.annotation.Nonnull;
+import org.example.spark.authorization.Role;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.ObjectWriteContext;
 import tools.jackson.core.json.JsonFactory;
 
 import java.io.ByteArrayOutputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 public class JsonAccountServiceCommandEncoder implements AccountServiceCommandEncoder {
 
@@ -49,6 +52,88 @@ public class JsonAccountServiceCommandEncoder implements AccountServiceCommandEn
 		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
 			jsonGenerator.writeStartObject();
 			jsonGenerator.writeStringProperty("account_id", Long.toString(id));
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+
+			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+		}
+	}
+
+	@Override
+	public EncodedCommand encodeCreatingAdministratorAccountCommand(@Nonnull String name, @Nonnull String password) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty("account_name", name);
+			jsonGenerator.writeStringProperty("password", password);
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+
+			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+		}
+	}
+
+	@Override
+	public EncodedCommand encodeSuspendingAccountCommand(long id) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty("account_id", Long.toString(id));
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+
+			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+		}
+	}
+
+	@Override
+	public EncodedCommand encodeRestoringAccountCommand(long id) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty("account_id", Long.toString(id));
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+
+			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+		}
+	}
+
+	@Override
+	public EncodedCommand encodeGettingAccountsCommand() {
+		return new EncodedCommand("application/json", "1.0", "{}".getBytes(StandardCharsets.UTF_8));
+	}
+
+	@Override
+	public EncodedCommand encodeGettingAccountCommand(long id) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty("account_id", Long.toString(id));
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+
+			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+		}
+	}
+
+	@Override
+	public EncodedCommand encodeUpdatingRolesCommand(long id, @Nonnull Role[] roles) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty("account_id", Long.toString(id));
+			jsonGenerator.writeName("roles");
+			jsonGenerator.writeArray(
+				Arrays.stream(roles).map(role -> Long.toString(role.getId())).toArray(String[]::new),
+				0,
+				roles.length
+			);
 			jsonGenerator.writeEndObject();
 			jsonGenerator.flush();
 

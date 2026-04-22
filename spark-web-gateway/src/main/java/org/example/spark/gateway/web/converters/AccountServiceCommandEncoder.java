@@ -19,6 +19,7 @@
 package org.example.spark.gateway.web.converters;
 
 import jakarta.annotation.Nonnull;
+import org.example.spark.authorization.Role;
 
 public interface AccountServiceCommandEncoder {
 
@@ -27,4 +28,16 @@ public interface AccountServiceCommandEncoder {
 	EncodedCommand encodeCreatingAccountCommand(@Nonnull String name, @Nonnull String password);
 
 	EncodedCommand encodeDeletingAccountCommand(long id);
+
+	EncodedCommand encodeCreatingAdministratorAccountCommand(@Nonnull String name, @Nonnull String password);
+
+	EncodedCommand encodeSuspendingAccountCommand(long id);
+
+	EncodedCommand encodeRestoringAccountCommand(long id);
+
+	EncodedCommand encodeGettingAccountsCommand();
+
+	EncodedCommand encodeGettingAccountCommand(long id);
+
+	EncodedCommand encodeUpdatingRolesCommand(long id, @Nonnull Role[] roles);
 }
