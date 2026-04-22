@@ -108,4 +108,34 @@ public class JsonOrderServiceCommandEncoder implements OrderServiceCommandEncode
 			return new EncodedCommand("application/json", "1.0", os.toByteArray());
 		}
 	}
+
+	@Override
+	public EncodedCommand encodeAcceptingOrderCommand(long orderId, @Nonnull String version) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty("order_id", Long.toString(orderId));
+			jsonGenerator.writeStringProperty("version", version);
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+
+			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+		}
+	}
+
+	@Override
+	public EncodedCommand encodeRejectingOrderCommand(long orderId, @Nonnull String version) {
+		JsonFactory jsonFactory = new JsonFactory();
+		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
+			jsonGenerator.writeStartObject();
+			jsonGenerator.writeStringProperty("order_id", Long.toString(orderId));
+			jsonGenerator.writeStringProperty("version", version);
+			jsonGenerator.writeEndObject();
+			jsonGenerator.flush();
+
+			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+		}
+	}
 }

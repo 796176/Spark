@@ -34,4 +34,8 @@ public interface OrderServiceCommandEncoder {
 	EncodedCommand restoreOrder(long orderId, @Nonnull String version);
 
 	EncodedCommand placeOrder(long accountId, long timestamp, @Nonnull LineItem[] lineItems);
+
+	EncodedCommand encodeAcceptingOrderCommand(long orderId, @Nonnull String version);
+
+	EncodedCommand encodeRejectingOrderCommand(long orderId, @Nonnull String version);
 }
