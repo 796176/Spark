@@ -104,6 +104,74 @@ public class JsonInventoryServiceResponseParser implements InventoryServiceRespo
 		}
 	}
 
+	@Override
+	public Item parseGettingItemResponse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body) {
+		if (!(contentType.equals("application/json") && version.equals("1.0"))) throw new IllegalArgumentException();
+
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body)) {
+			while (jsonParser.nextToken() != null) {
+				if (Objects.equals(jsonParser.currentName(), "items")) {
+					jsonParser.nextToken();
+					while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
+						String itemId = null, name = null, amount = null, itemVersion = null;
+						Money price = null;
+						while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+							String key = jsonParser.currentName();
+							switch (Objects.requireNonNullElse(key, "")) {
+								case "item_id" -> {
+									jsonParser.nextToken();
+									itemId = jsonParser.getValueAsString();
+								}
+								case "item_name" -> {
+									jsonParser.nextToken();
+									name = jsonParser.getValueAsString();
+								}
+								case "amount" -> {
+									jsonParser.nextToken();
+									amount = jsonParser.getValueAsString();
+								}
+								case "version" -> {
+									jsonParser.nextToken();
+									itemVersion = jsonParser.getValueAsString();
+								}
+								case "price" -> {
+									String currencyAmount = null, centAmount = null;
+									while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
+										key = jsonParser.currentName();
+										switch (Objects.requireNonNullElse(key, "")) {
+											case "currency_amount" -> {
+												jsonParser.nextToken();
+												currencyAmount = jsonParser.getValueAsString();
+											}
+											case "cent_amount" -> {
+												jsonParser.nextToken();
+												centAmount = jsonParser.getValueAsString();
+											}
+										}
+										if (!anyNull(currencyAmount, centAmount)) {
+											price = new Money(
+												Integer.parseInt(currencyAmount), Integer.parseInt(centAmount)
+											);
+										}
+									}
+								}
+							}
+						}
+						if (!anyNull(itemId, name, amount, price, itemVersion)) {
+							try {
+								return new Item(
+									Long.parseLong(itemId), name, price, Integer.parseInt(amount), itemVersion
+								);
+							} catch (IllegalArgumentException ignored) { }
+						}
+					}
+				}
+			}
+			throw new IllegalArgumentException();
+		}
+	}
+
 	private boolean anyNull(Object... objects) {
 		for (Object o: objects) {
 			if (o == null) return true;

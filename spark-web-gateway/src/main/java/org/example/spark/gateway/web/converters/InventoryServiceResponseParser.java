@@ -24,4 +24,6 @@ import org.example.spark.gateway.web.models.Item;
 public interface InventoryServiceResponseParser {
 
 	Item[] parseGettingItemsResponse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body);
+
+	Item parseGettingItemResponse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body);
 }
