@@ -1,0 +1,36 @@
+main {
+	padding-top: 3rem;
+	padding-left: 4rem;
+}
+
+h1 {
+	margin-bottom: 2rem;
+}
+
+
+input {
+	margin: 0;
+}
+
+input[type="text"],
+input[type="password"] {
+	width: 18rem;
+}
+
+form p {
+	margin: 0 0 1.5rem 0;
+}
+
+form p label {
+	width: 30%;
+	display: grid;
+	grid-template-columns: 1fr 2fr;
+	justify-items: start;
+}
+
+form button {
+	margin-top: 4rem;
+	width: 10rem;
+}
+
+

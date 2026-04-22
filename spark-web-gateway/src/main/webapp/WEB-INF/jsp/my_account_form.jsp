@@ -14,8 +14,13 @@
 		<header>
 			<div class="left_elements">
 				<a href="/">Spark</a>
-				<a href="/inventory">Inventory</a>
-				<a href="/orders">Orders</a>
+				<% if (org.example.spark.authorization.BasicAuthorizer.isAdmin(account.getRoles())) { %>
+					<a href="/panel/accounts">Accounts</a>
+					<a href="/panel/inventory">Inventory</a>
+				<% } else { %>
+					<a href="/inventory">Inventory</a>
+					<a href="/orders">Orders</a>
+				<% } %>
 			</div>
 			<div class="right_elements">
 				<a href="/myaccount">${account.getName()}</a>

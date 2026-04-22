@@ -76,3 +76,12 @@
 	border-radius: 5px;
 	padding: 0.3rem;
 }
+
+.decorated_embedded_link {
+	text-decoration: none;
+	color: black;
+}
+
+.decorated_embedded_link:hover {
+	font-weight: bold;
+}

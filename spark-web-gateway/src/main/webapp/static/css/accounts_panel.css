@@ -1,0 +1,48 @@
+main {
+	padding-left: 4rem;
+	padding-top: 3rem;
+}
+
+main a[href="/panel/newaccount"] {
+	width: 16rem;
+}
+
+main ol {
+	width: 90%;
+}
+
+.decorated_sli {
+	padding: 0.2rem;
+}
+
+.account {
+	display: grid;
+	grid-template-columns: 10fr 1fr;
+}
+
+.account_info {
+	display: grid;
+	align-items: center;
+	grid-template-columns: 1fr 4fr 6fr 2fr;
+	column-gap: 2rem;
+}
+
+.account_orders {
+	display: flex;
+	place-items: center;
+	justify-content: center;
+}
+
+.account_id {
+	text-align: end;
+}
+
+.account_name,
+.account_roles {
+	text-align: start;
+}
+
+
+.account_status {
+	text-align: center;
+}

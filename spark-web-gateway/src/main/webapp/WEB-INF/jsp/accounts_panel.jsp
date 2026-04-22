@@ -1,15 +1,15 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <jsp:useBean id="account" scope="request" type="java.util.Optional" />
-<jsp:useBean id="items" scope="request" type="org.example.spark.gateway.web.models.Item[]" />
+<jsp:useBean id="accounts" scope="request" type="org.example.spark.gateway.web.models.Account[]" />
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Inventory</title>
+		<title>Inventory Panel</title>
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
-		<link rel="stylesheet" href="/static/css/inventory.css"/>
+		<link rel="stylesheet" href="/static/css/accounts_panel.css"/>
 	</head>
 	<body>
 		<header>
@@ -33,23 +33,39 @@
 		</header>
 
 		<main>
-			<% if (items.length == 0) { %>
+			<h1>Account Panel</h1>
+			<a href="/panel/newaccount" class="decorated_link">New Account</a>
+			<% if (accounts.length == 0) { %>
 				<p>Empty</p>
 			<% } else { %>
 				<ol class="decorated_list">
-					<% for (var item: items) { %>
-						<li class="item decorated_li">
-							<span class="item_name decorated_sli">
-								<%= item.name() %>
-							</span>
-							<span class="item_price decorated_sli">
-								<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
-							</span>
-							<span class="item_availability decorated_sli">
-								<% if (item.amount() <= 0) { %>
-									Out of stock
-								<% } %>
-							</span>
+					<% for (var acc: accounts) { %>
+						<li class="account decorated_li">
+						<jsp:element name="a" class="decorated_embedded_link account_info">
+							<jsp:attribute name="href">
+								<%= "/panel/account/" + acc.getId() %>
+							</jsp:attribute>
+							<jsp:body>
+								<span class="account_id decorated_sli">
+									<%= acc.getId() %>
+								</span
+								<span class="account_name decorated_sli">
+									<%= acc.getName() %>
+								</span>
+								<span class="account_roles decorated_sli">
+									<%= String.join(", ", java.util.Arrays.stream(acc.getRoles()).map(java.util.Objects::toString).toList()) %>
+								</span>
+								<span class="account_status decorated_sli">
+									<%= acc.getStatus().toString() %>
+								</span>
+							</jsp:body>
+						</jsp:element>
+						<jsp:element name="a" class="decorated_embedded_link account_orders">
+							<jsp:attribute name="href">
+								<%= "/panel/account/" + acc.getId() + "/orders" %>
+							</jsp:attribute>
+							<jsp:body>Orders</jsp:body>
+						</jsp:element>
 						</li>
 					<% } %>
 				</ol>

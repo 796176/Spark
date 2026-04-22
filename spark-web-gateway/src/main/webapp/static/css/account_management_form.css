@@ -1,0 +1,17 @@
+h2,
+p {
+	margin: 0;
+}
+
+h2 {
+	margin-top: 2rem;
+}
+
+h1 + h2 {
+	margin-top: 1rem;
+}
+
+form p button {
+	width: 15rem;
+	margin-top: 4rem;
+}

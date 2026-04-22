@@ -20,7 +20,11 @@ package org.example.spark.gateway.web.validators;
 
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.example.spark.authorization.Role;
 import org.example.spark.gateway.web.models.*;
+
+import java.util.Arrays;
+import java.util.Comparator;
 
 public class FormValidators {
 
@@ -70,6 +74,78 @@ public class FormValidators {
 		if (placedOrderForm.getVersion() == null) {
 			return "The order version is not specified";
 		}
+		return null;
+	}
+
+	private static boolean anyNull(Object... objects) {
+		for (Object o: objects) {
+			if (o == null) return true;
+		}
+		return false;
+	}
+
+	private static boolean rolesAreUnique(Role[] roles) {
+		Comparator<Role> roleComparator = (r1, r2) -> (int) (r1.getId() - r2.getId());
+		Arrays.sort(roles, roleComparator);
+		for (int i = 1; i < roles.length; i++) {
+			if (roles[i - 1].equals(roles[i])) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	@Nullable
+	public static String validateAccountManagementForm(@Nonnull AccountManagementForm accountManagementForm) {
+		Role[] previouslyAssignedRoles = accountManagementForm.getPreviouslyAssignedRoles();
+		if (previouslyAssignedRoles == null) {
+			return "The previously assigned roles are not specified";
+		}
+		if (anyNull((Object[]) previouslyAssignedRoles) || !rolesAreUnique(previouslyAssignedRoles)) {
+			return "The elements of previously assigned roles are outside the accepted range";
+		}
+
+		Role[] currentlyAssignedRoles = accountManagementForm.getCurrentlyAssignedRoles();
+		if (currentlyAssignedRoles == null || currentlyAssignedRoles.length == 0) {
+			return "The currently assigned roles are not specified";
+		}
+		if (anyNull((Object[]) currentlyAssignedRoles) || !rolesAreUnique(currentlyAssignedRoles)) {
+			return "The elements of currently assigned roles are outside the accepted range";
+		}
+
+		if (accountManagementForm.getPreviousStatus() == null) {
+			return "The previous status is not specified";
+		}
+		if (accountManagementForm.getCurrentStatus() == null) {
+			return "The current status is not specified";
+		}
+		if (
+			accountManagementForm.getCurrentStatus() == Account.Status.DELETED &&
+			accountManagementForm.getPreviousStatus() != Account.Status.DELETED
+		) {
+			return "The value of current status is not acceptable";
+		}
+
+		return null;
+	}
+
+
+	@Nullable
+	public static String validateCreatingAccountForm(@Nonnull CreatingAccountForm creatingAccountForm) {
+		if (creatingAccountForm.getUsername() == null) {
+			return "The username is not specified";
+		}
+		if (creatingAccountForm.getUsername().isBlank()) {
+			return "The username is blank";
+		}
+
+		if (creatingAccountForm.getPassword() == null) {
+			return "The password is not specified";
+		}
+		if (creatingAccountForm.getPassword().isBlank()) {
+			return "The password is blank";
+		}
+
 		return null;
 	}
 }

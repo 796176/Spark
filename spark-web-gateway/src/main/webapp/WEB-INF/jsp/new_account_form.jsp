@@ -1,15 +1,15 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <jsp:useBean id="account" scope="request" type="java.util.Optional" />
-<jsp:useBean id="items" scope="request" type="org.example.spark.gateway.web.models.Item[]" />
+<jsp:useBean id="errorMessage" scope="request" type="java.util.Optional" />
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
-		<title>Inventory</title>
+		<title>Welcome</title>
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
-		<link rel="stylesheet" href="/static/css/inventory.css"/>
+		<link rel="stylesheet" href="/static/css/new_account_form.css"/>
 	</head>
 	<body>
 		<header>
@@ -33,27 +33,34 @@
 		</header>
 
 		<main>
-			<% if (items.length == 0) { %>
-				<p>Empty</p>
-			<% } else { %>
-				<ol class="decorated_list">
-					<% for (var item: items) { %>
-						<li class="item decorated_li">
-							<span class="item_name decorated_sli">
-								<%= item.name() %>
-							</span>
-							<span class="item_price decorated_sli">
-								<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
-							</span>
-							<span class="item_availability decorated_sli">
-								<% if (item.amount() <= 0) { %>
-									Out of stock
-								<% } %>
-							</span>
-						</li>
-					<% } %>
-				</ol>
-			<% } %>
+			<h1>New Account</h1>
+			<form:form action="/panel/newaccount">
+				<p>
+					<label>
+						<span>Username</span>
+						<input type="text" name="username" required/>
+					</label>
+				</p>
+				<p>
+					<label>
+						<span>Password</span>
+						<input type="password" name="password" required/>
+					</label>
+				</p>
+				<p>
+					<label>
+						<span>Assign Administrator</span>
+						<input type="checkbox" name="is_admin" />
+					</label>
+				</p>
+
+				<% if (errorMessage.isPresent()) { %>
+					<p class="decorated_error_message">
+						<%= errorMessage.get() %>
+					</p>
+				<% } %>
+				<button class="decorated_button">Submit</button>
+			</form:form>
 		</main>
 
 		<footer>
