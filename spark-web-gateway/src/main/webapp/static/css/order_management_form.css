@@ -1,0 +1,40 @@
+h2,
+p {
+	margin: 0;
+}
+
+h2 {
+	margin-top: 2rem;
+}
+
+h1 + h2 {
+	margin-top: 1rem;
+}
+
+form p button {
+	width: 15rem;
+	margin-top: 4rem;
+}
+
+main ol {
+	width: 50%;
+}
+
+.item {
+	display: grid;
+	align-items: center;
+	grid-template-columns: 5fr 1fr 1fr;
+}
+
+.item_name {
+	text-align: start;
+}
+
+.item_amount,
+.item_accumulative_price {
+	text-align: end;
+}
+
+.decorated_sli {
+	padding: 0.2rem;
+}

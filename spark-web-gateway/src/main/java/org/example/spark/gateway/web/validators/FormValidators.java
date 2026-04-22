@@ -145,6 +145,30 @@ public class FormValidators {
 	}
 
 	@Nullable
+	public static String validateOrderManagementForm(@Nonnull OrderManagementForm orderManagementForm) {
+		Order.Status previousStatus = orderManagementForm.getPreviousStatus();
+		if (previousStatus == null) {
+			return "The previous status is not specified";
+		}
+		Order.Status currentStatus = orderManagementForm.getCurrentStatus();
+		if (currentStatus == null) {
+			return "The current status is not specified";
+		}
+		boolean triesToSetCurrentStatusToAcceptedOrRejected =
+			previousStatus != currentStatus &&
+			(currentStatus == Order.Status.ACCEPTED || currentStatus == Order.Status.REJECTED);
+		if (triesToSetCurrentStatusToAcceptedOrRejected && previousStatus != Order.Status.PENDING_ACCEPTANCE) {
+			return "The value of current status is outside the accepted range";
+		}
+
+		if (orderManagementForm.getVersion() == null) {
+			return "The version is not specified";
+		}
+
+		return null;
+	}
+
+	@Nullable
 	public static String validateCreatingAccountForm(@Nonnull CreatingAccountForm creatingAccountForm) {
 		if (creatingAccountForm.getUsername() == null) {
 			return "The username is not specified";

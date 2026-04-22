@@ -1,0 +1,28 @@
+main {
+	padding-left: 4rem;
+	padding-top: 3rem;
+}
+
+ol {
+	width: 50%;
+}
+
+.decorated_sli {
+	padding: 0.2rem;
+}
+
+.order a {
+	display: grid;
+	grid-template-columns: 1fr 4fr 4fr;
+	align-items: center;
+	column-gap: 2rem;
+}
+
+.order_id {
+	text-align: end;
+}
+
+.order_status,
+.order_timestamp {
+	text-align: start;
+}
