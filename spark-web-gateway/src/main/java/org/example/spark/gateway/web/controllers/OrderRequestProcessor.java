@@ -110,7 +110,13 @@ public class OrderRequestProcessor {
 								Item[] orderedItems = Arrays.stream(order.lineItems()).map(lineItem -> {
 									for (Item item: items) {
 										if (item.itemId() == lineItem.itemId()) {
-											return new Item(item.itemId(), item.name(), item.price(), lineItem.amount());
+											return new Item(
+												item.itemId(),
+												item.name(),
+												item.price(),
+												lineItem.amount(),
+												item.version()
+											);
 										}
 									}
 									throw new RuntimeException("Inconsistent Data");

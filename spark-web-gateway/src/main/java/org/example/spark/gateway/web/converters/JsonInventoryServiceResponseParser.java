@@ -45,7 +45,7 @@ public class JsonInventoryServiceResponseParser implements InventoryServiceRespo
 					jsonParser.nextToken();
 					items = new ArrayList<>();
 					while (jsonParser.nextToken() != JsonToken.END_ARRAY) {
-						String itemId = null, name = null, amount = null;
+						String itemId = null, name = null, amount = null, itemVersion = null;
 						Money price = null;
 						while (jsonParser.nextToken() != JsonToken.END_OBJECT) {
 							String key = jsonParser.currentName();
@@ -61,6 +61,10 @@ public class JsonInventoryServiceResponseParser implements InventoryServiceRespo
 								case "amount" -> {
 									jsonParser.nextToken();
 									amount = jsonParser.getValueAsString();
+								}
+								case "version" -> {
+									jsonParser.nextToken();
+									itemVersion = jsonParser.getValueAsString();
 								}
 								case "price" -> {
 									String currencyAmount = null, centAmount = null;
@@ -85,9 +89,13 @@ public class JsonInventoryServiceResponseParser implements InventoryServiceRespo
 								}
 							}
 						}
-						if (anyNull(itemId, name, amount, price)) throw new IllegalArgumentException();
-
-						items.add(new Item(Long.parseLong(itemId), name, price, Integer.parseInt(amount)));
+						if (!anyNull(itemId, name, amount, price, itemVersion)) {
+							try {
+								items.add(new Item(
+									Long.parseLong(itemId), name, price, Integer.parseInt(amount), itemVersion
+								));
+							} catch (IllegalArgumentException ignored) { }
+						}
 					}
 				}
 			}
