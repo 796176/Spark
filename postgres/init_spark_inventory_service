@@ -1,0 +1,32 @@
+CREATE TABLE item_status ( id bigint PRIMARY KEY );
+INSERT INTO item_status VALUES (0), (1), (2);
+CREATE TABLE items (
+	id bigserial PRIMARY KEY,
+	name text NOT NULL UNIQUE,
+	amount integer NOT NULL,
+	price_currency_amount integer NOT NULL,
+	price_cent_amount integer NOT NULL,
+	item_status_id bigint REFERENCES item_status(id),
+	version bigint NOT NULL DEFAULT 0
+);
+INSERT INTO items(id, name, amount, price_currency_amount, price_cent_amount, item_status_id) VALUES
+(-100, 'NVIDIA RTX PRO 6000 Blackwell Workstation Edition', 5, 9999, 99, 0),
+(-99, 'Raspberry Pi 5 16GB', 100, 305, 0, 0),
+(-98, 'G.SKILL Flare X5 Series AMD EXPO 32GB (2 x 16GB) 288-Pin PC RAM DDR5 6000 Desktop Memory Model F5-6000J3636F16GX2-FX5', 0, 449, 99, 0),
+(-97, 'Pepperoni Pizza', 9999, 14, 99, 0);
+CREATE TABLE sagas (
+	id bigserial PRIMARY KEY,
+	item_id bigint REFERENCES items(id),
+	idempotence_token text NOT NULL UNIQUE,
+	state integer NOT NULL,
+	class_name text NOT NULL
+);
+CREATE TABLE outbox (
+	seqnum bigserial PRIMARY KEY,
+	event_id text NOT NULL UNIQUE,
+	event_type text NOT NULL,
+	content_type text NOT NULL,
+	version text NOT NULL,
+	event_body text NOT NULL
+);
+CREATE TABLE processed_messages ( id text PRIMARY KEY );

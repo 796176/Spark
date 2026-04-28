@@ -37,6 +37,20 @@
                 </configuration>
             </plugin>
         </plugins>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-dependency-plugin</artifactId>
+                    <version>3.10.0</version>
+                    <configuration>
+                        <excludeArtifactIds>spark-authorization</excludeArtifactIds>
+                        <excludeReactor>true</excludeReactor>
+                        <overWriteIfNewer>false</overWriteIfNewer>
+                    </configuration>
+                </plugin>
+            </plugins>
+        </pluginManagement>
     </build>
 
 

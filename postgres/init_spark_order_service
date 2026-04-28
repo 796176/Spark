@@ -1,0 +1,38 @@
+CREATE TABLE items_replica ( id bigint PRIMARY KEY, amount integer NOT NULL );
+INSERT INTO items_replica(id, amount) VALUES (-100, 5), (-99, 100), (-98, 0), (-97, 9999);
+CREATE TABLE pending_reduction_items (
+	id bigserial PRIMARY KEY,
+	item_id bigint REFERENCES items_replica(id),
+	amount integer NOT NULL
+);
+CREATE TABLE order_status( id bigint PRIMARY KEY );
+INSERT INTO order_status VALUES (0), (1), (2), (3), (4), (5), (6);
+CREATE TABLE orders (
+	id bigserial PRIMARY KEY,
+	account_id bigint NOT NULL,
+	timestamp bigint NOT NULL UNIQUE,
+	order_status_id bigint REFERENCES order_status(id),
+	version bigint NOT NULL DEFAULT 0
+);
+CREATE TABLE line_items (
+	order_id bigint REFERENCES orders(id),
+	item_id bigint NOT NULL,
+	amount integer NOT NULL,
+	PRIMARY KEY (order_id, item_id)
+);
+CREATE TABLE sagas (
+	id bigserial PRIMARY KEY,
+	order_id bigint REFERENCES orders(id),
+	idempotence_token text NOT NULL UNIQUE,
+	state bigint NOT NULL,
+	type text NOT NULL
+);
+CREATE TABLE outbox (
+	seqnum bigserial PRIMARY KEY,
+	event_id text NOT NULL UNIQUE,
+	event_type text NOT NULL,
+	content_type text NOT NULL,
+	version text NOT NULL,
+	event_body text NOT NULL
+);
+CREATE TABLE processed_messages ( id text PRIMARY KEY );

@@ -1,0 +1,23 @@
+CREATE TABLE account_status ( id bigint PRIMARY KEY );
+INSERT INTO account_status VALUES (0), (1), (2);
+CREATE TABLE accounts_replica (
+	id bigint PRIMARY KEY,
+	name text NOT NULL UNIQUE,
+	encoded_password text NOT NULL,
+	account_status_id bigint REFERENCES account_status(id)
+);
+INSERT INTO accounts_replica(id, name, encoded_password, account_status_id) VALUES
+(-100, 'admin', '$2a$10$4E4eiqj17M1Hhz9Q49C/nuqSNNSTpz9OKwTDVqzcua4lV1k3ESxGm', 0);
+CREATE TABLE roles ( id bigint PRIMARY KEY );
+INSERT INTO roles VALUES (0), (1);
+CREATE TABLE assigned_roles (
+	account_entity_id bigint REFERENCES accounts_replica(id),
+	role_entity_id bigint REFERENCES roles(id),
+	PRIMARY KEY (account_entity_id, role_entity_id)
+);
+INSERT INTO assigned_roles(account_entity_id, role_entity_id) VALUES (-100, 0), (-100, 1);
+CREATE TABLE active_sessions (
+	id text PRIMARY KEY,
+	account_entity_id bigint REFERENCES accounts_replica(id)
+);
+CREATE TABLE processed_messages ( id text PRIMARY KEY );

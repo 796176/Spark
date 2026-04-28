@@ -1,0 +1,4 @@
+CREATE DATABASE spark_account_service;
+CREATE DATABASE spark_inventory_service;
+CREATE DATABASE spark_order_service;
+CREATE DATABASE spark_web_gateway;

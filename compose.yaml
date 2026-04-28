@@ -1,0 +1,58 @@
+services:
+  spark-web-gateway:
+    image: javaspark/spark-web-gateway
+    ports:
+      - "0.0.0.0:8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  spark-inventory-service:
+    image: javaspark/spark-inventory-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  spark-account-service:
+    image: javaspark/spark-account-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  spark-order-service:
+    image: javaspark/spark-order-service
+    depends_on:
+      postgres:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+  postgres:
+    image: javaspark/postgres
+    environment:
+      - POSTGRES_PASSWORD=postgres
+    volumes:
+      - "spark-postgres-volume:/var/lib/postgresql"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+  rabbitmq:
+    image: rabbitmq:4
+    hostname: "rmq"
+    volumes:
+      - "spark-rabbitmq-volume:/var/lib/rabbitmq"
+    healthcheck:
+      test: [ "CMD-SHELL", "rabbitmq-diagnostics -q ping" ]
+      interval: 10s
+      retries: 5
+      start_period: 30s
+      timeout: 10s
+
+volumes:
+  spark-postgres-volume:
+  spark-rabbitmq-volume:
