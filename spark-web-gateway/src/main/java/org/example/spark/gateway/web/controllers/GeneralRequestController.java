@@ -18,13 +18,14 @@
 
 package org.example.spark.gateway.web.controllers;
 
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+import org.example.spark.gateway.web.interactors.UploadedFileDataAccess;
 import org.example.spark.gateway.web.models.Account;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.Optional;
 import java.util.concurrent.Callable;
@@ -35,6 +36,9 @@ public class GeneralRequestController {
 
 	@Autowired
 	private AccountRequestProcessor accountRequestProcessor;
+
+	@Autowired
+	private GeneralRequestProcessor generalRequestProcessor;
 
 	@GetMapping("/")
 	public String rootPage() {
@@ -69,4 +73,21 @@ public class GeneralRequestController {
 	public String error504() {
 		return "504";
 	}
+
+	@ResponseBody
+	@GetMapping("/upload/{fileName}")
+	public Callable<Void> getUpload(HttpServletResponse httpServletResponse, @PathVariable("fileName") String fileName) {
+		return () -> {
+			try {
+				UploadedFileDataAccess.Blob blob = generalRequestProcessor.getUploadedFile(fileName);
+				httpServletResponse.setContentType(blob.contentType());
+				httpServletResponse.getOutputStream().write(blob.content());
+				httpServletResponse.flushBuffer();
+			} catch (Exception e) {
+				httpServletResponse.sendRedirect("/400");
+			}
+			return null;
+		};
+	}
+
 }
