@@ -21,3 +21,4 @@ CREATE TABLE active_sessions (
 	account_entity_id bigint REFERENCES accounts_replica(id)
 );
 CREATE TABLE processed_messages ( id text PRIMARY KEY );
+CREATE TABLE uploads( file_name text PRIMARY KEY, content_type text NOT NULL, content bytea NOT NULL );
