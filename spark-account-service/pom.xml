@@ -26,6 +26,7 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
+                <version>4.0.6</version>
                 <executions>
                     <execution>
                         <goals>
@@ -47,7 +48,6 @@
                     <configuration>
                         <excludeReactor>true</excludeReactor>
                         <excludeArtifactIds>spark-authorization</excludeArtifactIds>
-                        <overWriteIfNewer>false</overWriteIfNewer>
                     </configuration>
                 </plugin>
             </plugins>

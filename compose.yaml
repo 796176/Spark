@@ -1,6 +1,6 @@
 services:
-  spark-web-gateway:
-    image: javaspark/spark-web-gateway
+  web-gateway:
+    image: javaspark/web-gateway
     ports:
       - "0.0.0.0:8080:8080"
     depends_on:
@@ -8,22 +8,22 @@ services:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-  spark-inventory-service:
-    image: javaspark/spark-inventory-service
+  inventory-service:
+    image: javaspark/inventory-service
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-  spark-account-service:
-    image: javaspark/spark-account-service
+  account-service:
+    image: javaspark/account-service
     depends_on:
       postgres:
         condition: service_healthy
       rabbitmq:
         condition: service_healthy
-  spark-order-service:
-    image: javaspark/spark-order-service
+  order-service:
+    image: javaspark/order-service
     depends_on:
       postgres:
         condition: service_healthy

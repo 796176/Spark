@@ -7,13 +7,14 @@ RUN tar -xf maven.tar.gz -C maven --strip-components=1
 
 COPY pom.xml ./
 COPY spark-authorization/pom.xml spark-authorization/
-RUN ./maven/bin/mvn -f spark-authorization/pom.xml dependency:go-offline
 COPY spark-web-gateway/pom.xml spark-web-gateway/
-RUN ./maven/bin/mvn -f spark-web-gateway/pom.xml dependency:go-offline
 
 COPY spark-account-service/pom.xml spark-account-service/
 COPY spark-inventory-service/pom.xml spark-inventory-service/
 COPY spark-order-service/pom.xml spark-order-service/
+
+RUN ./maven/bin/mvn --also-make --projects spark-authorization dependency:resolve-plugins dependency:go-offline -B
+RUN ./maven/bin/mvn --also-make --projects spark-web-gateway dependency:resolve-plugins dependency:go-offline -B
 
 COPY spark-authorization/src spark-authorization/src/
 COPY spark-web-gateway/src spark-web-gateway/src/

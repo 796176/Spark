@@ -7,8 +7,10 @@ RUN tar -xf maven.tar.gz -C maven --strip-components=1
 
 COPY pom.xml ./
 COPY spark-authorization/pom.xml spark-authorization/
+RUN ./maven/bin/mvn -f spark-authorization/pom.xml dependency:collect
 RUN ./maven/bin/mvn -f spark-authorization/pom.xml dependency:go-offline
 COPY spark-inventory-service/pom.xml spark-inventory-service/
+RUN ./maven/bin/mvn -f spark-inventory-service/pom.xml dependency:collect
 RUN ./maven/bin/mvn -f spark-inventory-service/pom.xml dependency:go-offline
 
 COPY spark-account-service/pom.xml spark-account-service/
