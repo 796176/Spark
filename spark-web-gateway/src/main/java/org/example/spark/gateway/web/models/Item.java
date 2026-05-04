@@ -20,4 +20,6 @@ package org.example.spark.gateway.web.models;
 
 import jakarta.annotation.Nonnull;
 
-public record Item(long itemId, @Nonnull String name, @Nonnull Money price, int amount, String version) { }
+public record Item(
+	long itemId, @Nonnull String name, @Nonnull Money price, int amount, String pictureName, String version
+) { }

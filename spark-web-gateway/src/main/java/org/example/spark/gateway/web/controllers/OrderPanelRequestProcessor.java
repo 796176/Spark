@@ -115,6 +115,7 @@ public class OrderPanelRequestProcessor {
 												item.name(),
 												item.price(),
 												lineItem.amount(),
+												item.pictureName(),
 												item.version()
 											);
 										}

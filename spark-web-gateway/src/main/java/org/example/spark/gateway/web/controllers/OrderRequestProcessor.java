@@ -115,6 +115,7 @@ public class OrderRequestProcessor {
 												item.name(),
 												item.price(),
 												lineItem.amount(),
+												item.pictureName(),
 												item.version()
 											);
 										}
