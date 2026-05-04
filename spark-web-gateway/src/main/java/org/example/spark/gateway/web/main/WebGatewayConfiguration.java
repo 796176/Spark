@@ -29,10 +29,12 @@ import org.example.spark.gateway.web.converters.*;
 import org.example.spark.gateway.web.interactors.AccountDataAccess;
 import org.example.spark.gateway.web.interactors.AccountRepositoryReplicaManager;
 import org.example.spark.gateway.web.interactors.SessionDataAccess;
+import org.example.spark.gateway.web.interactors.UploadedFileDataAccess;
 import org.example.spark.gateway.web.messaging.*;
 import org.example.spark.gateway.web.persistence.JPAAccountDataAccess;
 import org.example.spark.gateway.web.persistence.JPAAccountRepositoryReplicaManager;
 import org.example.spark.gateway.web.persistence.JPASessionDataAccess;
+import org.example.spark.gateway.web.persistence.JPAUploadedFileDataAccess;
 import org.example.spark.gateway.web.proxies.*;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
@@ -74,6 +76,7 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 	public AccountRequestController accountRequestController() {
 		return new AccountRequestController();
 	}
+
 	@Bean
 	public ValidatingControllerAdvising validatorAspect() {
 		return new ValidatingControllerAdvising();
@@ -364,13 +367,19 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 	}
 
 	@Bean
+	UploadedFileDataAccess uploadedFileDataAccess(EntityManagerFactory entityManagerFactory) {
+		return new JPAUploadedFileDataAccess(entityManagerFactory);
+	}
+
+	@Bean
 	InventoryPanelRequestProcessor inventoryPanelRequestProcessor(
 		AdminInventoryServiceProxy adminInventoryServiceProxy,
 		SessionDataAccess sessionDataAccess,
-		InventoryServiceResponseParser inventoryServiceResponseParser
+		InventoryServiceResponseParser inventoryServiceResponseParser,
+		UploadedFileDataAccess uploadedFileDataAccess
 	) {
 		return new InventoryPanelRequestProcessor(
-			adminInventoryServiceProxy, sessionDataAccess, inventoryServiceResponseParser
+			adminInventoryServiceProxy, sessionDataAccess, inventoryServiceResponseParser, uploadedFileDataAccess
 		);
 	}
 
@@ -403,6 +412,11 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 			inventoryServiceResponseParser,
 			executor
 		);
+	}
+
+	@Bean
+	GeneralRequestProcessor generalRequestProcessor(UploadedFileDataAccess uploadedFileDataAccess) {
+		return new GeneralRequestProcessor(uploadedFileDataAccess);
 	}
 
 	static void main(String[] args) {
