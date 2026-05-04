@@ -52,7 +52,7 @@ public class JPAMetamodelGenerator {
 		}
 		String packageLocation = entityClassContent.substring(packageMatcher.start(), packageMatcher.end()).trim();
 
-		Pattern fieldPattern = Pattern.compile("\\n\\t((private|public|protected|) )?[A-Za-z0-9<> ,]+ [A-Za-z0-9]+;");
+		Pattern fieldPattern = Pattern.compile("\\n\\t((private|public|protected|) )?(([A-Za-z0-9<> ,]+)|(Byte|byte|Character|char)\\[\\]) [A-Za-z0-9]+;");
 		Matcher fieldMatcher = fieldPattern.matcher(entityClassContent);
 		ArrayList<FieldRecord> fields = new ArrayList<>();
 		while(fieldMatcher.find()) {
@@ -86,6 +86,10 @@ public class JPAMetamodelGenerator {
 			} else if (fieldType.startsWith("Map<")) {
 				fieldType = fieldType.substring(fieldType.indexOf('<') + 1, fieldType.indexOf('>'));
 				fields.add(new FieldRecord(fieldType, fieldName, "Map"));
+			} else if (fieldType.equals("byte[]") || fieldType.equals("Byte[]")) {
+				fields.add(new FieldRecord("Byte[]", fieldName, null));
+			} else if (fieldName.equals("char[]") || fieldType.equals("Character[]")) {
+				fields.add(new FieldRecord("Character[]", fieldName, null));
 			} else {
 				fields.add(new FieldRecord(fieldType, fieldName, null));
 			}
