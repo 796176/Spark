@@ -1,0 +1,37 @@
+.decorated_inventory {
+	list-style-type: none;
+	padding: 0;
+	margin: 0;
+}
+
+.decorated_inventory_item {
+	padding-bottom: 40px;
+	margin-top: 40px;
+	border-bottom: 2px solid lightgray;
+}
+
+.decorated_inventory_item:first-of-type {
+	margin-top: 0;
+}
+
+.decorated_inventory_item:last-of-type {
+	padding-bottom: 0;
+	border-bottom: none;
+}
+
+.decorated_inventory_picture {
+	height: 100%;
+	width: 100%;
+	object-fit: cover;
+}
+
+.decorated_inventory_price strong {
+	font-size: 1.5rem;
+}
+
+.decorated_inventory_price sub {
+	vertical-align: 0;
+	font-size: calc(1.5rem * 70 / 100);
+	margin-left: -5px;
+}
+

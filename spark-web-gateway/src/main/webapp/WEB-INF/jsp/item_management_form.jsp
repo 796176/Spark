@@ -40,6 +40,9 @@
 					<a href="#Item_Name">Name</a>
 				</li>
 				<li>
+					<a href="#Item_Picture">Picture</a>
+				</li>
+				<li>
 					<a href="#Item_Price">Price</a>
 				</li>
 				<li>
@@ -60,6 +63,21 @@
 			<p>
 				<%= managedItem.name() %>
 			</p>
+			<h2 id="Item_Picture"> Item Picture</h2>
+			<% if (managedItem.pictureName() == null) { %>
+				<p>No picture</p>
+			<% } else { %>
+				<p>
+					<%= managedItem.pictureName() %>
+				</p>
+				<div>
+					<jsp:element name="img">
+						<jsp:attribute name="src">
+							<%= "/upload/" + managedItem.pictureName() %>
+						</jsp:attribute>
+					</jsp:element>
+				</div>
+			<% } %>
 			<h2 id="Item_Price">Item Price</h2>
 			<p>
 				<%= "$" + managedItem.price().currencyAmount() + "." + managedItem.price().centAmount() %>

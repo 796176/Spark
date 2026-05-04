@@ -10,6 +10,7 @@
 		<link rel="icon" href="/static/icons/local_mall_24dp_E3E3E3_FILL0_wght400_GRAD0_opsz24.svg" type="image/x-icon"/>
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
+		<link rel="stylesheet" href="/static/css/decorated_inventory.css"/>
 		<link rel="stylesheet" href="/static/css/place_order_form.css"/>
 	</head>
 	<body>
@@ -36,19 +37,35 @@
 		<main>
 			<% if (items.length > 0) { %>
 				<form:form>
-					<ol class="decorated_list">
+					<ol class="inventory_list decorated_inventory">
 						<% for (var item: items) { %>
-							<li class="item decorated_li">
-								<span class="item_name decorated_sli">
+							<li class="item decorated_inventory_item">
+								<span class="item_picture_box">
+									<% if (item.pictureName() == null) { %>
+										<img class="decorated_inventory_picture" src="/static/images/Placeholder_view_vector.png"/>
+									<% } else { %>
+										<jsp:element name="img" class="decorated_inventory_picture">
+											<jsp:attribute name="src">
+												<%= "/upload/" + item.pictureName() %>
+											</jsp:attribute>
+										</jsp:element>
+									<% } %>
+								</span>
+								<span class="item_name">
 									<%= item.name() %>
 								</span>
-								<span class="item_price decorated_sli">
-									<%= "$" + item.price().currencyAmount() + "." + item.price().centAmount() %>
+								<span class="item_price decorated_inventory_price">
+									<strong>
+										<%= "$" + item.price().currencyAmount() %>
+									</strong>
+									<sub>
+										<%= "." + item.price().centAmount() %>
+									</sub>
 								</span>
 								<% if (item.amount() > 0) { %>
 									<jsp:element name="input">
 										<jsp:attribute name="type">number</jsp:attribute>
-										<jsp:attribute name="class">item_interactive decorated_number_input</jsp:attribute>
+										<jsp:attribute name="class">item_amount_input</jsp:attribute>
 										<jsp:attribute name="name">
 											<%= item.itemId() %>
 										</jsp:attribute>
@@ -58,7 +75,7 @@
 										<jsp:attribute name="max">10</jsp:attribute>
 									</jsp:element>
 								<% } else { %>
-									<span class="item_interactive decorated_sli">Out of Stock</span>
+									<span class="item_availability">Out of Stock</span>
 								<% } %>
 							</li>
 						<% } %>

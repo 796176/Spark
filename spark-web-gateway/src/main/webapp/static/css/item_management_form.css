@@ -24,3 +24,14 @@ input[type="number"] {
 	margin-left: 1rem;
 	width: 6rem;
 }
+
+h2[id="Item_Picture"] + p + div {
+	width: 15rem;
+	height: 15rem;	
+}
+
+img {
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}

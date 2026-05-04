@@ -1,25 +1,35 @@
-ol {
+.inventory_list {
 	margin-left: 3rem;
 	width: 70%;
 	margin-top: 4rem;
-}	
+}
 
 .item {
-	display: flex;
+	display: grid;
+	grid-template-columns: 10rem 4fr 1fr;
+	border-bottom: 2px solid lightgray;
+}
+
+.item_picture_box {
+	height: 10rem;
+	width: 10rem;
 }
 
 .item_name {
+	margin-left: 20px;
+	padding-top: 20px;
 	text-align: start;
-	word-break: break-all;
-	flex: 5;
+	word-break: break-word;
+	max-height: calc(10rem - 20px);
+	overflow: hidden;
 }
 
 .item_price {
 	text-align: end;
-	flex: 3;
 }
 
 .item_availability {
-	text-align: center;
-	flex: 2;
+	text-align: end;
+	grid-column: 1 / span 3;
+	margin-top: -2rem;
 }
