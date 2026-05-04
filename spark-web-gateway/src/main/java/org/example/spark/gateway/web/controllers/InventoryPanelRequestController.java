@@ -19,7 +19,6 @@
 package org.example.spark.gateway.web.controllers;
 
 import jakarta.servlet.http.HttpSession;
-import org.example.spark.authorization.Role;
 import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
@@ -29,6 +28,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -159,12 +159,28 @@ public class InventoryPanelRequestController {
 	}
 
 	@PostMapping("/newitem")
-	public Callable<String> newItem(HttpSession httpSession, @RequestBody CreatingItemForm form) {
+	public Callable<String> newItem(
+		HttpSession httpSession,
+		@RequestParam("item_name") String itemName,
+		@RequestParam("item_price") String itemPrice,
+		@RequestParam("item_amount") int itemAmount,
+		@RequestParam(value = "item_picture") MultipartFile itemPicture
+	) {
 		return () -> {
 			try {
-				if (FormValidators.validateCreatingItemForm(form) != null) return "400";
+				Money price = new Money(
+					Integer.parseInt(itemPrice.substring(0, itemPrice.indexOf('.'))),
+					Integer.parseInt(itemPrice.substring(itemPrice.indexOf('.') + 1))
+				);
+				UploadedFile picture = null;
+				boolean filenameIsNotNullOrBlank =
+					itemPicture.getOriginalFilename() != null && !itemPicture.getOriginalFilename().isBlank();
+				if (filenameIsNotNullOrBlank) {
+					picture = new UploadedFile(itemPicture.getOriginalFilename(), itemPicture.getBytes());
+				}
+
 				Future<?> creatingItemProcess = inventoryPanelRequestProcessor
-					.addItem(httpSession.getId(), form.getItemName(), form.getPrice(), form.getAmount());
+					.addItem(httpSession.getId(), itemName, price, itemAmount, picture);
 				creatingItemProcess.get(timeout, TimeUnit.MILLISECONDS);
 				return "redirect:/panel/inventory";
 			} catch (ExecutionException e) {

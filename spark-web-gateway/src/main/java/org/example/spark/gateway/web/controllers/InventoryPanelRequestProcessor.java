@@ -19,14 +19,13 @@
 package org.example.spark.gateway.web.controllers;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.gateway.web.converters.InventoryServiceResponseParser;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.exceptions.ServerError;
 import org.example.spark.gateway.web.interactors.SessionDataAccess;
-import org.example.spark.gateway.web.models.Account;
-import org.example.spark.gateway.web.models.Item;
-import org.example.spark.gateway.web.models.Money;
-import org.example.spark.gateway.web.models.Session;
+import org.example.spark.gateway.web.interactors.UploadedFileDataAccess;
+import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.proxies.AdminInventoryServiceProxy;
 
 import java.util.Objects;
@@ -41,14 +40,18 @@ public class InventoryPanelRequestProcessor {
 
 	private final InventoryServiceResponseParser inventoryServiceResponseParser;
 
+	private final UploadedFileDataAccess uploadedFileDataAccess;
+
 	public InventoryPanelRequestProcessor(
 		@Nonnull AdminInventoryServiceProxy inventoryService,
 		@Nonnull SessionDataAccess sessionDataAccess,
-		@Nonnull InventoryServiceResponseParser inventoryServiceResponseParser
+		@Nonnull InventoryServiceResponseParser inventoryServiceResponseParser,
+		@Nonnull UploadedFileDataAccess uploadedFileDataAccess
 	) {
 		this.inventoryService = inventoryService;
 		this.sessionDataAccess = sessionDataAccess;
 		this.inventoryServiceResponseParser = inventoryServiceResponseParser;
+		this.uploadedFileDataAccess = uploadedFileDataAccess;
 	}
 
 	public Future<Item[]> getItems(@Nonnull String sessionId) throws Exception {
@@ -104,13 +107,29 @@ public class InventoryPanelRequestProcessor {
 	}
 
 	public Future<?> addItem(
-		@Nonnull String sessionId, @Nonnull String name, @Nonnull Money price, int amount
+		@Nonnull String sessionId,
+		@Nonnull String name,
+		@Nonnull Money price,
+		int amount,
+		@Nullable UploadedFile picture
 	) throws Exception {
 		Session session = sessionDataAccess.getSession(sessionId);
 		if (session == null) throw new AuthenticationException();
 
+		if (picture != null) {
+			String picExt = picture.name().substring(picture.name().lastIndexOf('.') + 1);
+			String contentType = "image/" + switch (picExt) {
+				case "png" -> "png";
+				case "jpg", "jpeg" -> "jpeg";
+				default -> throw new IllegalArgumentException();
+			};
+			uploadedFileDataAccess.addBlob(
+				new UploadedFileDataAccess.Blob(picture.name(), contentType, picture.content())
+			);
+		}
+		String picName = picture != null ? picture.name() : null;
 		CompletableFuture<?> completableFuture = new CompletableFuture<>();
-		inventoryService.addItem(session.getAccount(), name, price, amount, rcr -> {
+		inventoryService.addItem(session.getAccount(), name, price, amount, picName, rcr -> {
 			if (rcr.isSuccessful()) {
 				completableFuture.complete(null);
 			} else {

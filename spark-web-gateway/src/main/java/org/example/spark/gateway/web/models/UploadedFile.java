@@ -16,25 +16,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.example.spark.gateway.web.converters;
+package org.example.spark.gateway.web.models;
 
-import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
-import org.example.spark.gateway.web.models.Money;
-
-public interface InventoryServiceCommandEncoder {
-
-	record EncodedCommand(String contentType, String version, byte[] body) { }
-
-	EncodedCommand encodeGettingItemsCommand();
-
-	EncodedCommand encodeGettingItemCommand(long id);
-
-	EncodedCommand encodeAddingItemCommand(
-		@Nonnull String name, @Nonnull Money price, int amount, @Nullable String pictureName
-	);
-
-	EncodedCommand encodeDeletingItemCommand(long id);
-
-	EncodedCommand encodeUpdatingItemAmountCommand(long id, int newAmount, @Nonnull String version);
-}
+public record UploadedFile(String name, byte[] content) { }

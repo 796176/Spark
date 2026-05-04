@@ -19,6 +19,7 @@
 package org.example.spark.gateway.web.converters;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.gateway.web.models.Money;
 import tools.jackson.core.JsonGenerator;
 import tools.jackson.core.ObjectWriteContext;
@@ -34,13 +35,18 @@ public class JsonInventoryServiceCommandEncoder implements InventoryServiceComma
 	}
 
 	@Override
-	public EncodedCommand encodeAddingItemCommand(@Nonnull String name, @Nonnull Money price, int amount) {
+	public EncodedCommand encodeAddingItemCommand(
+		@Nonnull String name, @Nonnull Money price, int amount, @Nullable String pictureName
+	) {
 		JsonFactory jsonFactory = new JsonFactory();
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
 			jsonGenerator.writeStartObject();
 			jsonGenerator.writeStringProperty("item_name", name);
 			jsonGenerator.writeStringProperty("amount", Integer.toString(amount));
+			if (pictureName != null) {
+				jsonGenerator.writeStringProperty("item_picture_name", pictureName);
+			}
 
 			jsonGenerator.writeObjectPropertyStart("price");
 			jsonGenerator.writeStringProperty("currency_amount", Integer.toString(price.currencyAmount()));

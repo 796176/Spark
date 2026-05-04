@@ -19,6 +19,7 @@
 package org.example.spark.gateway.web.proxies;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.gateway.web.models.Account;
 import org.example.spark.gateway.web.models.Money;
 import org.example.spark.gateway.web.models.RemoteCallResult;
@@ -38,6 +39,7 @@ public interface AdminInventoryServiceProxy {
 		@Nonnull String name,
 		@Nonnull Money price,
 		int amount,
+		@Nullable String pictureName,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception;
 

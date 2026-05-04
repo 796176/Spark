@@ -34,7 +34,7 @@
 
 		<main>
 			<h1>New Item</h1>
-			<form:form action="/panel/newitem">
+			<form:form action="/panel/newitem" enctype="multipart/form-data">
 				<p>
 					<label>
 						<span>Item Name</span>
@@ -51,6 +51,12 @@
 					<label>
 						<span>Item Amount</span>
 						<input type="number" name="item_amount" required/>
+					</label>
+				</p>
+				<p>
+					<label>
+						<span>Item Picture</span>
+						<input type="file" name="item_picture" accept=".png,.jpg,.jpeg"/>
 					</label>
 				</p>
 				<% if (errorMessage.isPresent()) { %>

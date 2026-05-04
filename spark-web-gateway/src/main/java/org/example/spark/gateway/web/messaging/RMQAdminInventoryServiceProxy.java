@@ -21,6 +21,7 @@ package org.example.spark.gateway.web.messaging;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.gateway.web.converters.InventoryServiceCommandEncoder;
 import org.example.spark.gateway.web.converters.RoleEncoder;
 import org.example.spark.gateway.web.models.Account;
@@ -113,11 +114,12 @@ public class RMQAdminInventoryServiceProxy implements AdminInventoryServiceProxy
 		@Nonnull String name,
 		@Nonnull Money price,
 		int amount,
+		@Nullable String pictureName,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
 		InventoryServiceCommandEncoder.EncodedCommand command =
-			inventoryServiceCommandEncoder.encodeAddingItemCommand(name, price, amount);
+			inventoryServiceCommandEncoder.encodeAddingItemCommand(name, price, amount, pictureName);
 		String encodedRoles = RoleEncoder.encode(account.getRoles());
 		rmqConsumer.register(correlationId, callResultConsumer);
 		AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
