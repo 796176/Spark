@@ -37,5 +37,11 @@ public interface ItemDataAccess {
 		@Nonnull ItemAggregate item, long version, @Nullable String idempotenceToken, @Nonnull ItemEvent... itemEvents
 	);
 
-	ItemAggregate addItem(@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken);
+	ItemAggregate addItem(
+		@Nonnull String name,
+		@Nonnull Money price,
+		int amount,
+		@Nullable String pictureName,
+		@Nonnull String idempotenceToken
+	);
 }

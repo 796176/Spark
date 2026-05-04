@@ -19,6 +19,7 @@
 package org.example.spark.inventory.controllers;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.authorization.Role;
 import org.example.spark.inventory.interactors.InventoryService;
 import org.example.spark.inventory.models.Money;
@@ -48,9 +49,10 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 		@Nonnull String name,
 		@Nonnull Money price,
 		int amount,
+		@Nullable String pictureName,
 		@Nonnull String idempotenceToken
 	) throws Exception {
-		inventoryService.addItem(name, price, amount, idempotenceToken);
+		inventoryService.addItem(name, price, amount, pictureName, idempotenceToken);
 	}
 
 	@Override

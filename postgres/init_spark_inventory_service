@@ -7,7 +7,8 @@ CREATE TABLE items (
 	price_currency_amount integer NOT NULL,
 	price_cent_amount integer NOT NULL,
 	item_status_id bigint REFERENCES item_status(id),
-	version bigint NOT NULL DEFAULT 0
+	version bigint NOT NULL DEFAULT 0,
+	picture_name text
 );
 INSERT INTO items(id, name, amount, price_currency_amount, price_cent_amount, item_status_id) VALUES
 (-100, 'NVIDIA RTX PRO 6000 Blackwell Workstation Edition', 5, 9999, 99, 0),

@@ -19,6 +19,7 @@
 package org.example.spark.inventory.models;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
 
 @Entity
@@ -28,6 +29,8 @@ public class ItemEntity {
 	private long id;
 
 	private String name;
+
+	private String pictureName;
 
 	private EmbeddablePrice embeddablePrice;
 
@@ -39,9 +42,16 @@ public class ItemEntity {
 
 	public ItemEntity() { }
 
-	public ItemEntity(@Nonnull String name, @Nonnull Money price, int amount, @Nonnull ItemStatus status) {
+	public ItemEntity(
+		@Nonnull String name,
+		@Nonnull Money price,
+		int amount,
+		@Nullable String pictureName,
+		@Nonnull ItemStatus status
+	) {
 		this();
 		this.setName(name);
+		this.setPictureName(pictureName);
 		this.setEmbeddablePrice(new EmbeddablePrice(price.getCurrencyAmount(), price.getCentAmount()));
 		this.setAmount(amount);
 		this.setItemStatus(status);
@@ -64,6 +74,15 @@ public class ItemEntity {
 
 	public void setName(@Nonnull String name) {
 		this.name = name;
+	}
+
+	@Nullable
+	public String getPictureName() {
+		return pictureName;
+	}
+
+	public void setPictureName(@Nullable String pictureName) {
+		this.pictureName = pictureName;
 	}
 
 	@Embedded

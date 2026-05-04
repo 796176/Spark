@@ -19,6 +19,7 @@
 package org.example.spark.inventory.aggregates;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.inventory.events.ItemAmountUpdated;
 import org.example.spark.inventory.events.ItemAmountUpdatedImpl;
 import org.example.spark.inventory.events.ItemDeleted;
@@ -35,14 +36,22 @@ public class ItemAggregateImpl implements ItemAggregate {
 
 	private int amount;
 
+	private final String pictureName;
+
 	private Status status;
 
 	public ItemAggregateImpl(
-		long itemId, @Nonnull String name, @Nonnull Money price, int amount, @Nonnull Status status
+		long itemId,
+		@Nonnull String name,
+		@Nonnull Money price,
+		int amount,
+		@Nullable String pictureName,
+		@Nonnull Status status
 	) {
 		this.itemId = itemId;
 		this.name = name;
 		this.price = price;
+		this.pictureName = pictureName;
 		this.amount = amount;
 		this.status = status;
 	}
@@ -60,6 +69,12 @@ public class ItemAggregateImpl implements ItemAggregate {
 	@Override
 	public Money getPrice() {
 		return price;
+	}
+
+	@Nullable
+	@Override
+	public String getPictureName() {
+		return pictureName;
 	}
 
 	@Override

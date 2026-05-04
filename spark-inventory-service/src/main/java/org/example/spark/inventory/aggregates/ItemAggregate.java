@@ -18,6 +18,7 @@
 
 package org.example.spark.inventory.aggregates;
 
+import jakarta.annotation.Nullable;
 import org.example.spark.inventory.events.ItemAmountUpdated;
 import org.example.spark.inventory.events.ItemDeleted;
 import org.example.spark.inventory.models.Money;
@@ -50,6 +51,9 @@ public interface ItemAggregate {
 	String getName();
 
 	Money getPrice();
+
+	@Nullable
+	String getPictureName();
 
 	int getAmount();
 

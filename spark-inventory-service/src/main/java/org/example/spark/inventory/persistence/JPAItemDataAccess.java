@@ -104,6 +104,7 @@ public class JPAItemDataAccess implements ItemDataAccess {
 			item.getName(),
 			new Money(item.getEmbeddablePrice().getCurrencyAmount(), item.getEmbeddablePrice().getCentAmount()),
 			item.getAmount(),
+			item.getPictureName(),
 			ItemAggregate.Status.fromId(item.getItemStatus().getId())
 		);
 	}
@@ -140,7 +141,11 @@ public class JPAItemDataAccess implements ItemDataAccess {
 	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = false)
 	@Override
 	public ItemAggregate addItem(
-		@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken
+		@Nonnull String name,
+		@Nonnull Money price,
+		int amount,
+		@Nullable String pictureName,
+		@Nonnull String idempotenceToken
 	) {
 		AtomicLong atomicLong = new AtomicLong();
 		entityManagerFactory.runInTransaction(entityManager -> {
@@ -161,7 +166,11 @@ public class JPAItemDataAccess implements ItemDataAccess {
 			entityManager.persist(processedMessage);
 
 			ItemEntity item = new ItemEntity(
-				name, price, amount, entityManager.find(ItemStatus.class, ItemAggregate.Status.CREATED.getId())
+				name,
+				price,
+				amount,
+				pictureName,
+				entityManager.find(ItemStatus.class, ItemAggregate.Status.CREATED.getId())
 			);
 			entityManager.persist(item);
 			atomicLong.set(item.getId());
@@ -174,6 +183,6 @@ public class JPAItemDataAccess implements ItemDataAccess {
 			entityManager.persist(event);
 		});
 
-		return new ItemAggregateImpl(atomicLong.get(), name, price, amount, ItemAggregate.Status.CREATED);
+		return new ItemAggregateImpl(atomicLong.get(), name, price, amount, pictureName, ItemAggregate.Status.CREATED);
 	}
 }

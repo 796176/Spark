@@ -19,13 +19,18 @@
 package org.example.spark.inventory.interactors;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.inventory.models.Money;
 import org.example.spark.inventory.models.RenderableItem;
 
 public interface InventoryService {
 
 	void addItem(
-		@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken
+		@Nonnull String name,
+		@Nonnull Money price,
+		int amount,
+		@Nullable String pictureName,
+		@Nonnull String idempotenceToken
 	) throws Exception;
 
 	void deleteItem(long itemId, @Nonnull String idempotenceToken) throws Exception;

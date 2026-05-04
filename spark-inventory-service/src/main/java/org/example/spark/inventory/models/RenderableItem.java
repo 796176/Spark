@@ -19,6 +19,7 @@
 package org.example.spark.inventory.models;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class RenderableItem {
 
@@ -30,13 +31,18 @@ public class RenderableItem {
 
 	private final int amount;
 
+	private final String pictureName;
+
 	private final long version;
 
-	public RenderableItem(long id, @Nonnull String name, @Nonnull Money price, int amount, long version) {
+	public RenderableItem(
+		long id, @Nonnull String name, @Nonnull Money price, int amount, @Nullable String pictureName, long version
+	) {
 		this.id = id;
 		this.name = name;
 		this.price = price;
 		this.amount = amount;
+		this.pictureName = pictureName;
 		this.version = version;
 	}
 
@@ -54,6 +60,11 @@ public class RenderableItem {
 
 	public int getAmount() {
 		return amount;
+	}
+
+	@Nullable
+	public String getPictureName() {
+		return pictureName;
 	}
 
 	public long getVersion() {

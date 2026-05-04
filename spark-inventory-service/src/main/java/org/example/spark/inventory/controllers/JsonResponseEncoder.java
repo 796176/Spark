@@ -71,6 +71,9 @@ public class JsonResponseEncoder implements ResponseEncoder {
 			jsonGenerator.writeStringProperty("item_id", Long.toString(renderableItem.getId()));
 			jsonGenerator.writeStringProperty("item_name", renderableItem.getName());
 			jsonGenerator.writeStringProperty("amount", Integer.toString(renderableItem.getAmount()));
+			if (renderableItem.getPictureName() != null) {
+				jsonGenerator.writeStringProperty("item_picture_name", renderableItem.getPictureName());
+			}
 			jsonGenerator.writeStringProperty("version", Long.toString(renderableItem.getVersion()));
 
 			jsonGenerator.writeObjectPropertyStart("price");

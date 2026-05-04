@@ -19,6 +19,7 @@
 package org.example.spark.inventory.controllers;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.inventory.aggregates.ItemAggregate;
 import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.events.ItemAmountUpdated;
@@ -42,8 +43,14 @@ public class InventoryServiceImpl implements InventoryService {
 	}
 
 	@Override
-	public void addItem(@Nonnull String name, @Nonnull Money price, int amount, @Nonnull String idempotenceToken) {
-		itemDataAccess.addItem(name, price, amount, idempotenceToken);
+	public void addItem(
+		@Nonnull String name,
+		@Nonnull Money price,
+		int amount,
+		@Nullable String pictureName,
+		@Nonnull String idempotenceToken
+	) {
+		itemDataAccess.addItem(name, price, amount, pictureName, idempotenceToken);
 	}
 
 	@Override
@@ -72,6 +79,7 @@ public class InventoryServiceImpl implements InventoryService {
 			versionedItem.item().getName(),
 			versionedItem.item().getPrice(),
 			versionedItem.item().getAmount(),
+			versionedItem.item().getPictureName(),
 			versionedItem.version()
 		);
 	}
@@ -90,6 +98,7 @@ public class InventoryServiceImpl implements InventoryService {
 					versionedItem.item().getName(),
 					versionedItem.item().getPrice(),
 					versionedItem.item().getAmount(),
+					versionedItem.item().getPictureName(),
 					versionedItem.version()
 				);
 			})

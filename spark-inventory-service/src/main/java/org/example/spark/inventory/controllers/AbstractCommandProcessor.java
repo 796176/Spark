@@ -19,6 +19,7 @@
 package org.example.spark.inventory.controllers;
 
 import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 import org.example.spark.authorization.Role;
 import org.example.spark.inventory.models.Money;
 import org.example.spark.inventory.models.RenderableItem;
@@ -67,6 +68,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 							Objects.requireNonNull(parsedCommand.getValue("item_name")),
 							Objects.requireNonNull(parsedCommand.getPrice()),
 							Integer.parseInt(Objects.requireNonNull(parsedCommand.getValue("amount"))),
+							parsedCommand.getValue("item_picture_name"),
 							commandId
 						);
 						callback.send(
@@ -151,6 +153,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		@Nonnull String name,
 		@Nonnull Money price,
 		int amount,
+		@Nullable String pictureName,
 		@Nonnull String idempotenceToken
 	) throws Exception;
 
