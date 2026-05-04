@@ -22,3 +22,8 @@ CREATE TABLE active_sessions (
 );
 CREATE TABLE processed_messages ( id text PRIMARY KEY );
 CREATE TABLE uploads( file_name text PRIMARY KEY, content_type text NOT NULL, content bytea NOT NULL );
+INSERT INTO uploads(file_name, content_type, content) VALUES
+('nvidia.png', 'image/png',  pg_read_binary_file('/docker-entrypoint-initdb.d/nvidia.png')),
+('rpi5.jpg', 'image/jpeg',  pg_read_binary_file('/docker-entrypoint-initdb.d/rpi5.jpg')),
+('ram.jpg', 'image/jpeg',  pg_read_binary_file('/docker-entrypoint-initdb.d/ram.jpg')),
+('pizza.jpg', 'image/jpeg',  pg_read_binary_file('/docker-entrypoint-initdb.d/pizza.jpg'));
