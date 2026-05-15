@@ -10,6 +10,8 @@
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/order.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -68,13 +70,15 @@
 				<form:form action="/cancelorder">
 					<input name="order_id" value="${detailedOrder.orderId()}" type="hidden"/>
 					<input name="version" value="${detailedOrder.version()}" type="hidden"/>
-					<button class="decorated_button">Cancel Order</button>
+					<p class="error_field decorated_error"></p>
+					<button class="submit_form_button decorated_button">Cancel Order</button>
 				</form:form>
 			<% } else if (detailedOrder.status().equals(org.example.spark.gateway.web.models.Order.Status.CANCELED)) { %>
 				<form:form action="/restoreorder">
 					<input name="order_id" value="${detailedOrder.orderId()}" type="hidden"/>
 					<input name="version" value="${detailedOrder.version()}" type="hidden"/>
-					<button class="decorated_button">Restore Order</button>
+					<p class="error_field decorated_error"></p>
+					<button class="submit_form_button decorated_button">Restore Order</button>
 				</form:form>
 			<% } %>
 		</main>

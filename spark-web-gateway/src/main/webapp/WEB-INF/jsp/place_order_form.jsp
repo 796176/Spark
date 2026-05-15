@@ -12,6 +12,8 @@
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_inventory.css"/>
 		<link rel="stylesheet" href="/static/css/place_order_form.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -81,12 +83,8 @@
 						<% } %>
 					</ol>
 					<input name="timestamp" value="${System.currentTimeMillis()}" type="hidden"/>
-					<% if (errorMessage.isPresent()) { %>
-						<p class="decorated_error_message">
-							<%= errorMessage.get() %>
-						</p>
-					<% } %>
-					<button class="decorated_button">Place</button>
+					<p class="error_field decorated_error"></p>
+					<button class="submit_form_button decorated_button">Place</button>
 				</form:form>
 			<% } else { %>
 				<p>The inventory is empty<\p>

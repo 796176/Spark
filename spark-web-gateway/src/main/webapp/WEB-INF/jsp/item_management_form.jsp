@@ -12,6 +12,8 @@
 		<link rel="stylesheet" href="/static/css/navigable.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/item_management_form.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -109,14 +111,16 @@
 						<%= managedItem.version() %>
 					</jsp:attribute>
 				</jsp:element>
+				<p class="error_field decorated_error"></p>
 				<p>
-					<button class="decorated_button">Save</button>
+					<button class="submit_form_button decorated_button">Save</button>
 				</p>
 			</form:form>
 			<h2 id="Item_Actions">Item Actions</h2>
 			<form:form action="/panel/item/${managedItem.itemId()}/delete" method="DELETE">
+				<p class="error_field decorated_error"></p>
 				<p>
-					<button class="decorated_button">Delete Item</button>
+					<button class="submit_form_button decorated_button">Delete Item</button>
 				</p>
 			</form:form>
 		</main>

@@ -10,6 +10,8 @@
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/new_account_form.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -59,7 +61,8 @@
 						<%= errorMessage.get() %>
 					</p>
 				<% } %>
-				<button class="decorated_button">Submit</button>
+				<p class="error_field decorated_error"></p>
+				<button class="submit_form_button decorated_button">Submit</button>
 			</form:form>
 		</main>
 

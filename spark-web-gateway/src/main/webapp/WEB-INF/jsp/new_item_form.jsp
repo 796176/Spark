@@ -1,7 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <jsp:useBean id="account" scope="request" type="java.util.Optional" />
-<jsp:useBean id="errorMessage" scope="request" type="java.util.Optional" />
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
@@ -10,6 +9,8 @@
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/new_item_form.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -59,12 +60,8 @@
 						<input type="file" name="item_picture" accept=".png,.jpg,.jpeg"/>
 					</label>
 				</p>
-				<% if (errorMessage.isPresent()) { %>
-					<p class="decorated_error_message">
-						<%= errorMessage.get() %>
-					</p>
-				<% } %>
-				<button class="decorated_button">Submit</button>
+				<p class="error_field decorated_error"></p>
+				<button class="submit_form_button decorated_button">Submit</button>
 			</form:form>
 		</main>
 

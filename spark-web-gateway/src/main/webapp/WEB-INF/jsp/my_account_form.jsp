@@ -9,6 +9,8 @@
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/my_account.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -34,10 +36,12 @@
 			</div>
 			<div class="account_action">
 				<form:form action="/logout">
-					<button class="decorated_button">Log Out</button>
+					<p class="error_field decorated_error"></p>
+					<button class="submit_form_button decorated_button">Log Out</button>
 				</form:form>
 				<form:form action="/myaccount" method="DELETE">
-					<button class="decorated_button">Delete Account</button>
+					<p class="error_field decorated_error"></p>
+					<button class="submit_form_button decorated_button">Delete Account</button>
 				</form:form>
 			</div>
 		</main>

@@ -15,6 +15,8 @@
 		<link rel="stylesheet" href="/static/css/navigable.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/order_management_form.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -107,8 +109,9 @@
                 		<%= managedOrder.version() %>
                 	</jsp:attribute>
 				</jsp:element>
+				<p class="error_field decorated_error"></p>
 				<p>
-					<button class="decorated_button">Save</button>
+					<button class="submit_form_button decorated_button">Save</button>
 				</p>
 			</form:form>
 		</main>

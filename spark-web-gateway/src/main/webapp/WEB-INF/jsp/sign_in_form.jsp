@@ -8,6 +8,8 @@
 		<link rel="stylesheet" href="/static/css/general.css"/>
 		<link rel="stylesheet" href="/static/css/decorated_elements.css"/>
 		<link rel="stylesheet" href="/static/css/sign_in_form.css"/>
+
+		<script type="module" src="/static/scripts/form_submission.js"></script>
 	</head>
 	<body>
 		<header>
@@ -35,7 +37,8 @@
 						<input type="password" name="password" required/>
 					</label>
 				</p>
-				<button class="decorated_button">Sign In</button>
+				<p class="error_field decorated_error"></p>
+				<button class="submit_form_button decorated_button">Sign In</button>
 			</form:form>
 		</main>
 
