@@ -18,7 +18,7 @@
 
 package org.example.spark.gateway.web.models;
 
-import jakarta.annotation.Nonnull;
+import jakarta.annotation.Nullable;
 
 public class SignInForm {
 
@@ -26,15 +26,17 @@ public class SignInForm {
 
 	private final String password;
 
-	public SignInForm(@Nonnull String username, @Nonnull String password) {
+	public SignInForm(@Nullable String username, @Nullable String password) {
 		this.username = username;
 		this.password = password;
 	}
 
+	@Nullable
 	public String getUsername() {
 		return username;
 	}
 
+	@Nullable
 	public String getPassword() {
 		return password;
 	}
