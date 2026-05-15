@@ -134,7 +134,9 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 			.addCustomConverter(new ItemManagementFormConverter())
 			.addCustomConverter(new OrderManagementFormConverter())
 			.addCustomConverter(new CreatingAccountFormConverter())
-			.addCustomConverter(new CreatingItemFormConverter());
+			.addCustomConverter(new CreatingItemFormConverter())
+			.addCustomConverter(new ErrorMessageResponseObjectConverter())
+			.addCustomConverter(new RedirectResponseObjectConverter());
 	}
 
 	@Bean
