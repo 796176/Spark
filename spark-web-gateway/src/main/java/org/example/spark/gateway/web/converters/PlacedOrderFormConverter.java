@@ -23,18 +23,18 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class PlacedOrderFormConverter implements HttpMessageConverter<PlacedOrderForm> {
-
-	private final FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 
 	@Override
 	public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
@@ -48,26 +48,39 @@ public class PlacedOrderFormConverter implements HttpMessageConverter<PlacedOrde
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
-		return formHttpMessageConverter.getSupportedMediaTypes();
+		return List.of(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public PlacedOrderForm read(
 		Class<? extends PlacedOrderForm> clazz, HttpInputMessage inputMessage
 	) throws IOException, HttpMessageNotReadableException {
-		Map<String, String> map = formHttpMessageConverter.read(null, inputMessage).asSingleValueMap();
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())) {
+			Long orderId = null;
+			String version = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "order_id" -> {
+						jsonParser.nextToken();
+						try {
+							orderId = Long.parseLong(jsonParser.getValueAsString());
+						} catch (NullPointerException | IllegalArgumentException ignored) { }
+					}
 
-		Long orderId = null;
-		try {
-			orderId = Long.parseLong(map.get("order_id"));
-		} catch (NumberFormatException ignored) { }
-		return new PlacedOrderForm(orderId, map.get("version"));
+					case "version" -> {
+						jsonParser.nextToken();
+						version = jsonParser.getValueAsString();
+					}
+				}
+			}
+			return new PlacedOrderForm(orderId, version);
+		}
 	}
 
 	@Override
 	public void write(
 		PlacedOrderForm placedOrderForm, @Nullable MediaType contentType, HttpOutputMessage outputMessage
-	) throws IOException, HttpMessageNotWritableException {
-
-	}
+	) throws IOException, HttpMessageNotWritableException { }
 }

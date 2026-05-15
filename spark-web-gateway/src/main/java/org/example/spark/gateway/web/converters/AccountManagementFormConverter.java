@@ -25,18 +25,18 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.*;
 
 public class AccountManagementFormConverter implements HttpMessageConverter<AccountManagementForm> {
 
-	private final FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 	@Override
 	public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
 		return clazz.equals(AccountManagementForm.class);
@@ -49,58 +49,61 @@ public class AccountManagementFormConverter implements HttpMessageConverter<Acco
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
-		return formHttpMessageConverter.getSupportedMediaTypes();
+		return List.of(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public AccountManagementForm read(
 		Class<? extends AccountManagementForm> clazz, HttpInputMessage inputMessage
 	) throws IOException, HttpMessageNotReadableException {
-		Map<String, String> map = formHttpMessageConverter.read(null, inputMessage).asSingleValueMap();
-
-		ArrayList<Role> currentlyAssignedRoles = new ArrayList<>();
-		for (String key: map.keySet()) {
-			if (key.startsWith("role:")) {
-				try {
-					currentlyAssignedRoles.add(
-						Role.fromId(Long.parseLong(key.substring(key.indexOf(":") + 1)))
-					);
-				} catch (NullPointerException | IllegalArgumentException ignored) { }
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())) {
+			Account.Status previousStatus = null, currentStatus = null;
+			Role[] previouslyAssignedRoles = null;
+			ArrayList<Role> currentlyAssignedRoles = new ArrayList<>();
+			while (jsonParser.nextToken() != null) {
+				String key = Objects.requireNonNullElse(jsonParser.currentName(), "");
+				switch (key) {
+					case "previously_assigned_roles" -> {
+						jsonParser.nextToken();
+						try {
+							previouslyAssignedRoles = Arrays
+								.stream(jsonParser.getValueAsString().split(","))
+								.map(s -> Role.fromId(Long.parseLong(s)))
+								.toArray(Role[]::new);
+						} catch (NullPointerException | IllegalArgumentException ignored) { }
+					}
+					case "previous_status" -> {
+						jsonParser.nextToken();
+						try {
+							previousStatus = Account.Status.fromId(Long.parseLong(jsonParser.getValueAsString()));
+						} catch (NullPointerException | IllegalArgumentException ignored) { }
+					}
+					case "account_status" -> {
+						jsonParser.nextToken();
+						try {
+							currentStatus = Account.Status.fromId(Long.parseLong(jsonParser.getValueAsString()));
+						} catch (NullPointerException | IllegalArgumentException ignored) { }
+					}
+					default -> {
+						if (key.startsWith("role:")) {
+							try {
+								currentlyAssignedRoles.add(
+									Role.fromId(Long.parseLong(key.substring(key.indexOf(":") + 1)))
+								);
+							} catch (NullPointerException | IllegalArgumentException | IndexOutOfBoundsException _) { }
+							jsonParser.nextToken();
+						}
+					}
+				}
 			}
+			return new AccountManagementForm(
+				previouslyAssignedRoles,
+				currentlyAssignedRoles.toArray(Role[]::new),
+				previousStatus,
+				Objects.requireNonNullElse(currentStatus, previousStatus)
+			);
 		}
-		Role[] previouslyAssignedRoles = null;
-		if (map.containsKey("previously_assigned_roles")) {
-			try {
-				previouslyAssignedRoles = Arrays
-					.stream(map.get("previously_assigned_roles").split(","))
-					.map(s -> Role.fromId(Long.parseLong(s)))
-					.toArray(Role[]::new);
-			} catch (NullPointerException | IllegalArgumentException ignored) { }
-		}
-
-		Account.Status previousStatus = null;
-		if (map.containsKey("previous_status")) {
-			try {
-				previousStatus = Account.Status.fromId(Long.parseLong(map.get("previous_status")));
-			} catch (NullPointerException | IllegalArgumentException ignored) { }
-		}
-		Account.Status currentStatus = null;
-		if (map.containsKey("account_status") || previousStatus != null) {
-			try {
-				currentStatus = Account.Status.fromId(
-					Long.parseLong(
-						Objects.requireNonNullElse(map.get("account_status"), map.get("previous_status"))
-					)
-				);
-			} catch (NullPointerException | IllegalArgumentException ignored) { }
-		}
-
-		return new AccountManagementForm(
-			previouslyAssignedRoles,
-			currentlyAssignedRoles.toArray(Role[]::new),
-			previousStatus,
-			currentStatus
-		);
 	}
 
 	@Override

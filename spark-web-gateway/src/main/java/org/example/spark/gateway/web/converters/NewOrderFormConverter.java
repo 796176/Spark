@@ -24,19 +24,19 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class NewOrderFormConverter implements HttpMessageConverter<NewOrderForm> {
-
-	private final FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 
 	@Override
 	public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
@@ -50,39 +50,44 @@ public class NewOrderFormConverter implements HttpMessageConverter<NewOrderForm>
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
-		return formHttpMessageConverter.getSupportedMediaTypes();
+		return List.of(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public NewOrderForm read(
 		Class<? extends NewOrderForm> clazz, HttpInputMessage inputMessage
 	) throws IOException, HttpMessageNotReadableException {
-		Map<String, String> map = formHttpMessageConverter.read(null, inputMessage).asSingleValueMap();
-		Long timestamp = null;
-		ArrayList<LineItem> lineItems = new ArrayList<>();
-		for (Map.Entry<String, String> entry: map.entrySet()) {
-			switch (entry.getKey()) {
-				case "timestamp" -> {
-					try {
-						timestamp = Long.parseLong(entry.getValue());
-					} catch (NumberFormatException ignored) { }
-				}
-				default -> {
-					try {
-						LineItem lineItem =
-							new LineItem(Long.parseLong(entry.getKey()), Integer.parseInt(entry.getValue()));
-						if (lineItem.amount() > 0) lineItems.add(lineItem);
-					} catch (NumberFormatException ignored) { }
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())) {
+			Long timestamp = null;
+			ArrayList<LineItem> lineItems = new ArrayList<>();
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "timestamp" -> {
+						jsonParser.nextToken();
+						try {
+							timestamp = Long.parseLong(jsonParser.getValueAsString());
+						} catch (IllegalArgumentException | NullPointerException ignored) { }
+					}
+					default -> {
+						if (key != null) {
+							jsonParser.nextToken();
+							try {
+								LineItem lineItem =
+									new LineItem(Long.parseLong(key), Integer.parseInt(jsonParser.getValueAsString()));
+								if (lineItem.amount() > 0) lineItems.add(lineItem);
+							} catch (IllegalArgumentException | NullPointerException ignored) { }
+						}
+					}
 				}
 			}
+			return new NewOrderForm(timestamp, lineItems.toArray(LineItem[]::new));
 		}
-		return new NewOrderForm(timestamp, lineItems.toArray(LineItem[]::new));
 	}
 
 	@Override
 	public void write(
 		NewOrderForm newOrderForm, @Nullable MediaType contentType, HttpOutputMessage outputMessage
-	) throws IOException, HttpMessageNotWritableException {
-
-	}
+	) throws IOException, HttpMessageNotWritableException { }
 }

@@ -24,18 +24,18 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
-import org.springframework.util.MultiValueMap;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 public class SignInFormConverter implements HttpMessageConverter<SignInForm> {
-
-	private final FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 
 	@Override
 	public boolean canRead(@Nonnull Class<?> clazz, @Nullable MediaType mediaType) {
@@ -50,24 +50,39 @@ public class SignInFormConverter implements HttpMessageConverter<SignInForm> {
 	@Nonnull
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
-		return formHttpMessageConverter.getSupportedMediaTypes();
+		return List.of(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public SignInForm read(
 		@Nonnull Class<? extends SignInForm> clazz, @Nonnull HttpInputMessage inputMessage
 	) throws IOException, HttpMessageNotReadableException {
-		MultiValueMap<String, String> linkedMultiValueMap = formHttpMessageConverter.read(null, inputMessage);
-		return new SignInForm(
-			linkedMultiValueMap.asSingleValueMap().get("username").strip(),
-			linkedMultiValueMap.asSingleValueMap().get("password").strip()
-		);
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())) {
+		    String username = null, password = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "username" -> {
+						jsonParser.nextToken();
+						if (jsonParser.getValueAsString() != null) {
+							username = jsonParser.getValueAsString().strip();
+						}
+					}
+					case "password" -> {
+						jsonParser.nextToken();
+						if (jsonParser.getValueAsString() != null) {
+							password = jsonParser.getValueAsString().strip();
+						}
+					}
+				}
+			}
+			return new SignInForm(username, password);
+		}
 	}
 
 	@Override
 	public void write(
 		SignInForm signInForm, @Nullable MediaType contentType, @Nonnull HttpOutputMessage outputMessage
-	) throws IOException, HttpMessageNotWritableException {
-
-	}
+	) throws IOException, HttpMessageNotWritableException { }
 }

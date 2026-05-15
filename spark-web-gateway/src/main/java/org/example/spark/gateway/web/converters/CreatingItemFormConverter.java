@@ -24,18 +24,18 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class CreatingItemFormConverter implements HttpMessageConverter<CreatingItemForm> {
-
-	private final FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 
 	@Override
 	public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
@@ -49,32 +49,45 @@ public class CreatingItemFormConverter implements HttpMessageConverter<CreatingI
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
-		return formHttpMessageConverter.getSupportedMediaTypes();
+		return List.of(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public CreatingItemForm read(
 		Class<? extends CreatingItemForm> clazz, HttpInputMessage inputMessage
 	) throws IOException, HttpMessageNotReadableException {
-		Map<String, String> map = formHttpMessageConverter.read(null, inputMessage).asSingleValueMap();
-
-		String name = map.get("item_name") == null ? null : map.get("item_name").strip();
-
-		Money price = null;
-		if (map.containsKey("item_price")) {
-			String[] itemPrice = map.get("item_price").split("\\.", 2);
-			try {
-				price = new Money(Integer.parseInt(itemPrice[0]), Integer.parseInt(itemPrice[1]));
-			} catch (ArrayIndexOutOfBoundsException | NumberFormatException ignored) { }
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())) {
+			String name = null;
+			Integer amount = null;
+			Money price = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "item_name" -> {
+						jsonParser.nextToken();
+						name = jsonParser.getValueAsString();
+					}
+					case "item_price" -> {
+						jsonParser.nextToken();
+						try {
+							String value = jsonParser.getValueAsString();
+							price = new Money(
+								Integer.parseInt(value.substring(0, value.indexOf('.'))),
+								Integer.parseInt(value.substring(value.indexOf('.') + 1))
+							);
+						} catch (NullPointerException | IllegalArgumentException | IndexOutOfBoundsException _) { }
+					}
+					case "item_amount" -> {
+						jsonParser.nextToken();
+						try {
+							amount = Integer.parseInt(jsonParser.getValueAsString());
+						} catch (NullPointerException | IllegalArgumentException ignored) { }
+					}
+				}
+			}
+			return new CreatingItemForm(name, price, amount);
 		}
-
-		Integer amount = null;
-		if (map.containsKey("item_amount")) {
-			try {
-				amount = Integer.parseInt(map.get("item_amount"));
-			} catch (NullPointerException | NumberFormatException ignored) { }
-		}
-		return new CreatingItemForm(name, price, amount);
 	}
 
 	@Override

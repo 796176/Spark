@@ -24,19 +24,18 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 
 public class OrderManagementFormConverter implements HttpMessageConverter<OrderManagementForm> {
-
-	private final FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 
 	@Override
 	public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
@@ -50,33 +49,42 @@ public class OrderManagementFormConverter implements HttpMessageConverter<OrderM
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
-		return formHttpMessageConverter.getSupportedMediaTypes();
+		return List.of(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public OrderManagementForm read(
 		Class<? extends OrderManagementForm> clazz, HttpInputMessage inputMessage
 	) throws IOException, HttpMessageNotReadableException {
-		Map<String, String> map = formHttpMessageConverter.read(null, inputMessage).asSingleValueMap();
-
-		Order.Status previousOrderStatus = null;
-		if (map.containsKey("previous_order_status")) {
-			try {
-				previousOrderStatus = Order.Status.fromId(Long.parseLong(map.get("previous_order_status")));
-			} catch (NullPointerException | IllegalArgumentException ignored) { }
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())) {
+			Order.Status previousStatus = null, currentStatus = null;
+			String version = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "previous_order_status" -> {
+						jsonParser.nextToken();
+						try {
+							previousStatus = Order.Status.fromId(Long.parseLong(jsonParser.getValueAsString()));
+						} catch (IllegalArgumentException | NullPointerException ignored) { }
+					}
+					case "order_status" -> {
+						jsonParser.nextToken();
+						try {
+							currentStatus = Order.Status.fromId(Long.parseLong(jsonParser.getValueAsString()));
+						} catch (IllegalArgumentException | NullPointerException ignored) { }
+					}
+					case "order_version" -> {
+						jsonParser.nextToken();
+						version = jsonParser.getValueAsString();
+					}
+				}
+			}
+			return new OrderManagementForm(
+				previousStatus, Objects.requireNonNullElse(currentStatus, previousStatus), version
+			);
 		}
-		Order.Status orderStatus = null;
-		if (map.containsKey("order_status") || previousOrderStatus != null) {
-			try {
-				orderStatus = Order.Status.fromId(
-					Long.parseLong(
-						Objects.requireNonNullElse(map.get("order_status"), map.get("previous_order_status"))
-					)
-				);
-			} catch (NullPointerException | IllegalArgumentException ignored) { }
-		}
-
-		return new OrderManagementForm(previousOrderStatus, orderStatus, map.get("order_version"));
 	}
 
 	@Override

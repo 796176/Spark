@@ -23,18 +23,19 @@ import org.jspecify.annotations.Nullable;
 import org.springframework.http.HttpInputMessage;
 import org.springframework.http.HttpOutputMessage;
 import org.springframework.http.MediaType;
-import org.springframework.http.converter.FormHttpMessageConverter;
 import org.springframework.http.converter.HttpMessageConverter;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.HttpMessageNotWritableException;
+import tools.jackson.core.JsonParser;
+import tools.jackson.core.ObjectReadContext;
+import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Map;
+import java.util.Objects;
 
 public class CreatingAccountFormConverter implements HttpMessageConverter<CreatingAccountForm> {
 
-	private final FormHttpMessageConverter formHttpMessageConverter = new FormHttpMessageConverter();
 	@Override
 	public boolean canRead(Class<?> clazz, @Nullable MediaType mediaType) {
 		return clazz.equals(CreatingAccountForm.class);
@@ -47,17 +48,38 @@ public class CreatingAccountFormConverter implements HttpMessageConverter<Creati
 
 	@Override
 	public List<MediaType> getSupportedMediaTypes() {
-		return formHttpMessageConverter.getSupportedMediaTypes();
+		return List.of(MediaType.APPLICATION_JSON);
 	}
 
 	@Override
 	public CreatingAccountForm read(
 		Class<? extends CreatingAccountForm> clazz, HttpInputMessage inputMessage
 	) throws IOException, HttpMessageNotReadableException {
-		Map<String, String> map = formHttpMessageConverter.read(null, inputMessage).asSingleValueMap();
-		String username = map.get("username") == null ? null : map.get("username").strip();
-		String password = map.get("password") == null ? null : map.get("password").strip();
-		return new CreatingAccountForm(username, password, map.containsKey("is_admin"));
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())){
+			String username = null, password = null;
+			boolean isAdmin = false;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "username" -> {
+						jsonParser.nextToken();
+						username = jsonParser.getValueAsString();
+						if (username != null) username = username.strip();
+					}
+					case "password" -> {
+						jsonParser.nextToken();
+						password = jsonParser.getValueAsString();
+						if (password != null) password = password.strip();
+					}
+					case "is_admin" -> {
+						jsonParser.nextToken();
+						isAdmin = true;
+					}
+				}
+			}
+			return new CreatingAccountForm(username, password, isAdmin);
+		}
 	}
 
 	@Override
