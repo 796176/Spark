@@ -23,7 +23,6 @@ import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.FormValidators;
-import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -141,91 +140,95 @@ public class OrderRequestController {
 	}
 
 	@PostMapping("/placeorder")
-	public Callable<String> placeOrder(HttpSession httpSession, @RequestBody NewOrderForm newOrderForm) {
+	@ResponseBody
+	public Callable<FormSubmissionResponse> placeOrder(HttpSession httpSession, @RequestBody NewOrderForm newOrderForm) {
 		return () -> {
 			String validationError = FormValidators.validateNewOrderForm(newOrderForm);
 			if (validationError != null) {
-				return "redirect:/" + UriComponentsBuilder
+				return new RedirectFormSubmissionResponse(UriComponentsBuilder
 					.fromPath("/placeorder")
 					.queryParam("error_message", validationError)
-					.build();
+					.build()
+					.toString());
 			}
 			Future<?> placingOrderProcess = orderRequestProcessor.placeOrder(
 				httpSession.getId(), newOrderForm.getTimestamp(), newOrderForm.getLineItems()
 			);
 			try {
 				placingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/orders";
+				return new RedirectFormSubmissionResponse("/orders");
 			} catch (TimeoutException e) {
 				placingOrderProcess.cancel(true);
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthenticationException)
-					return "redirect:/login";
+					return new RedirectFormSubmissionResponse("/login");
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				return "500";
+				return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			}
 		};
 	}
 
 	@PostMapping("/cancelorder")
-	public Callable<String> cancelOrder(
+	@ResponseBody
+	public Callable<FormSubmissionResponse> cancelOrder(
 		HttpSession httpSession, @RequestBody PlacedOrderForm placedOrderForm
 	) {
 		return () -> {
-			if (FormValidators.validatePlacedOrderForm(placedOrderForm) != null) return "400";
+			if (FormValidators.validatePlacedOrderForm(placedOrderForm) != null) return new ErrorFormSubmissionResponse("Bad Request");
 
 			Future<?> cancellingOrderProcess = orderRequestProcessor.cancelOrder(
 				httpSession.getId(), placedOrderForm.getOrderId(), placedOrderForm.getVersion()
 			);
 			try {
 				cancellingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/orders";
+				return new RedirectFormSubmissionResponse("/orders");
 			} catch (TimeoutException e) {
 				cancellingOrderProcess.cancel(true);
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthenticationException)
-					return "redirect:/login";
+					return new RedirectFormSubmissionResponse("/login");
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				return "500";
+				return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			}
 		};
 	}
 
 	@PostMapping("/restoreorder")
-	public Callable<String> restoreOrder(
-		HttpSession httpSession, @RequestBody @Valid PlacedOrderForm placedOrderForm
+	@ResponseBody
+	public Callable<FormSubmissionResponse> restoreOrder(
+		HttpSession httpSession, @RequestBody PlacedOrderForm placedOrderForm
 	) {
 		return () -> {
-			if (FormValidators.validatePlacedOrderForm(placedOrderForm) != null) return "400";
+			if (FormValidators.validatePlacedOrderForm(placedOrderForm) != null) return new ErrorFormSubmissionResponse("Bad Request");
 
 			Future<?> cancellingOrderProcess = orderRequestProcessor.restoreOrder(
 				httpSession.getId(), placedOrderForm.getOrderId(), placedOrderForm.getVersion()
 			);
 			try {
 				cancellingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/orders";
+				return new RedirectFormSubmissionResponse("/orders");
 			} catch (TimeoutException e) {
 				cancellingOrderProcess.cancel(true);
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthenticationException)
-					return "redirect:/login";
+					return new RedirectFormSubmissionResponse("/login");
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				return "500";
+				return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			}
 		};
 	}

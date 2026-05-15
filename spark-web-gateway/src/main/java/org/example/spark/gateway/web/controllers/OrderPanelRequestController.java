@@ -108,7 +108,8 @@ public class OrderPanelRequestController {
 	}
 
 	@PostMapping("/order/{orderId}/save")
-	public Callable<String> saveOrder(
+	@ResponseBody
+	public Callable<FormSubmissionResponse> saveOrder(
 		HttpSession httpSession,
 		@PathVariable(name = "accountId") long accountId,
 		@PathVariable(name = "orderId") long orderId,
@@ -116,23 +117,23 @@ public class OrderPanelRequestController {
 	) {
 		return () -> {
 			try {
-				if (FormValidators.validateOrderManagementForm(form) != null) return "400";
+				if (FormValidators.validateOrderManagementForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> savingOrderProcess = orderPanelRequestProcessor.saveOrder(
 					httpSession.getId(), orderId, form.getVersion(), form.getPreviousStatus(), form.getCurrentStatus()
 				);
 				savingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/panel/account/" + accountId + "/orders";
+				return new RedirectFormSubmissionResponse("/panel/account/" + accountId + "/orders");
 			} catch (AuthenticationException e) {
-				return "redirect:/login";
+				return new RedirectFormSubmissionResponse("/login");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				else return "500";
+				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			} catch (TimeoutException e) {
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			}
 		};
 	}

@@ -24,7 +24,6 @@ import org.example.spark.authorization.Role;
 import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
-import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -52,8 +51,9 @@ public class AccountRequestController {
 	}
 
 	@PostMapping("/login")
-	public Callable<String> logIn(
-		@RequestBody @Valid LogInForm logInForm, Model model, HttpServletRequest httpServletRequest
+	@ResponseBody
+	public Callable<FormSubmissionResponse> logIn(
+		@RequestBody LogInForm logInForm, HttpServletRequest httpServletRequest
 	) {
 		return () -> {
 			try {
@@ -61,11 +61,9 @@ public class AccountRequestController {
 					httpServletRequest.getRequestedSessionId(), logInForm.getUsername(), logInForm.getPassword()
 				);
 			} catch (AuthenticationException e) {
-				ErrorMessage errorMessage = new ErrorMessage("Incorrect name or password");
-				model.addAttribute("errorMessage", errorMessage);
-				return "log_in_form_with_error";
+				return new ErrorFormSubmissionResponse("Incorrect name or password");
 			}
-			return "redirect:/index";
+			return new RedirectFormSubmissionResponse("/index");
 		};
 	}
 
@@ -76,8 +74,9 @@ public class AccountRequestController {
 	}
 
 	@PostMapping("/signin")
-	public Callable<String> signIn(
-		@RequestBody @Valid SignInForm signInForm, Model model, HttpServletRequest httpServletRequest
+	@ResponseBody
+	public Callable<FormSubmissionResponse> signIn(
+		@RequestBody SignInForm signInForm, HttpServletRequest httpServletRequest
 	) {
 		return () -> {
 			Future<?> signInProcess = accountRequestProcessor.signIn(
@@ -90,19 +89,16 @@ public class AccountRequestController {
 
 			try {
 				signInProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/index";
+				return new RedirectFormSubmissionResponse("/index");
 			} catch (TimeoutException timeoutException) {
 				signInProcess.cancel(true);
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpServletRequest.getSession(true).getId())) {
-						return "403";
-					} else return "redirect:/login";
-				} else return "500";
-			} catch (Exception e) {
-				model.addAttribute("errorMessage", new ErrorMessage(e.getMessage()));
-				return "sign_in_form_with_error";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
+				} else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			}
 		};
 	}
@@ -118,10 +114,11 @@ public class AccountRequestController {
 	}
 
 	@PostMapping("/logout")
-	public Callable<String> logOut(HttpSession httpSession) {
+	@ResponseBody
+	public Callable<FormSubmissionResponse> logOut(HttpSession httpSession) {
 		return () -> {
 			accountRequestProcessor.logOut(httpSession.getId());
-			return "redirect:/index";
+			return new RedirectFormSubmissionResponse("/login");
 		};
 	}
 
@@ -131,20 +128,21 @@ public class AccountRequestController {
 	}
 
 	@DeleteMapping("/myaccount")
-	public Callable<String> deleteAccount(HttpSession httpSession) {
+	@ResponseBody
+	public Callable<FormSubmissionResponse> deleteAccount(HttpSession httpSession) {
 		return () -> {
 			Future<?> deletingAccountProcess = accountRequestProcessor.deleteAccount(httpSession.getId());
 			try {
 				deletingAccountProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/logout";
+				return new RedirectFormSubmissionResponse("/logout");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "redirect:/403";
-					} else return "redirect:/login";
-				} else return "redirect:/500";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
+				} else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			} catch (TimeoutException e) {
-				return "redirect:/504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			}
 		};
 	}

@@ -21,9 +21,7 @@ package org.example.spark.gateway.web.controllers;
 import jakarta.servlet.http.HttpSession;
 import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
-import org.example.spark.gateway.web.models.Account;
-import org.example.spark.gateway.web.models.AccountManagementForm;
-import org.example.spark.gateway.web.models.CreatingAccountForm;
+import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.FormValidators;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -112,10 +110,11 @@ public class AccountPanelRequestController {
 	}
 
 	@PostMapping("/newaccount")
-	public Callable<String> newAccount(HttpSession httpSession, Model model, @RequestBody CreatingAccountForm form) {
+	@ResponseBody
+	public Callable<FormSubmissionResponse> newAccount(HttpSession httpSession, @RequestBody CreatingAccountForm form) {
 		return () -> {
 			try {
-				if (FormValidators.validateCreatingAccountForm(form) != null) return "400";
+				if (FormValidators.validateCreatingAccountForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> creatingAccountProcess;
 				if (form.isAdmin()) {
 					creatingAccountProcess = accountPanelRequestProcessor
@@ -125,31 +124,32 @@ public class AccountPanelRequestController {
 						.createAccount(httpSession.getId(), form.getUsername(), form.getPassword());
 				}
 				creatingAccountProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/panel/accounts";
+				return new RedirectFormSubmissionResponse("/panel/accounts");
 			} catch (AuthenticationException e) {
-				return "redirect:/login";
+				return new RedirectFormSubmissionResponse("/login");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				else return "500";
+				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			} catch (TimeoutException e) {
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			}
 		};
 	}
 
 	@PostMapping("/account/{accountId}/save")
-	public Callable<String> saveAccount(
+	@ResponseBody
+	public Callable<FormSubmissionResponse> saveAccount(
 		HttpSession httpSession,
 		@PathVariable(name = "accountId") long accountId,
 		@RequestBody AccountManagementForm form
 	) {
 		return () -> {
 			try {
-				if (FormValidators.validateAccountManagementForm(form) != null) return "400";
+				if (FormValidators.validateAccountManagementForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> savingAccountProcess = accountPanelRequestProcessor.saveAccount(
 					httpSession.getId(),
 					accountId,
@@ -157,18 +157,18 @@ public class AccountPanelRequestController {
 					form.getPreviouslyAssignedRoles(), form.getCurrentlyAssignedRoles()
 				);
 				savingAccountProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/panel/accounts";
+				return new RedirectFormSubmissionResponse("/panel/accounts");
 			} catch (AuthenticationException e) {
-				return "redirect:/login";
+				return new RedirectFormSubmissionResponse("/login");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				else return "500";
+				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			} catch (TimeoutException e) {
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			}
 		};
 	}

@@ -98,12 +98,13 @@ public class InventoryPanelRequestController {
 	}
 
 	@PostMapping("/item/{itemId}/save")
-	public Callable<String> saveItem(
+	@ResponseBody
+	public Callable<FormSubmissionResponse> saveItem(
 		HttpSession httpSession, @PathVariable(name = "itemId") long itemId, @RequestBody ItemManagementForm form
 	) {
 		return () -> {
 			try {
-				if (FormValidators.validateItemManagementForm(form) != null) return "400";
+				if (FormValidators.validateItemManagementForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> savingItemProcess = inventoryPanelRequestProcessor.saveItem(
 					httpSession.getId(),
 					itemId,
@@ -112,38 +113,39 @@ public class InventoryPanelRequestController {
 					form.getCurrentItemAmount()
 				);
 				savingItemProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/panel/inventory";
+				return new RedirectFormSubmissionResponse("/panel/inventory");
 			} catch (AuthenticationException e) {
-				return "redirect:/login";
+				return new RedirectFormSubmissionResponse("/login");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				else return "500";
+				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			} catch (TimeoutException e) {
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			}
 		};
 	}
 
 	@DeleteMapping("/item/{itemId}/delete")
-	public Callable<String> deleteItem(HttpSession httpSession, @PathVariable(name = "itemId") long itemId) {
+	@ResponseBody
+	public Callable<FormSubmissionResponse> deleteItem(HttpSession httpSession, @PathVariable(name = "itemId") long itemId) {
 		return () -> {
 			try {
 				Future<?> deletingItemProcess = inventoryPanelRequestProcessor.deleteItem(httpSession.getId(), itemId);
 				deletingItemProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/panel/inventory";
+				return new RedirectFormSubmissionResponse("/panel/inventory");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "redirect:/403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				else return "redirect:/500";
+				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			} catch (TimeoutException e) {
-				return "redirect:/504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			}
 		};
 	}
@@ -159,19 +161,14 @@ public class InventoryPanelRequestController {
 	}
 
 	@PostMapping("/newitem")
-	public Callable<String> newItem(
+	@ResponseBody
+	public Callable<FormSubmissionResponse> newItem(
 		HttpSession httpSession,
-		@RequestParam("item_name") String itemName,
-		@RequestParam("item_price") String itemPrice,
-		@RequestParam("item_amount") int itemAmount,
-		@RequestParam(value = "item_picture") MultipartFile itemPicture
+		@RequestPart("form") CreatingItemForm form,
+		@RequestPart(value = "item_picture") MultipartFile itemPicture
 	) {
 		return () -> {
 			try {
-				Money price = new Money(
-					Integer.parseInt(itemPrice.substring(0, itemPrice.indexOf('.'))),
-					Integer.parseInt(itemPrice.substring(itemPrice.indexOf('.') + 1))
-				);
 				UploadedFile picture = null;
 				boolean filenameIsNotNullOrBlank =
 					itemPicture.getOriginalFilename() != null && !itemPicture.getOriginalFilename().isBlank();
@@ -180,18 +177,18 @@ public class InventoryPanelRequestController {
 				}
 
 				Future<?> creatingItemProcess = inventoryPanelRequestProcessor
-					.addItem(httpSession.getId(), itemName, price, itemAmount, picture);
+					.addItem(httpSession.getId(), form.getItemName(), form.getPrice(), form.getAmount(), picture);
 				creatingItemProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return "redirect:/panel/inventory";
+				return new RedirectFormSubmissionResponse("/panel/inventory");
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return "403";
-					} else return "redirect:/login";
+						return new ErrorFormSubmissionResponse("Not Authorized");
+					} else return new RedirectFormSubmissionResponse("/login");
 				}
-				else return "500";
+				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
 			} catch (TimeoutException e) {
-				return "504";
+				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
 			}
 		};
 	}
