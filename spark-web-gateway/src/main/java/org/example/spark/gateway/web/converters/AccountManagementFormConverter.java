@@ -69,7 +69,13 @@ public class AccountManagementFormConverter implements HttpMessageConverter<Acco
 						try {
 							previouslyAssignedRoles = Arrays
 								.stream(jsonParser.getValueAsString().split(","))
-								.map(s -> Role.fromId(Long.parseLong(s)))
+								.map(s -> {
+									try {
+										return Role.fromId(Long.parseLong(s));
+									} catch (IllegalArgumentException | NullPointerException ignored) { }
+									return null;
+								})
+								.filter(Objects::nonNull)
 								.toArray(Role[]::new);
 						} catch (NullPointerException | IllegalArgumentException ignored) { }
 					}
