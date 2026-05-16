@@ -36,13 +36,7 @@ public class JspLogInFormValidator implements Validator {
 	public ValidationResult validate(@Nonnull Object target) {
 		LogInForm logInForm = (LogInForm) target;
 		String validationResult = FormValidators.validateLogInForm(logInForm);
-		if (validationResult != null) {
-			return new ValidationResult(
-				"log_in_form_with_error",
-				"errorMessage",
-				new ErrorMessage(validationResult)
-			);
-		}
-		return null;
+		if (validationResult != null) return new ValidationResult(validationResult);
+		else return null;
 	}
 }

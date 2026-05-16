@@ -36,13 +36,7 @@ public class JspSignInFormValidator implements Validator {
 	public ValidationResult validate(@Nonnull Object object) {
 		SignInForm signInForm = (SignInForm) object;
 		String validationResult = FormValidators.validateSignInForm(signInForm);
-		if (validationResult != null) {
-			return new ValidationResult(
-				"sign_in_form_with_error",
-				"errorMessage",
-				new ErrorMessage(validationResult)
-			);
-		}
-		return null;
+		if (validationResult != null) return new ValidationResult(validationResult);
+		else return null;
 	}
 }

@@ -23,7 +23,7 @@ import jakarta.annotation.Nullable;
 
 public interface Validator {
 
-	record ValidationResult(Object returnObject, String attributeName, Object attribute) {}
+	record ValidationResult(String errorMessage) {}
 
 	boolean supports(@Nonnull Class<?> clazz);
 

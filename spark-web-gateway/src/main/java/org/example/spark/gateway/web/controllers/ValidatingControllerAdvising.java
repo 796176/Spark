@@ -54,15 +54,9 @@ public class ValidatingControllerAdvising {
 			if (parameters[i].getDeclaredAnnotation(Valid.class) != null) {
 				Validator.ValidationResult validationResult = validate(args[i]);
 				if (validationResult != null) {
-					for (Object arg: args) {
-						if (arg instanceof Model model)  {
-							model.addAttribute(validationResult.attributeName(), validationResult.attribute());
-							break;
-						}
-					}
 					if (advisedMethod.getReturnType().equals(Callable.class)) {
-						return (Callable<?>) validationResult::returnObject;
-					} else return validationResult.returnObject();
+						return (Callable<?>) validationResult::errorMessage;
+					} else return validationResult.errorMessage();
 				}
 			}
 		}
