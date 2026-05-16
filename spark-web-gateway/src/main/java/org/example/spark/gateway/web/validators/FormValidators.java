@@ -71,7 +71,7 @@ public class FormValidators {
 		if (placedOrderForm.getOrderId() == null) {
 			return "The order id is not specified";
 		}
-		if (placedOrderForm.getVersion() == null) {
+		if (placedOrderForm.getVersion() == null || placedOrderForm.getVersion().isBlank()) {
 			return "The order version is not specified";
 		}
 		return null;
@@ -137,7 +137,7 @@ public class FormValidators {
 		if (itemManagementForm.getCurrentItemAmount() == null) {
 			return "The current item amount is not specified";
 		}
-		if (itemManagementForm.getVersion() == null) {
+		if (itemManagementForm.getVersion() == null || itemManagementForm.getVersion().isBlank()) {
 			return "The version is not specified";
 		}
 
@@ -161,7 +161,7 @@ public class FormValidators {
 			return "The value of current status is outside the accepted range";
 		}
 
-		if (orderManagementForm.getVersion() == null) {
+		if (orderManagementForm.getVersion() == null || orderManagementForm.getVersion().isBlank()) {
 			return "The version is not specified";
 		}
 
