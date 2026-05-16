@@ -41,10 +41,10 @@ public class FormValidators {
 
 	@Nullable
 	public static String validateLogInForm(@Nonnull LogInForm logInForm) {
-		if (logInForm.getUsername().isEmpty()) {
+		if (logInForm.getUsername() == null || logInForm.getUsername().isEmpty()) {
 			return "The username field is empty";
 		}
-		if (logInForm.getPassword().isEmpty()) {
+		if (logInForm.getPassword() == null || logInForm.getPassword().isEmpty()) {
 			return "The password field is empty";
 		}
 		return null;
