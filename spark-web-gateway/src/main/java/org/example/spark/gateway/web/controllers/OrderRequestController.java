@@ -23,6 +23,7 @@ import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.FormValidators;
+import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -109,8 +110,7 @@ public class OrderRequestController {
 	@GetMapping("/placeorder")
 	public Callable<String> placeOrder(
 		HttpSession httpSession,
-		Model model,
-		@RequestParam(required = false, name = "error_message") String errorMessage
+		Model model
 	) {
 		return () -> {
 			Account account = accountRequestProcessor.getAccount(httpSession.getId());
@@ -121,7 +121,6 @@ public class OrderRequestController {
 			try {
 				Item[] items = gettingInventoryProcess.get(timeout, TimeUnit.MILLISECONDS);
 				model.addAttribute("items", items);
-				model.addAttribute("errorMessage", Optional.ofNullable(errorMessage));
 				return "place_order_form";
 			} catch (TimeoutException e) {
 				gettingInventoryProcess.cancel(true);
@@ -141,16 +140,10 @@ public class OrderRequestController {
 
 	@PostMapping("/placeorder")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> placeOrder(HttpSession httpSession, @RequestBody NewOrderForm newOrderForm) {
+	public Callable<FormSubmissionResponse> placeOrder(
+		HttpSession httpSession, @RequestBody @Valid NewOrderForm newOrderForm
+	) {
 		return () -> {
-			String validationError = FormValidators.validateNewOrderForm(newOrderForm);
-			if (validationError != null) {
-				return new RedirectFormSubmissionResponse(UriComponentsBuilder
-					.fromPath("/placeorder")
-					.queryParam("error_message", validationError)
-					.build()
-					.toString());
-			}
 			Future<?> placingOrderProcess = orderRequestProcessor.placeOrder(
 				httpSession.getId(), newOrderForm.getTimestamp(), newOrderForm.getLineItems()
 			);
@@ -176,11 +169,9 @@ public class OrderRequestController {
 	@PostMapping("/cancelorder")
 	@ResponseBody
 	public Callable<FormSubmissionResponse> cancelOrder(
-		HttpSession httpSession, @RequestBody PlacedOrderForm placedOrderForm
+		HttpSession httpSession, @RequestBody @Valid PlacedOrderForm placedOrderForm
 	) {
 		return () -> {
-			if (FormValidators.validatePlacedOrderForm(placedOrderForm) != null) return new ErrorFormSubmissionResponse("Bad Request");
-
 			Future<?> cancellingOrderProcess = orderRequestProcessor.cancelOrder(
 				httpSession.getId(), placedOrderForm.getOrderId(), placedOrderForm.getVersion()
 			);
@@ -206,11 +197,9 @@ public class OrderRequestController {
 	@PostMapping("/restoreorder")
 	@ResponseBody
 	public Callable<FormSubmissionResponse> restoreOrder(
-		HttpSession httpSession, @RequestBody PlacedOrderForm placedOrderForm
+		HttpSession httpSession, @RequestBody @Valid PlacedOrderForm placedOrderForm
 	) {
 		return () -> {
-			if (FormValidators.validatePlacedOrderForm(placedOrderForm) != null) return new ErrorFormSubmissionResponse("Bad Request");
-
 			Future<?> cancellingOrderProcess = orderRequestProcessor.restoreOrder(
 				httpSession.getId(), placedOrderForm.getOrderId(), placedOrderForm.getVersion()
 			);

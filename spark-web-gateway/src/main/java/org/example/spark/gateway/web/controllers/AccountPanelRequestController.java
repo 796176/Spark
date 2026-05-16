@@ -23,6 +23,7 @@ import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.FormValidators;
+import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -111,10 +112,11 @@ public class AccountPanelRequestController {
 
 	@PostMapping("/newaccount")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> newAccount(HttpSession httpSession, @RequestBody CreatingAccountForm form) {
+	public Callable<FormSubmissionResponse> newAccount(
+		HttpSession httpSession, @RequestBody @Valid CreatingAccountForm form
+	) {
 		return () -> {
 			try {
-				if (FormValidators.validateCreatingAccountForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> creatingAccountProcess;
 				if (form.isAdmin()) {
 					creatingAccountProcess = accountPanelRequestProcessor
@@ -145,11 +147,10 @@ public class AccountPanelRequestController {
 	public Callable<FormSubmissionResponse> saveAccount(
 		HttpSession httpSession,
 		@PathVariable(name = "accountId") long accountId,
-		@RequestBody AccountManagementForm form
+		@RequestBody @Valid AccountManagementForm form
 	) {
 		return () -> {
 			try {
-				if (FormValidators.validateAccountManagementForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> savingAccountProcess = accountPanelRequestProcessor.saveAccount(
 					httpSession.getId(),
 					accountId,

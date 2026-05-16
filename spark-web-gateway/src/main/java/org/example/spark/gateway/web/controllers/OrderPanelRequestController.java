@@ -23,6 +23,7 @@ import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.FormValidators;
+import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -113,11 +114,10 @@ public class OrderPanelRequestController {
 		HttpSession httpSession,
 		@PathVariable(name = "accountId") long accountId,
 		@PathVariable(name = "orderId") long orderId,
-		@RequestBody OrderManagementForm form
+		@RequestBody @Valid OrderManagementForm form
 	) {
 		return () -> {
 			try {
-				if (FormValidators.validateOrderManagementForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> savingOrderProcess = orderPanelRequestProcessor.saveOrder(
 					httpSession.getId(), orderId, form.getVersion(), form.getPreviousStatus(), form.getCurrentStatus()
 				);

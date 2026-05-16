@@ -23,6 +23,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
 import org.aspectj.lang.reflect.MethodSignature;
+import org.example.spark.gateway.web.models.ErrorFormSubmissionResponse;
+import org.example.spark.gateway.web.models.FormSubmissionResponse;
 import org.example.spark.gateway.web.validators.Valid;
 import org.example.spark.gateway.web.validators.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,13 +41,16 @@ public class ValidatingControllerAdvising {
 	@Autowired
 	private List<Validator> validators;
 
+	@Pointcut("@annotation(org.springframework.web.bind.annotation.ResponseBody)")
+	public void restEndpoint() { }
+
 	@Pointcut("within(@org.springframework.stereotype.Controller org.example.spark.gateway.web.controllers.*)")
-	public void controllerBean() {}
+	public void controllerBean() { }
 
-	@Pointcut("execution(* *(..))")
-	public void methodPointcut() {}
+	@Pointcut("execution(public java.util.concurrent.Callable *(..))")
+	public void asynchronousMethod() { }
 
-	@Around("controllerBean() && methodPointcut()")
+	@Around("controllerBean() && restEndpoint() && asynchronousMethod()")
 	public Object validationAdvise(ProceedingJoinPoint pjp) throws Throwable {
 		Object[] args = pjp.getArgs();
 		Method advisedMethod = ((MethodSignature) pjp.getSignature()).getMethod();
@@ -54,9 +59,9 @@ public class ValidatingControllerAdvising {
 			if (parameters[i].getDeclaredAnnotation(Valid.class) != null) {
 				Validator.ValidationResult validationResult = validate(args[i]);
 				if (validationResult != null) {
-					if (advisedMethod.getReturnType().equals(Callable.class)) {
-						return (Callable<?>) validationResult::errorMessage;
-					} else return validationResult.errorMessage();
+					return (Callable<FormSubmissionResponse>) () -> {
+						return new ErrorFormSubmissionResponse(validationResult.errorMessage());
+					};
 				}
 			}
 		}

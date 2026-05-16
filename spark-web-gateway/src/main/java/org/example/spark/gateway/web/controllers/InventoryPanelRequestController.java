@@ -23,6 +23,7 @@ import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.FormValidators;
+import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -100,11 +101,10 @@ public class InventoryPanelRequestController {
 	@PostMapping("/item/{itemId}/save")
 	@ResponseBody
 	public Callable<FormSubmissionResponse> saveItem(
-		HttpSession httpSession, @PathVariable(name = "itemId") long itemId, @RequestBody ItemManagementForm form
+		HttpSession httpSession, @PathVariable(name = "itemId") long itemId, @RequestBody @Valid ItemManagementForm form
 	) {
 		return () -> {
 			try {
-				if (FormValidators.validateItemManagementForm(form) != null) return new ErrorFormSubmissionResponse("Bad Request");
 				Future<?> savingItemProcess = inventoryPanelRequestProcessor.saveItem(
 					httpSession.getId(),
 					itemId,
@@ -131,7 +131,9 @@ public class InventoryPanelRequestController {
 
 	@DeleteMapping("/item/{itemId}/delete")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> deleteItem(HttpSession httpSession, @PathVariable(name = "itemId") long itemId) {
+	public Callable<FormSubmissionResponse> deleteItem(
+		HttpSession httpSession, @PathVariable(name = "itemId") long itemId
+	) {
 		return () -> {
 			try {
 				Future<?> deletingItemProcess = inventoryPanelRequestProcessor.deleteItem(httpSession.getId(), itemId);
@@ -164,7 +166,7 @@ public class InventoryPanelRequestController {
 	@ResponseBody
 	public Callable<FormSubmissionResponse> newItem(
 		HttpSession httpSession,
-		@RequestPart("form") CreatingItemForm form,
+		@RequestPart("form") @Valid CreatingItemForm form,
 		@RequestPart(value = "item_picture") MultipartFile itemPicture
 	) {
 		return () -> {

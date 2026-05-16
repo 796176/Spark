@@ -24,6 +24,7 @@ import org.example.spark.authorization.Role;
 import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
+import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
@@ -53,7 +54,7 @@ public class AccountRequestController {
 	@PostMapping("/login")
 	@ResponseBody
 	public Callable<FormSubmissionResponse> logIn(
-		@RequestBody LogInForm logInForm, HttpServletRequest httpServletRequest
+		@RequestBody @Valid LogInForm logInForm, HttpServletRequest httpServletRequest
 	) {
 		return () -> {
 			try {
@@ -76,7 +77,7 @@ public class AccountRequestController {
 	@PostMapping("/signin")
 	@ResponseBody
 	public Callable<FormSubmissionResponse> signIn(
-		@RequestBody SignInForm signInForm, HttpServletRequest httpServletRequest
+		@RequestBody @Valid SignInForm signInForm, HttpServletRequest httpServletRequest
 	) {
 		return () -> {
 			Future<?> signInProcess = accountRequestProcessor.signIn(
