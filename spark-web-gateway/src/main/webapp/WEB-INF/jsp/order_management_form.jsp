@@ -3,7 +3,6 @@
 <jsp:useBean id="account" scope="request" type="java.util.Optional"/>
 <jsp:useBean id="accountId" scope="request" type="java.lang.Long"/>
 <jsp:useBean id="managedOrder" scope="request" type="org.example.spark.gateway.web.models.DetailedOrder"/>
-<jsp:useBean id="errorMessage" scope="request" type="java.util.Optional"/>
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>

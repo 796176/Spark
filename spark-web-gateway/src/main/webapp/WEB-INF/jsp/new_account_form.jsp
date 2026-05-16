@@ -1,7 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="form" uri="http://www.springframework.org/tags/form" %>
 <jsp:useBean id="account" scope="request" type="java.util.Optional" />
-<jsp:useBean id="errorMessage" scope="request" type="java.util.Optional" />
 <html lang="en-US">
 	<head>
 		<meta charset="utf-8"/>
@@ -56,11 +55,6 @@
 					</label>
 				</p>
 
-				<% if (errorMessage.isPresent()) { %>
-					<p class="decorated_error_message">
-						<%= errorMessage.get() %>
-					</p>
-				<% } %>
 				<p class="error_field decorated_error"></p>
 				<button class="submit_form_button decorated_button">Submit</button>
 			</form:form>
