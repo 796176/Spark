@@ -13,6 +13,7 @@
 		<link rel="stylesheet" href="/static/css/place_order_form.css"/>
 
 		<script type="module" src="/static/scripts/form_submission.js"></script>
+		<script type="module" src="/static/scripts/cart_control.js"></script>
 	</head>
 	<body>
 		<header>
@@ -64,17 +65,27 @@
 									</sub>
 								</span>
 								<% if (item.amount() > 0) { %>
-									<jsp:element name="input">
-										<jsp:attribute name="type">number</jsp:attribute>
-										<jsp:attribute name="class">item_amount_input</jsp:attribute>
-										<jsp:attribute name="name">
-											<%= item.itemId() %>
-										</jsp:attribute>
-										<jsp:attribute name="min">0</jsp:attribute>
-										<jsp:attribute name="value">0</jsp:attribute>
-										<jsp:attribute name="required"></jsp:attribute>
-										<jsp:attribute name="max">10</jsp:attribute>
-									</jsp:element>
+									<button class="add_to_cart_button">
+										<img src="/static/icons/add_shopping_cart_24dp_000000_FILL0_wght400_GRAD0_opsz24.svg"/>
+										<span>Add</span>
+									</button>
+									<div class="cart_control hidden">
+										<jsp:element name="select" class="item_amount">
+											<jsp:attribute name="name">
+												<%= item.itemId() %>
+											</jsp:attribute>
+											<jsp:body>
+												<option value="1">1</option>
+												<option value="2">2</option>
+												<option value="3">3</option>
+												<option value="4">4</option>
+												<option value="5">5</option>
+												<hr>
+												<option value="0" selected>Remove</option>
+											</jsp:body>
+										</jsp:element>
+										<span>In cart</span>
+									</div>
 								<% } else { %>
 									<span class="item_availability">Out of Stock</span>
 								<% } %>
