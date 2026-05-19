@@ -22,10 +22,12 @@ import jakarta.servlet.http.HttpSession;
 import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
-import org.example.spark.gateway.web.validators.FormValidators;
 import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -100,7 +102,7 @@ public class InventoryPanelRequestController {
 
 	@PostMapping("/item/{itemId}/save")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> saveItem(
+	public Callable<HttpEntity<FormSubmissionResponse>> saveItem(
 		HttpSession httpSession, @PathVariable(name = "itemId") long itemId, @RequestBody @Valid ItemManagementForm form
 	) {
 		return () -> {
@@ -113,41 +115,65 @@ public class InventoryPanelRequestController {
 					form.getCurrentItemAmount()
 				);
 				savingItemProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/panel/inventory");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/panel/inventory"));
 			} catch (AuthenticationException e) {
-				return new RedirectFormSubmissionResponse("/login");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				}
-				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+				else return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			} catch (TimeoutException e) {
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			}
 		};
 	}
 
 	@DeleteMapping("/item/{itemId}/delete")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> deleteItem(
+	public Callable<HttpEntity<FormSubmissionResponse>> deleteItem(
 		HttpSession httpSession, @PathVariable(name = "itemId") long itemId
 	) {
 		return () -> {
 			try {
 				Future<?> deletingItemProcess = inventoryPanelRequestProcessor.deleteItem(httpSession.getId(), itemId);
 				deletingItemProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/panel/inventory");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/panel/inventory"));
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				}
-				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+				else return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			} catch (TimeoutException e) {
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			}
 		};
 	}
@@ -164,7 +190,7 @@ public class InventoryPanelRequestController {
 
 	@PostMapping("/newitem")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> newItem(
+	public Callable<HttpEntity<FormSubmissionResponse>> newItem(
 		HttpSession httpSession,
 		@RequestPart("form") @Valid CreatingItemForm form,
 		@RequestPart(value = "item_picture") MultipartFile itemPicture
@@ -181,16 +207,28 @@ public class InventoryPanelRequestController {
 				Future<?> creatingItemProcess = inventoryPanelRequestProcessor
 					.addItem(httpSession.getId(), form.getItemName(), form.getPrice(), form.getAmount(), picture);
 				creatingItemProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/panel/inventory");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/panel/inventory"));
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				}
-				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+				else return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			} catch (TimeoutException e) {
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			}
 		};
 	}

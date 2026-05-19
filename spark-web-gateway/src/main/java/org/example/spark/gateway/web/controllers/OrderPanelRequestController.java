@@ -22,10 +22,12 @@ import jakarta.servlet.http.HttpSession;
 import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
-import org.example.spark.gateway.web.validators.FormValidators;
 import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -110,7 +112,7 @@ public class OrderPanelRequestController {
 
 	@PostMapping("/order/{orderId}/save")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> saveOrder(
+	public Callable<HttpEntity<FormSubmissionResponse>> saveOrder(
 		HttpSession httpSession,
 		@PathVariable(name = "accountId") long accountId,
 		@PathVariable(name = "orderId") long orderId,
@@ -122,18 +124,30 @@ public class OrderPanelRequestController {
 					httpSession.getId(), orderId, form.getVersion(), form.getPreviousStatus(), form.getCurrentStatus()
 				);
 				savingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/panel/account/" + accountId + "/orders");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/panel/account/" + accountId + "/orders"));
 			} catch (AuthenticationException e) {
-				return new RedirectFormSubmissionResponse("/login");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				}
-				else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+				else return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			} catch (TimeoutException e) {
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			}
 		};
 	}

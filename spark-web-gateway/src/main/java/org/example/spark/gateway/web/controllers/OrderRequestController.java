@@ -22,14 +22,15 @@ import jakarta.servlet.http.HttpSession;
 import org.example.spark.authorization.exceptions.AuthorizationException;
 import org.example.spark.gateway.web.exceptions.AuthenticationException;
 import org.example.spark.gateway.web.models.*;
-import org.example.spark.gateway.web.validators.FormValidators;
 import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.Optional;
 import java.util.concurrent.*;
@@ -140,7 +141,7 @@ public class OrderRequestController {
 
 	@PostMapping("/placeorder")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> placeOrder(
+	public Callable<HttpEntity<FormSubmissionResponse>> placeOrder(
 		HttpSession httpSession, @RequestBody @Valid NewOrderForm newOrderForm
 	) {
 		return () -> {
@@ -149,26 +150,38 @@ public class OrderRequestController {
 			);
 			try {
 				placingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/orders");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/orders"));
 			} catch (TimeoutException e) {
 				placingOrderProcess.cancel(true);
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthenticationException)
-					return new RedirectFormSubmissionResponse("/login");
+					return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				}
-				return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			}
 		};
 	}
 
 	@PostMapping("/cancelorder")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> cancelOrder(
+	public Callable<HttpEntity<FormSubmissionResponse>> cancelOrder(
 		HttpSession httpSession, @RequestBody @Valid PlacedOrderForm placedOrderForm
 	) {
 		return () -> {
@@ -177,26 +190,38 @@ public class OrderRequestController {
 			);
 			try {
 				cancellingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/orders");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/orders"));
 			} catch (TimeoutException e) {
 				cancellingOrderProcess.cancel(true);
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthenticationException)
-					return new RedirectFormSubmissionResponse("/login");
+					return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				}
-				return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			}
 		};
 	}
 
 	@PostMapping("/restoreorder")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> restoreOrder(
+	public Callable<HttpEntity<FormSubmissionResponse>> restoreOrder(
 		HttpSession httpSession, @RequestBody @Valid PlacedOrderForm placedOrderForm
 	) {
 		return () -> {
@@ -205,19 +230,31 @@ public class OrderRequestController {
 			);
 			try {
 				cancellingOrderProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/orders");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/orders"));
 			} catch (TimeoutException e) {
 				cancellingOrderProcess.cancel(true);
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthenticationException)
-					return new RedirectFormSubmissionResponse("/login");
+					return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
 				}
-				return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			}
 		};
 	}

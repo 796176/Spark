@@ -27,6 +27,9 @@ import org.example.spark.gateway.web.models.*;
 import org.example.spark.gateway.web.validators.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -53,7 +56,7 @@ public class AccountRequestController {
 
 	@PostMapping("/login")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> logIn(
+	public Callable<HttpEntity<FormSubmissionResponse>> logIn(
 		@RequestBody @Valid LogInForm logInForm, HttpServletRequest httpServletRequest
 	) {
 		return () -> {
@@ -62,9 +65,13 @@ public class AccountRequestController {
 					httpServletRequest.getRequestedSessionId(), logInForm.getUsername(), logInForm.getPassword()
 				);
 			} catch (AuthenticationException e) {
-				return new ErrorFormSubmissionResponse("Incorrect name or password");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Incorrect name or password"),
+					(HttpHeaders) null,
+					400
+				);
 			}
-			return new RedirectFormSubmissionResponse("/index");
+			return new HttpEntity<>(new RedirectFormSubmissionResponse("/index"));
 		};
 	}
 
@@ -76,7 +83,7 @@ public class AccountRequestController {
 
 	@PostMapping("/signin")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> signIn(
+	public Callable<HttpEntity<FormSubmissionResponse>> signIn(
 		@RequestBody @Valid SignInForm signInForm, HttpServletRequest httpServletRequest
 	) {
 		return () -> {
@@ -90,16 +97,28 @@ public class AccountRequestController {
 
 			try {
 				signInProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/index");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/index"));
 			} catch (TimeoutException timeoutException) {
 				signInProcess.cancel(true);
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpServletRequest.getSession(true).getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
-				} else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
+				} else return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			}
 		};
 	}
@@ -130,20 +149,32 @@ public class AccountRequestController {
 
 	@DeleteMapping("/myaccount")
 	@ResponseBody
-	public Callable<FormSubmissionResponse> deleteAccount(HttpSession httpSession) {
+	public Callable<HttpEntity<FormSubmissionResponse>> deleteAccount(HttpSession httpSession) {
 		return () -> {
 			Future<?> deletingAccountProcess = accountRequestProcessor.deleteAccount(httpSession.getId());
 			try {
 				deletingAccountProcess.get(timeout, TimeUnit.MILLISECONDS);
-				return new RedirectFormSubmissionResponse("/logout");
+				return new HttpEntity<>(new RedirectFormSubmissionResponse("/logout"));
 			} catch (ExecutionException e) {
 				if (e.getCause() instanceof AuthorizationException) {
 					if (accountRequestProcessor.isLoggedIn(httpSession.getId())) {
-						return new ErrorFormSubmissionResponse("Not Authorized");
-					} else return new RedirectFormSubmissionResponse("/login");
-				} else return new ErrorFormSubmissionResponse("Server Error. Try Again Later");
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse("Not Authorized"),
+							(HttpHeaders) null,
+							401
+						);
+					} else return new HttpEntity<>(new RedirectFormSubmissionResponse("/login"));
+				} else return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Server Error. Try Again Later"),
+					(HttpHeaders) null,
+					500
+				);
 			} catch (TimeoutException e) {
-				return new ErrorFormSubmissionResponse("Timeout Error. Try Again Later");
+				return new ResponseEntity<>(
+					new ErrorFormSubmissionResponse("Timeout Error. Try Again Later"),
+					(HttpHeaders) null,
+					504
+				);
 			}
 		};
 	}
