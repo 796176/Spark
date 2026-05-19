@@ -28,7 +28,9 @@ import org.example.spark.gateway.web.models.FormSubmissionResponse;
 import org.example.spark.gateway.web.validators.Valid;
 import org.example.spark.gateway.web.validators.Validator;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ui.Model;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.ResponseEntity;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
@@ -59,8 +61,12 @@ public class ValidatingControllerAdvising {
 			if (parameters[i].getDeclaredAnnotation(Valid.class) != null) {
 				Validator.ValidationResult validationResult = validate(args[i]);
 				if (validationResult != null) {
-					return (Callable<FormSubmissionResponse>) () -> {
-						return new ErrorFormSubmissionResponse(validationResult.errorMessage());
+					return (Callable<HttpEntity<FormSubmissionResponse>>) () -> {
+						return new ResponseEntity<>(
+							new ErrorFormSubmissionResponse(validationResult.errorMessage()),
+							(HttpHeaders) null,
+							400
+						);
 					};
 				}
 			}
