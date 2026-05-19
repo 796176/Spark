@@ -54,18 +54,18 @@ function registerSubmitButton(form) {
 		if (uri == null) {
 			uri = window.location.pathname;
 		}
-		fetch(uri, fetchOptions)
-			.then((response) => {
-				return response.json();
-			})
-			.then((json) => {
-				const associatedErrorField = form.querySelector(".error_field");
-				if (json.error != null ) {
+		fetch(uri, fetchOptions).then((response) => {
+			if (response.ok) {
+				response.json().then((json) => {
+					window.location.href = json.redirect;
+				});
+			} else {
+				response.json().then((json) => {
+					const associatedErrorField = form.querySelector(".error_field");
 					associatedErrorField.textContent = json.error;
-				} else {
-					window.location = json.redirect;
-				}
-			});
+				});
+			} 	
+		});
 	});
 }
 
