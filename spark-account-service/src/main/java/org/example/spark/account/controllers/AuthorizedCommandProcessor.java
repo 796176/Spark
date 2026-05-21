@@ -23,6 +23,8 @@ import org.example.spark.account.models.Password;
 import org.example.spark.account.models.PermissionList;
 import org.example.spark.account.models.RenderableAccount;
 import org.example.spark.authorization.Role;
+import org.example.spark.authorization.exceptions.AuthorizationException;
+import org.example.spark.authorization.exceptions.ConditionalAuthorizer;
 
 import java.util.UUID;
 import java.util.concurrent.Executor;
@@ -49,7 +51,15 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 		@Nonnull String name,
 		@Nonnull Password password,
 		@Nonnull UUID messageId
-	) {
+	) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder
+			.any(
+				builder.isAdministrator(),
+				builder.not(builder.hasRoles())
+			)
+			.build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		accountService.createAccount(name, password, messageId);
 	}
 
@@ -60,42 +70,85 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 		@Nonnull String name,
 		@Nonnull Password password,
 		@Nonnull UUID messageId
-	) {
+	) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		accountService.createAdminAccount(name, password, messageId);
 	}
 
 	@Override
-	protected RenderableAccount getAccount(long callerId, @Nonnull Role[] callerRoles, long id) {
+	protected RenderableAccount getAccount(
+		long callerId, @Nonnull Role[] callerRoles, long id
+	) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder
+			.any(
+				builder.isAdministrator(),
+				builder.matchesId(id)
+			)
+			.build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		return accountService.getAccount(id);
 	}
 
 	@Override
-	protected RenderableAccount[] getAccounts(long callerId, @Nonnull Role[] callerRoles) {
+	protected RenderableAccount[] getAccounts(
+		long callerId, @Nonnull Role[] callerRoles
+	) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		return accountService.getAccounts();
 	}
 
 	@Override
-	protected void deleteAccount(long callerId, @Nonnull Role[] callerRoles, long id) {
+	protected void deleteAccount(long callerId, @Nonnull Role[] callerRoles, long id) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.matchesId(id).build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		accountService.deleteAccount(id);
 	}
 
 	@Override
-	protected void suspendAccount(long callerId, @Nonnull Role[] callerRoles, long id) {
+	protected void suspendAccount(long callerId, @Nonnull Role[] callerRoles, long id) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		accountService.suspendAccount(id);
 	}
 
 	@Override
-	protected void restoreAccount(long callerId, @Nonnull Role[] callerRoles, long id) {
+	protected void restoreAccount(long callerId, @Nonnull Role[] callerRoles, long id) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		accountService.restoreAccount(id);
 	}
 
 	@Override
-	protected void changeAccountRoles(long callerId, @Nonnull Role[] callerRoles, long id, @Nonnull Role[] roles) {
+	protected void changeAccountRoles(
+		long callerId, @Nonnull Role[] callerRoles, long id, @Nonnull Role[] roles
+	) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		accountService.changeAccountRoles(id, roles);
 	}
 
 	@Override
-	protected PermissionList getAccountPermissions(long callerId, @Nonnull Role[] callerRoles, long id) {
+	protected PermissionList getAccountPermissions(
+		long callerId, @Nonnull Role[] callerRoles, long id
+	) throws AuthorizationException {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder
+			.any(
+				builder.isAdministrator(),
+				builder.isService(),
+				builder.matchesId(id)
+			)
+			.build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		return accountService.getAccountPermissions(id);
 	}
 }
