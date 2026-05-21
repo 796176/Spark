@@ -205,7 +205,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		@Nonnull String name,
 		@Nonnull Password password,
 		@Nonnull UUID messageId
-	);
+	) throws Exception;
 
 	protected abstract void createAdminAccount(
 		long callerId,
@@ -213,21 +213,31 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		@Nonnull String name,
 		@Nonnull Password password,
 		@Nonnull UUID messageId
-	);
+	) throws Exception;
 
-	protected abstract RenderableAccount getAccount(long callerId, @Nonnull Role[] callerRoles, long id);
+	protected abstract RenderableAccount getAccount(
+		long callerId, @Nonnull Role[] callerRoles, long id
+	) throws Exception;
 
-	protected abstract RenderableAccount[] getAccounts(long callerId, @Nonnull Role[] callerRoles);
+	protected abstract RenderableAccount[] getAccounts(
+		long callerId, @Nonnull Role[] callerRoles
+	) throws Exception;
 
-	protected abstract void deleteAccount(long callerId, @Nonnull Role[] callerRoles, long id);
+	protected abstract void deleteAccount(
+		long callerId, @Nonnull Role[] callerRoles, long id
+	) throws Exception;
 
-	protected abstract void suspendAccount(long callerId, @Nonnull Role[] callerRoles, long id);
+	protected abstract void suspendAccount(
+		long callerId, @Nonnull Role[] callerRoles, long id
+	) throws Exception;
 
-	protected abstract void restoreAccount(long callerId, @Nonnull Role[] callerRoles, long id);
+	protected abstract void restoreAccount(
+		long callerId, @Nonnull Role[] callerRoles, long id
+	) throws Exception;
 
 	protected abstract void changeAccountRoles(
 		long callerId, @Nonnull Role[] callerRoles, long id, @Nonnull Role[] roles
-	);
+	) throws Exception;
 
 	protected abstract PermissionList getAccountPermissions(
 		long callerId, @Nonnull Role[] callerRoles, long id
