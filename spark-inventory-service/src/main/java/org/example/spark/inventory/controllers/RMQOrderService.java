@@ -21,6 +21,7 @@ package org.example.spark.inventory.controllers;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
+import org.example.spark.authorization.Role;
 import org.example.spark.inventory.sagas.OrderServiceProxy;
 import org.example.spark.inventory.sagas.SagaState;
 
@@ -39,6 +40,7 @@ public class RMQOrderService implements OrderServiceProxy {
 
 	@Override
 	public void invalidateItem(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) throws Exception {
+		String encodedRole = Long.toString(Role.SERVICE.getId());
 		AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder()
 			.deliveryMode(2)
 			.contentType("application/json")
@@ -46,7 +48,7 @@ public class RMQOrderService implements OrderServiceProxy {
 			.messageId(state.getIdempotenceToken())
 			.type("org.example.spark.order.invalidate-item")
 			.replyTo(replyChannel)
-			.headers(Map.of("Version", "1.0", "Caller-Id", "-1", "Caller-Roles", ""))
+			.headers(Map.of("Version", "1.0", "Caller-Id", "-1", "Caller-Roles", encodedRole))
 			.build();
 		// TODO decouple this service proxy from command formating
 		channel.basicPublish(

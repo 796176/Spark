@@ -21,6 +21,7 @@ package org.example.spark.order.controllers;
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
+import org.example.spark.authorization.Role;
 import org.example.spark.order.converters.AuthorizingAccountMessageProcessor;
 import org.example.spark.order.sagas.AccountServiceProxy;
 import org.example.spark.order.sagas.SagaState;
@@ -52,6 +53,7 @@ public class RMQAccountService implements AccountServiceProxy {
 	) throws IOException, InterruptedException {
 		AuthorizingAccountMessageProcessor.MessageDetails messageDetails =
 			authorizingAccountMessageProcessor.createRequest(accountId);
+		String encodedRole = Long.toString(Role.SERVICE.getId());
 		AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
 			.deliveryMode(2)
 			.correlationId(correlationId)
@@ -61,7 +63,7 @@ public class RMQAccountService implements AccountServiceProxy {
 				Map.of(
 					"Version", messageDetails.getVersion(),
 					"Caller-Id", "-1",
-					"Caller-Roles", ""
+					"Caller-Roles", encodedRole
 				)
 			)
 			.contentType(messageDetails.getContentType())
