@@ -21,6 +21,7 @@ package org.example.spark.inventory.controllers;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
 import org.example.spark.authorization.Role;
+import org.example.spark.authorization.exceptions.ConditionalAuthorizer;
 import org.example.spark.inventory.interactors.InventoryService;
 import org.example.spark.inventory.models.Money;
 import org.example.spark.inventory.models.RenderableItem;
@@ -52,6 +53,9 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 		@Nullable String pictureName,
 		@Nonnull String idempotenceToken
 	) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		inventoryService.addItem(name, price, amount, pictureName, idempotenceToken);
 	}
 
@@ -59,6 +63,9 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 	protected void deleteItem(
 		long callerId, @Nonnull Role[] callerRoles, long itemId, @Nonnull String idempotenceToken
 	) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		inventoryService.deleteItem(itemId, idempotenceToken);
 	}
 
@@ -71,16 +78,25 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 		long version,
 		@Nonnull String idempotenceToken
 	) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		inventoryService.updateAmount(itemId, amount, version, idempotenceToken);
 	}
 
 	@Override
 	protected RenderableItem getItem(long callerId, @Nonnull Role[] callerRoles, long itemId) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.allowAny().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		return inventoryService.getItem(itemId);
 	}
 
 	@Override
 	protected RenderableItem[] getItems(long callerId, @Nonnull Role[] callerRoles) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.allowAny().build();
+		conditionalAuthorizer.authorize(callerId, callerRoles);
 		return inventoryService.getItems();
 	}
 }
