@@ -19,7 +19,7 @@
 package org.example.spark.authorization;
 
 public enum Role {
-	USER(0), ADMIN(1);
+	USER(0), ADMIN(1), SERVICE(2);
 
 	private final long id;
 
@@ -34,6 +34,7 @@ public enum Role {
 	public static Role fromId(long id) {
 		if (id == 0L) return Role.USER;
 		if (id == 1L) return Role.ADMIN;
+		if (id == 2L) return Role.SERVICE;
 		throw new IllegalArgumentException();
 	}
 
