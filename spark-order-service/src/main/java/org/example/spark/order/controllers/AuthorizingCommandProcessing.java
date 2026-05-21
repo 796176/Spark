@@ -20,6 +20,7 @@ package org.example.spark.order.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.authorization.Role;
+import org.example.spark.authorization.exceptions.ConditionalAuthorizer;
 import org.example.spark.order.converters.OrderCommandParser;
 import org.example.spark.order.converters.ResponseConverter;
 import org.example.spark.order.interactors.ItemRepositoryReplicaManager;
@@ -62,6 +63,14 @@ public class AuthorizingCommandProcessing extends AbstractCommandProcessor {
 		@Nonnull LineItem[] lineItems,
 		@Nonnull String idempotenceToken
 	) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder
+			.all(
+				builder.hasRoles(Role.USER),
+				builder.matchesId(accountId)
+			)
+			.build();
+		conditionalAuthorizer.authorize(callerId, roles);
 		orderService.placeOrder(accountId, orderTimestamp, lineItems, idempotenceToken);
 	}
 
@@ -69,6 +78,9 @@ public class AuthorizingCommandProcessing extends AbstractCommandProcessor {
 	protected void rejectOrder(
 		long callerId, @Nonnull Role[] roles, long orderId, long version, @Nonnull String idempotenceToken
 	) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, roles);
 		orderService.rejectOrder(orderId, version, idempotenceToken);
 	}
 
@@ -76,6 +88,9 @@ public class AuthorizingCommandProcessing extends AbstractCommandProcessor {
 	protected void acceptOrder(
 		long callerId, @Nonnull Role[] roles, long orderId, long version, @Nonnull String idempotenceToken
 	) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
+		conditionalAuthorizer.authorize(callerId, roles);
 		orderService.acceptOrder(orderId, version, idempotenceToken);
 	}
 
@@ -83,6 +98,10 @@ public class AuthorizingCommandProcessing extends AbstractCommandProcessor {
 	protected void cancelOrder(
 		long callerId, @Nonnull Role[] roles, long orderId, long version, @Nonnull String idempotenceToken
 	) throws Exception {
+		RenderableOrder order = orderService.getOrder(orderId);
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.matchesId(order.getAccountId()).build();
+		conditionalAuthorizer.authorize(callerId, roles);
 		orderService.cancelOrder(orderId, version, idempotenceToken);
 	}
 
@@ -90,23 +109,47 @@ public class AuthorizingCommandProcessing extends AbstractCommandProcessor {
 	protected void restoreOrder(
 		long callerId, @Nonnull Role[] roles, long orderId, long version, @Nonnull String idempotenceToken
 	) throws Exception {
+		RenderableOrder order = orderService.getOrder(orderId);
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.matchesId(order.getAccountId()).build();
+		conditionalAuthorizer.authorize(callerId, roles);
 		orderService.restoreOrder(orderId, version, idempotenceToken);
 	}
 
 	@Override
 	protected RenderableOrder getOrder(long callerId, @Nonnull Role[] roles, long orderId) throws Exception {
-		return orderService.getOrder(orderId);
+		RenderableOrder order = orderService.getOrder(orderId);
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder
+			.any(
+				builder.isAdministrator(),
+				builder.matchesId(order.getAccountId())
+			)
+			.build();
+		conditionalAuthorizer.authorize(callerId, roles);
+		return order;
 	}
 
 	@Override
 	protected RenderableOrder[] getOrdersByAccount(
 		long callerId, @Nonnull Role[] roles, long accountId
 	) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder
+			.any(
+				builder.isAdministrator(),
+				builder.matchesId(accountId)
+			)
+			.build();
+		conditionalAuthorizer.authorize(callerId, roles);
 		return orderService.getOrdersByAccount(accountId);
 	}
 
 	@Override
-	protected void invalidateItem(long callerId, @Nonnull Role[] roles, long itemId) {
+	protected void invalidateItem(long callerId, @Nonnull Role[] roles, long itemId) throws Exception {
+		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
+		ConditionalAuthorizer conditionalAuthorizer = builder.isService().build();
+		conditionalAuthorizer.authorize(callerId, roles);
 		if (orderDataAccess.isItemOrdered(itemId)) throw new IllegalStateException();
 		itemRepositoryReplicaManager.deleteItem(itemId);
 	}
