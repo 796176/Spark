@@ -1,4 +1,16 @@
+@font-face {
+	font-family: "opensans";
+	src:
+		url("/static/fonts/opensans.ttf") format("truetype"),
+		url("/static/fonts/OpenSans-Regular.woff2") format("woff2"),
+		url("/static/fonts/OpenSans-Regular.woff") format("woff");
+  	font-weight: 430 680;
+    font-style: normal;
+    font-display: swap;
+}
+
 body {
+	font-family: "opensans";
 	margin: 0;
 	min-height: 100vh;
 	display: grid;

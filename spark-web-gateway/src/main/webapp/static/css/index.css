@@ -1,18 +1,7 @@
-@font-face {
-	font-family: "opensans";
-	src:
-		url("/static/fonts/OpenSans-Regular.woff2") format("woff2"),
-		url("/static/fonts/OpenSans-Regular.woff") format("woff");
-  	font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-
 main {
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	font-family: "opensans";
 	color: dimgray;
 	padding-left: 17rem;
 	width: 50%;
