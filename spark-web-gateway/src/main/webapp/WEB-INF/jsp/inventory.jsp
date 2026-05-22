@@ -51,7 +51,7 @@
 									</jsp:element>
 								<% } %>
 							</span>
-							<span class="item_name">
+							<span class="item_name decorated_inventory_name">
 								<%= item.name() %>
 							</span>
 							<span class="item_price decorated_inventory_price">
