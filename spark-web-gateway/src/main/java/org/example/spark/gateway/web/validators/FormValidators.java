@@ -197,7 +197,7 @@ public class FormValidators {
 		}
 
 		if (creatingItemForm.getPrice() == null) {
-			return "The price is not specified";
+			return "The price is not specified. Specify it using the following format: 5.00 or 0.20 or 10.05";
 		}
 		if (creatingItemForm.getPrice().centAmount() < 0 || creatingItemForm.getPrice().currencyAmount() < 0) {
 			return "The price can't be negative";
