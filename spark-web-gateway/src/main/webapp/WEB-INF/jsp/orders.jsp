@@ -34,7 +34,7 @@
 
 		<main>
 			<a class="decorated_link" href="/placeorder">Place Order</a>
-			<p>Placed Orders</p>
+			<h1>Placed Orders</h1>
 			<% if (orders.length == 0) { %>
 				<p>Empty</p>
 			<% } else { %>
