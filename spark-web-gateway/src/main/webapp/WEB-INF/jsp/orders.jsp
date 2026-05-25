@@ -33,8 +33,8 @@
 		</header>
 
 		<main>
-			<a class="decorated_link" href="/placeorder">Place Order</a>
 			<h1>Placed Orders</h1>
+			<a class="decorated_link" href="/placeorder">Place Order</a>
 			<% if (orders.length == 0) { %>
 				<p>Empty</p>
 			<% } else { %>

@@ -9,6 +9,10 @@ main a[href="/placeorder"] {
 	width: 10rem;
 }
 
+h1 + a {
+	margin-top: 2rem;
+}
+
 ol {
 	width: 50%;
 }
