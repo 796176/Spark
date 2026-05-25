@@ -121,6 +121,7 @@
 				<p>
 					<button class="submit_form_button decorated_button">Delete Item</button>
 				</p>
+				<p><sub>(The item won't be deleted if it's part of any existing order)</sub></p>
 			</form:form>
 		</main>
 
