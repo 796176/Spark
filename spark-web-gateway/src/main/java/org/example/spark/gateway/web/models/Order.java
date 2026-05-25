@@ -24,17 +24,20 @@ public record Order(
 	long orderId, long timestamp, @Nonnull Status status, @Nonnull String version, @Nonnull LineItem[] lineItems
 ) {
 	public enum Status {
-		PLACING(0L),
-		PENDING_ACCEPTANCE(1L),
-		ACCEPTED(2L),
-		REJECTED(3L),
-		CANCELED(4L),
-		PLACING_ABORTED(5L);
+		PLACING(0L, "Placing"),
+		PENDING_ACCEPTANCE(1L, "Pending acceptance"),
+		ACCEPTED(2L, "Accepted"),
+		REJECTED(3L, "Rejected"),
+		CANCELED(4L, "Canceled"),
+		PLACING_ABORTED(5L, "Placing aborted");
 
 		private final long id;
 
-		Status(long id) {
+		private final String formatedStatus;
+
+		Status(long id, String formatedStatus) {
 			this.id = id;
+			this.formatedStatus = formatedStatus;
 		}
 
 		public long getId() {
@@ -49,6 +52,11 @@ public record Order(
 			if (id == 4) return CANCELED;
 			if (id == 5) return PLACING_ABORTED;
 			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public String toString() {
+			return formatedStatus;
 		}
 	}
 }
