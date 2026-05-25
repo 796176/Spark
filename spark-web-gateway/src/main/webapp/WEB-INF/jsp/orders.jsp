@@ -35,28 +35,32 @@
 		<main>
 			<a class="decorated_link" href="/placeorder">Place Order</a>
 			<p>Placed Orders</p>
-			<ol class="decorated_list">
-				<% for (var order: orders) { %>
-					<li class="order decorated_li">
-						<jsp:element name="a">
-							<jsp:attribute name="href">
-								<%= "/order/" + order.orderId() %>
-							</jsp:attribute>
-							<jsp:body>
-								<span class="order_number decorated_sli">
-									<%= "Order No. " + order.orderId() %>
-								</span>
-								<span class="order_date decorated_sli">
-									<%= java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT).format(java.util.Date.from(java.time.Instant.ofEpochMilli(order.timestamp()))) %>
-								</span>
-								<span class="order_status decorated_sli">
-									<%= order.status() %>
-								</span>
-							</jsp:body>
-						</jsp:element>
-					</li>
-				<% } %>
-			</ol>
+			<% if (orders.length == 0) { %>
+				<p>Empty</p>
+			<% } else { %>
+				<ol class="decorated_list">
+					<% for (var order: orders) { %>
+						<li class="order decorated_li">
+							<jsp:element name="a">
+								<jsp:attribute name="href">
+									<%= "/order/" + order.orderId() %>
+								</jsp:attribute>
+								<jsp:body>
+									<span class="order_number decorated_sli">
+										<%= "Order No. " + order.orderId() %>
+									</span>
+									<span class="order_date decorated_sli">
+										<%= java.text.DateFormat.getDateTimeInstance(java.text.DateFormat.MEDIUM, java.text.DateFormat.SHORT).format(java.util.Date.from(java.time.Instant.ofEpochMilli(order.timestamp()))) %>
+									</span>
+									<span class="order_status decorated_sli">
+										<%= order.status() %>
+									</span>
+								</jsp:body>
+							</jsp:element>
+						</li>
+					<% } %>
+				</ol>
+			<% } %>
 		</main>
 
 		<footer>
