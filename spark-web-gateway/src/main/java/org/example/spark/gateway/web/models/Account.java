@@ -24,12 +24,15 @@ import org.example.spark.authorization.Role;
 public interface Account {
 
 	enum Status {
-		ACTIVE(0), DELETED(1), SUSPENDED(2);
+		ACTIVE(0, "Active"), DELETED(1, "Deleted"), SUSPENDED(2, "Suspended");
+
+		private final String formatedStatus;
 
 		private final long id;
 
-		Status(long id) {
+		Status(long id, String formatedStatus) {
 			this.id = id;
+			this.formatedStatus = formatedStatus;
 		}
 
 		public long getId() {
@@ -41,6 +44,11 @@ public interface Account {
 			if (id == 1) return DELETED;
 			if (id == 2) return SUSPENDED;
 			throw new IllegalArgumentException();
+		}
+
+		@Override
+		public String toString() {
+			return formatedStatus;
 		}
 	}
 
