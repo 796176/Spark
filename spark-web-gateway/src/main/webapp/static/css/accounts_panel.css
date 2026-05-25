@@ -11,6 +11,10 @@ main ol {
 	width: 90%;
 }
 
+h1 + a {
+	margin-top: 2rem;
+}
+
 .decorated_sli {
 	padding: 0.2rem;
 }
