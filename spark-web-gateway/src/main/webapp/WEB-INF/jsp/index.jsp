@@ -36,13 +36,13 @@
 				<a href="https://en.wikipedia.org/wiki/Enterprise_resource_planning">enterprise resource planing</a>
 				software
 			</h1>
-			<p>You can see the inventory on the <a href="/inventory">/inventory</a> page.</p>
+			<p>You can browse the inventory on the <a href="/inventory">/inventory</a> page.</p>
 			<p>
 				<a href="/login">Log in</a> to place a new order and track its status. Or <a href="/signin">sign in</a>
 				if you don't have an account.
 			</p>
 			<p>
-				The administrator panel features account, order, and inventory management. To check it out make sure you
+				The administrator panel features account, order, and inventory management. To access it make sure you
 				you are not logged in, otherwise log out on <a href="/myaccount">the following page</a>, after which
 				<a href="/login">log in</a> using 'admin' as the username and the password.
 			</p>
