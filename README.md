@@ -85,7 +85,7 @@ and then open [http://localhost:8080](http://localhost:8080) in your browser.
 
 ## Design Overview
 
-![](https://raw.githubusercontent.com/796176/Spark/refs/heads/master/wiki/images/spark_diagrom.drawio.png)
+![](https://raw.githubusercontent.com/796176/Spark/refs/heads/master/wiki/images/spark_diagram.drawio.png)
 
 ![](https://raw.githubusercontent.com/796176/Spark/refs/heads/master/wiki/images/item_deletion_saga.drawio.png)
 
