@@ -127,6 +127,62 @@ public class JsonCommandParser implements CommandParser {
 		}
 	}
 
+	@Override
+	public CreatingAccountCommand2 parseCreatingAccountCommand2(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
+	) {
+		if (!(contentType.equals("application/json") && version.equals("2.0"))) throw new IllegalArgumentException();
+
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body)) {
+			String name = null, encodedPassword = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "account_name" -> {
+						jsonParser.nextToken();
+						name = jsonParser.getValueAsString();
+					}
+					case "encoded_password" -> {
+						jsonParser.nextToken();
+						encodedPassword = jsonParser.getValueAsString();
+					}
+				}
+			}
+			if (anyNull(name, encodedPassword)) throw new IllegalArgumentException();
+
+			return new CreatingAccountCommand2(name, encodedPassword);
+		}
+	}
+
+	@Override
+	public CreatingAdminAccountCommand2 parseCreatingAdminAccountCommand2(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
+	) {
+		if (!(contentType.equals("application/json") && version.equals("2.0"))) throw new IllegalArgumentException();
+
+		JsonFactory jsonFactory = new JsonFactory();
+		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), body)) {
+			String name = null, encodedPassword = null;
+			while (jsonParser.nextToken() != null) {
+				String key = jsonParser.currentName();
+				switch (Objects.requireNonNullElse(key, "")) {
+					case "account_name" -> {
+						jsonParser.nextToken();
+						name = jsonParser.getValueAsString();
+					}
+					case "encoded_password" -> {
+						jsonParser.nextToken();
+						encodedPassword = jsonParser.getValueAsString();
+					}
+				}
+			}
+			if (anyNull(name, encodedPassword)) throw new IllegalArgumentException();
+
+			return new CreatingAdminAccountCommand2(name, encodedPassword);
+		}
+	}
+
 	private boolean anyNull(Object... objects) {
 		for (Object o: objects) {
 			if (o == null) return true;

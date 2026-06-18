@@ -18,22 +18,34 @@
 
 package org.example.spark.account.controllers;
 
-
 import jakarta.annotation.Nonnull;
 
+public class DefaultCommand implements Command {
 
-public interface CommandProcessor {
+	private final String contentType;
 
-	void processCommand(
-		@Nonnull String commandType,
-		long callerId,
-		@Nonnull long[] callerRoles,
-		@Nonnull String commandId,
-		@Nonnull Command command,
-		@Nonnull Response callback
-	);
+	private final String version;
 
-	interface Response {
-		void send(int statusCode, String contentType, String version, byte[] body) throws Exception;
+	private final byte[] body;
+
+	public DefaultCommand(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body) {
+		this.contentType = contentType;
+		this.version = version;
+		this.body = body;
+	}
+
+	@Override
+	public String getContentType() {
+		return contentType;
+	}
+
+	@Override
+	public String getVersion() {
+		return version;
+	}
+
+	@Override
+	public byte[] getBody() {
+		return body;
 	}
 }

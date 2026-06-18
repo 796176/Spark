@@ -80,9 +80,11 @@ public class CommandController implements Consumer {
 				.mapToLong(Long::parseLong)
 				.toArray(),
 			basicProperties.getMessageId(),
-			basicProperties.getContentType(),
-			basicProperties.getHeaders().get("Version").toString(),
-			bytes,
+			new DefaultCommand(
+				basicProperties.getContentType(),
+				basicProperties.getHeaders().get("Version").toString(),
+				bytes
+			),
 			(statusCode, contentType, version, body) -> {
 				AMQP.BasicProperties replyProperties = new AMQP.BasicProperties.Builder()
 					.deliveryMode(2)

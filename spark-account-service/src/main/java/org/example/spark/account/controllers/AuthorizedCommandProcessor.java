@@ -19,7 +19,6 @@
 package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
-import org.example.spark.account.models.Password;
 import org.example.spark.account.models.PermissionList;
 import org.example.spark.account.models.RenderableAccount;
 import org.example.spark.authorization.Role;
@@ -49,7 +48,7 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 		long callerId,
 		@Nonnull Role[] callerRoles,
 		@Nonnull String name,
-		@Nonnull Password password,
+		@Nonnull String encodedPassword,
 		@Nonnull UUID messageId
 	) throws AuthorizationException {
 		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
@@ -60,7 +59,7 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 			)
 			.build();
 		conditionalAuthorizer.authorize(callerId, callerRoles);
-		accountService.createAccount(name, password, messageId);
+		accountService.createAccount(name, encodedPassword, messageId);
 	}
 
 	@Override
@@ -68,13 +67,13 @@ public class AuthorizedCommandProcessor extends AbstractCommandProcessor {
 		long callerId,
 		@Nonnull Role[] callerRoles,
 		@Nonnull String name,
-		@Nonnull Password password,
+		@Nonnull String encodedPassword,
 		@Nonnull UUID messageId
 	) throws AuthorizationException {
 		ConditionalAuthorizer.Builder builder = ConditionalAuthorizer.builder();
 		ConditionalAuthorizer conditionalAuthorizer = builder.isAdministrator().build();
 		conditionalAuthorizer.authorize(callerId, callerRoles);
-		accountService.createAdminAccount(name, password, messageId);
+		accountService.createAdminAccount(name, encodedPassword, messageId);
 	}
 
 	@Override

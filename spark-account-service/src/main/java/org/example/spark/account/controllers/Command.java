@@ -18,22 +18,11 @@
 
 package org.example.spark.account.controllers;
 
+public interface Command {
 
-import jakarta.annotation.Nonnull;
+	String getContentType();
 
+	String getVersion();
 
-public interface CommandProcessor {
-
-	void processCommand(
-		@Nonnull String commandType,
-		long callerId,
-		@Nonnull long[] callerRoles,
-		@Nonnull String commandId,
-		@Nonnull Command command,
-		@Nonnull Response callback
-	);
-
-	interface Response {
-		void send(int statusCode, String contentType, String version, byte[] body) throws Exception;
-	}
+	byte[] getBody();
 }

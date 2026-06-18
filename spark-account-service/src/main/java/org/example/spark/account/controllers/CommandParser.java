@@ -37,6 +37,18 @@ public interface CommandParser {
 
 	ParsedCommand parse(@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body);
 
+	record CreatingAccountCommand2(String name, String encodedPassword) { }
+
+	CreatingAccountCommand2 parseCreatingAccountCommand2(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
+	);
+
+	record CreatingAdminAccountCommand2(String name, String encodedPassword) { }
+
+	CreatingAdminAccountCommand2 parseCreatingAdminAccountCommand2(
+		@Nonnull String contentType, @Nonnull String version, @Nonnull byte[] body
+	);
+
 	record ChangingRolesCommand(long accountId, @Nonnull Role[] newRoleList) { }
 
 	ChangingRolesCommand parseChangingRolesCommand(

@@ -19,7 +19,6 @@
 package org.example.spark.account.controllers;
 
 import jakarta.annotation.Nonnull;
-import org.example.spark.account.models.Password;
 import org.example.spark.account.models.PermissionList;
 import org.example.spark.account.models.RenderableAccount;
 import org.example.spark.authorization.Role;
@@ -51,23 +50,25 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		long callerId,
 		@Nonnull long[] callerRoles,
 		@Nonnull String commandId,
-		@Nonnull String bodyContentType,
-		@Nonnull String version,
-		@Nonnull byte[] body,
+		@Nonnull Command commandObj,
 		@Nonnull Response callback
 	) {
 		executor.execute(() -> {
+			String bodyContentType = commandObj.getContentType();
+			String version = commandObj.getVersion();
+			byte[] body = commandObj.getBody();
 			Role[] roles = Arrays.stream(callerRoles).mapToObj(Role::fromId).toArray(Role[]::new);
-			CommandParser.ParsedCommand parsedCommand = parser.parse(bodyContentType, version, body);
 			try {
 				ResponseEncoder.EncodedResponseProperties emptyResponse = responseEncoder.emptyResponse();
 				switch (commandType) {
 					case "org.example.spark.account.create-account" -> {
+						CommandParser.CreatingAccountCommand2 creatingAccountCommand2 =
+							parser.parseCreatingAccountCommand2(bodyContentType, version, body);
 						createAccount(
 							callerId,
 							roles,
-							Objects.requireNonNull(parsedCommand.getValue("account_name")),
-							Objects.requireNonNull(parsedCommand.getPassword()),
+							creatingAccountCommand2.name(),
+							creatingAccountCommand2.encodedPassword(),
 							UUID.fromString(commandId)
 						);
 						callback.send(
@@ -78,11 +79,13 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 					}
 					case "org.example.spark.account.create-admin-account" -> {
+						CommandParser.CreatingAdminAccountCommand2 creatingAdminAccountCommand2 =
+							parser.parseCreatingAdminAccountCommand2(bodyContentType, version, body);
 						createAdminAccount(
 							callerId,
 							roles,
-							Objects.requireNonNull(parsedCommand.getValue("account_name")),
-							Objects.requireNonNull(parsedCommand.getPassword()),
+							creatingAdminAccountCommand2.name(),
+							creatingAdminAccountCommand2.encodedPassword(),
 							UUID.fromString(commandId)
 						);
 						callback.send(
@@ -93,6 +96,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 					}
 					case "org.example.spark.account.delete-account" -> {
+						CommandParser.ParsedCommand parsedCommand = parser.parse(bodyContentType, version, body);
 						deleteAccount(
 							callerId,
 							roles,
@@ -106,6 +110,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 					}
 					case "org.example.spark.account.suspend-account" -> {
+						CommandParser.ParsedCommand parsedCommand = parser.parse(bodyContentType, version, body);
 						suspendAccount(
 							callerId,
 							roles,
@@ -119,6 +124,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 					}
 					case "org.example.spark.account.restore-account" -> {
+						CommandParser.ParsedCommand parsedCommand = parser.parse(bodyContentType, version, body);
 						restoreAccount(
 							callerId,
 							roles,
@@ -132,6 +138,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 					}
 					case "org.example.spark.account.get-account" -> {
+						CommandParser.ParsedCommand parsedCommand = parser.parse(bodyContentType, version, body);
 						RenderableAccount renderableAccount = getAccount(
 							callerId,
 							roles,
@@ -166,6 +173,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 						);
 					}
 					case "org.example.spark.account.get-account-permissions" -> {
+						CommandParser.ParsedCommand parsedCommand = parser.parse(bodyContentType, version, body);
 						PermissionList permissionList = getAccountPermissions(
 							callerId,
 							roles,
@@ -192,9 +200,6 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 					);
 				} catch (Exception ignored) { }
 				e.printStackTrace();
-			} finally {
-				parsedCommand.destroy();
-				if (parsedCommand.getPassword() != null) parsedCommand.getPassword().destroy();
 			}
 		});
 	}
@@ -203,7 +208,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		long callerId,
 		@Nonnull Role[] callerRoles,
 		@Nonnull String name,
-		@Nonnull Password password,
+		@Nonnull String encodedPassword,
 		@Nonnull UUID messageId
 	) throws Exception;
 
@@ -211,7 +216,7 @@ public abstract class AbstractCommandProcessor implements CommandProcessor {
 		long callerId,
 		@Nonnull Role[] callerRoles,
 		@Nonnull String name,
-		@Nonnull Password password,
+		@Nonnull String encodedPassword,
 		@Nonnull UUID messageId
 	) throws Exception;
 

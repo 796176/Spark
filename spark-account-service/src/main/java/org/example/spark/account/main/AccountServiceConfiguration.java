@@ -75,8 +75,8 @@ public class AccountServiceConfiguration {
 	}
 
 	@Bean
-	AccountService accountService(AccountDataAccess accountDataAccess, PasswordEncoder passwordEncoder) {
-		return new AccountServiceImpl(accountDataAccess, passwordEncoder);
+	AccountService accountService(AccountDataAccess accountDataAccess) {
+		return new AccountServiceImpl(accountDataAccess);
 	}
 
 	@Bean

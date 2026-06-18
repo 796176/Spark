@@ -28,9 +28,9 @@ import java.util.UUID;
 
 public interface AccountService {
 
-	void createAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId);
+	void createAccount(@Nonnull String name, @Nonnull String encodedPassword, @Nonnull UUID commandId);
 
-	void createAdminAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId);
+	void createAdminAccount(@Nonnull String name, @Nonnull String encodedPassword, @Nonnull UUID commandId);
 
 	RenderableAccount getAccount(long id);
 

@@ -24,7 +24,6 @@ import org.example.spark.account.aggregates.Account;
 import org.example.spark.account.models.PermissionList;
 import org.example.spark.authorization.Role;
 import org.example.spark.account.intaractors.AccountDataAccess;
-import org.example.spark.account.models.Password;
 import org.example.spark.account.models.RenderableAccount;
 
 import java.util.Arrays;
@@ -34,24 +33,18 @@ public class AccountServiceImpl implements AccountService {
 
 	public final AccountDataAccess accountDataAccess;
 
-	public final PasswordEncoder passwordEncoder;
-
-	public AccountServiceImpl(
-		@Nonnull AccountDataAccess accountDataAccess,
-		@Nonnull PasswordEncoder passwordEncoder
-	) {
+	public AccountServiceImpl(@Nonnull AccountDataAccess accountDataAccess) {
 		this.accountDataAccess = accountDataAccess;
-		this.passwordEncoder = passwordEncoder;
 	}
 
 	@Override
-	public void createAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId) {
-		accountDataAccess.createAccount(name, passwordEncoder.encode(password), commandId, Role.USER);
+	public void createAccount(@Nonnull String name, @Nonnull String encodedPassword, @Nonnull UUID commandId) {
+		accountDataAccess.createAccount(name, encodedPassword, commandId, Role.USER);
 	}
 
 	@Override
-	public void createAdminAccount(@Nonnull String name, @Nonnull Password password, @Nonnull UUID commandId) {
-		accountDataAccess.createAccount(name, passwordEncoder.encode(password), commandId, Role.USER, Role.ADMIN);
+	public void createAdminAccount(@Nonnull String name, @Nonnull String encodedPassword, @Nonnull UUID commandId) {
+		accountDataAccess.createAccount(name, encodedPassword, commandId, Role.USER, Role.ADMIN);
 	}
 
 	@Override
