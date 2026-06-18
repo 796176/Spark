@@ -24,6 +24,8 @@ import com.rabbitmq.client.Connection;
 import com.rabbitmq.client.ConnectionFactory;
 import jakarta.persistence.EntityManagerFactory;
 import org.example.spark.account.controllers.*;
+import org.example.spark.account.converters.AccountServiceCommandEncoder;
+import org.example.spark.account.converters.JsonAccountServiceCommandEncoder;
 import org.example.spark.account.events.AccountEventConverter;
 import org.example.spark.account.events.JsonAccountEventConverter;
 import org.example.spark.account.intaractors.AccountDataAccess;
@@ -105,19 +107,55 @@ public class AccountServiceConfiguration {
 	}
 
 	@Bean
-	CommandProcessor commandProcessor(
+	AuthorizedCommandProcessor authorizedCommandProcessor(
 		Executor executor, CommandParser commandParser, ResponseEncoder responseEncoder, AccountService accountService
 	) {
 		return new AuthorizedCommandProcessor(executor, commandParser, responseEncoder, accountService);
 	}
 
 	@Bean
-	CommandController commandController(CommandProcessor commandProcessor, Connection connection) throws IOException {
+	AccountServiceCommandEncoder accountServiceCommandEncoder() {
+		return new JsonAccountServiceCommandEncoder();
+	}
+
+	@Bean
+	CreatingAdminAccountCommandFilter creatingAdminAccountCommandFilter(
+		AccountServiceCommandEncoder accountServiceCommandEncoder,
+		CommandParser commandParser,
+		PasswordEncoder passwordEncoder
+	) {
+		return new CreatingAdminAccountCommandFilter(accountServiceCommandEncoder, commandParser, passwordEncoder);
+	}
+
+	@Bean
+	CreatingAccountCommandFilter creatingAccountCommandFilter(
+		AccountServiceCommandEncoder accountServiceCommandEncoder,
+		CommandParser commandParser,
+		PasswordEncoder passwordEncoder
+	) {
+		return new CreatingAccountCommandFilter(accountServiceCommandEncoder, commandParser, passwordEncoder);
+	}
+
+	@Bean
+	DecoratingCommandProcessor decoratingCommandProcessor(
+		AuthorizedCommandProcessor authorizedCommandProcessor,
+		CreatingAccountCommandFilter creatingAccountCommandFilter,
+		CreatingAdminAccountCommandFilter creatingAdminAccountCommandFilter
+	) {
+		return new DecoratingCommandProcessor(
+			authorizedCommandProcessor, creatingAccountCommandFilter, creatingAdminAccountCommandFilter
+		);
+	}
+
+	@Bean
+	CommandController commandController(
+		DecoratingCommandProcessor decoratingCommandProcessor, Connection connection
+	) throws IOException {
 		Channel ch = connection.createChannel();
 		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true);
 		ch.queueDeclare("spark-account-service", true, false, false, Map.of());
 		ch.queueBind("spark-account-service", "commands", "spark-account-service");
-		CommandController commandController = new CommandController(commandProcessor, connection, ch);
+		CommandController commandController = new CommandController(decoratingCommandProcessor, connection, ch);
 		ch.basicConsume("spark-account-service", false, commandController);
 		return commandController;
 	}
