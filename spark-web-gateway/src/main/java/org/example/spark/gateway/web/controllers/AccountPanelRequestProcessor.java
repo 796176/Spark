@@ -109,57 +109,71 @@ public class AccountPanelRequestProcessor {
 	}
 
 	public Future<?> createAccount(
-		@Nonnull String sessionId, @Nonnull String name, @Nonnull String password
+		@Nonnull String sessionId, @Nonnull String name, @Nonnull char[] password
 	) throws Exception {
-		Session session = sessionDataAccess.getSession(sessionId);
-		if (session == null) throw new AuthenticationException();
-
-		String encodedPassword = passwordEncoder.encode(password.toCharArray());
-		CompletableFuture<?> completableFuture = new CompletableFuture<>();
-		accountService.createAccount(session.getAccount(), name, encodedPassword, rcr -> {
-			if (rcr.isSuccessful()) {
-				completableFuture.complete(null);
-			} else {
-				String errorMessage =
-					Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
-				try {
-					Class<? extends Exception> errorClass =
-						Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
-					Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
-					completableFuture.completeExceptionally(error);
-				} catch (Exception e) {
-					completableFuture.completeExceptionally(new ServerError(errorMessage));
+		try {
+			Session session = sessionDataAccess.getSession(sessionId);
+			if (session == null) throw new AuthenticationException();
+			CompletableFuture<?> completableFuture = new CompletableFuture<>();
+			accountService.createAccount(
+				session.getAccount(),
+				name,
+				passwordEncoder.encode(password),
+				rcr -> {
+					if (rcr.isSuccessful()) {
+						completableFuture.complete(null);
+					} else {
+						String errorMessage =
+							Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
+						try {
+							Class<? extends Exception> errorClass =
+								Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
+							Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
+							completableFuture.completeExceptionally(error);
+						} catch (Exception e) {
+							completableFuture.completeExceptionally(new ServerError(errorMessage));
+						}
+					}
 				}
-			}
-		});
-		return completableFuture;
+			);
+			return completableFuture;
+		} finally {
+			Arrays.fill(password, (char) 0);
+		}
 	}
 
 	public Future<?> createAdministratorAccount(
-		@Nonnull String sessionId, @Nonnull String name, @Nonnull String password
+		@Nonnull String sessionId, @Nonnull String name, @Nonnull char[] password
 	) throws Exception {
-		Session session = sessionDataAccess.getSession(sessionId);
-		if (session == null) throw new AuthenticationException();
-
-		String encodedPassword = passwordEncoder.encode(password.toCharArray());
-		CompletableFuture<?> completableFuture = new CompletableFuture<>();
-		accountService.createAdministratorAccount(session.getAccount(), name, encodedPassword, rcr -> {
-			if (rcr.isSuccessful()) {
-				completableFuture.complete(null);
-			} else {
-				String errorMessage =
-					Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
-				try {
-					Class<? extends Exception> errorClass =
-						Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
-					Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
-					completableFuture.completeExceptionally(error);
-				} catch (Exception e) {
-					completableFuture.completeExceptionally(new ServerError(errorMessage));
+		try {
+			Session session = sessionDataAccess.getSession(sessionId);
+			if (session == null) throw new AuthenticationException();
+			CompletableFuture<?> completableFuture = new CompletableFuture<>();
+			accountService.createAdministratorAccount(
+				session.getAccount(),
+				name,
+				passwordEncoder.encode(password),
+				rcr -> {
+					if (rcr.isSuccessful()) {
+						completableFuture.complete(null);
+					} else {
+						String errorMessage =
+							Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
+						try {
+							Class<? extends Exception> errorClass =
+								Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
+							Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
+							completableFuture.completeExceptionally(error);
+						} catch (Exception e) {
+							completableFuture.completeExceptionally(new ServerError(errorMessage));
+						}
+					}
 				}
-			}
-		});
-		return completableFuture;
+			);
+			return completableFuture;
+		} finally {
+			Arrays.fill(password, (char) 0);
+		}
 	}
 
 	public Future<?> saveAccount(

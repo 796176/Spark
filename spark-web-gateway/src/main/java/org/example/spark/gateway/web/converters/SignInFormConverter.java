@@ -32,6 +32,7 @@ import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -59,7 +60,8 @@ public class SignInFormConverter implements HttpMessageConverter<SignInForm> {
 	) throws IOException, HttpMessageNotReadableException {
 		JsonFactory jsonFactory = new JsonFactory();
 		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())) {
-		    String username = null, password = null;
+		    String username = null;
+			char[] password = null;
 			while (jsonParser.nextToken() != null) {
 				String key = jsonParser.currentName();
 				switch (Objects.requireNonNullElse(key, "")) {
@@ -71,8 +73,27 @@ public class SignInFormConverter implements HttpMessageConverter<SignInForm> {
 					}
 					case "password" -> {
 						jsonParser.nextToken();
-						if (jsonParser.getValueAsString() != null) {
-							password = jsonParser.getValueAsString().strip();
+
+						char[] stringCharacters = jsonParser.getStringCharacters();
+						int stringOffset = jsonParser.getStringOffset();
+						int stringLength = jsonParser.getStringLength();
+						int leftmostNonWhitespaceCharacterIndex = Integer.MAX_VALUE;
+						int rightmostNonWhitespaceCharacterIndex = -1;
+						for (int i = stringOffset; i < stringOffset + stringLength; i++) {
+							boolean notWhitespace = !Character.isWhitespace(stringCharacters[i]);
+							if (notWhitespace && i < leftmostNonWhitespaceCharacterIndex) {
+								leftmostNonWhitespaceCharacterIndex = i;
+							}
+							if (notWhitespace && i > rightmostNonWhitespaceCharacterIndex) {
+								rightmostNonWhitespaceCharacterIndex = i;
+							}
+						}
+						if (leftmostNonWhitespaceCharacterIndex <= rightmostNonWhitespaceCharacterIndex) {
+							password = Arrays.copyOfRange(
+								stringCharacters,
+								leftmostNonWhitespaceCharacterIndex,
+								rightmostNonWhitespaceCharacterIndex + 1
+							);
 						}
 					}
 				}

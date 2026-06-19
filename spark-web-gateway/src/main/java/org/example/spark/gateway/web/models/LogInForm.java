@@ -24,9 +24,9 @@ public class LogInForm {
 
 	private final String username;
 
-	private final String password;
+	private final char[] password;
 
-	public LogInForm(@Nullable String username, @Nullable String password) {
+	public LogInForm(@Nullable String username, @Nullable char[] password) {
 		this.username = username;
 		this.password = password;
 	}
@@ -37,7 +37,7 @@ public class LogInForm {
 	}
 
 	@Nullable
-	public String getPassword() {
+	public char[] getPassword() {
 		return password;
 	}
 }

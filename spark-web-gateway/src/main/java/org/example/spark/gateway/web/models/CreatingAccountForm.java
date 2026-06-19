@@ -24,11 +24,11 @@ public class CreatingAccountForm {
 
 	private final String username;
 
-	private final String password;
+	private final char[] password;
 
 	private final boolean admin;
 
-	public CreatingAccountForm(@Nullable String username, @Nullable String password, boolean admin) {
+	public CreatingAccountForm(@Nullable String username, @Nullable char[] password, boolean admin) {
 		this.username = username;
 		this.password = password;
 		this.admin = admin;
@@ -40,7 +40,7 @@ public class CreatingAccountForm {
 	}
 
 	@Nullable
-	public String getPassword() {
+	public char[] getPassword() {
 		return password;
 	}
 

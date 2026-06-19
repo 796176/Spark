@@ -31,6 +31,7 @@ import tools.jackson.core.ObjectReadContext;
 import tools.jackson.core.json.JsonFactory;
 
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -57,7 +58,8 @@ public class CreatingAccountFormConverter implements HttpMessageConverter<Creati
 	) throws IOException, HttpMessageNotReadableException {
 		JsonFactory jsonFactory = new JsonFactory();
 		try (JsonParser jsonParser = jsonFactory.createParser(ObjectReadContext.empty(), inputMessage.getBody())){
-			String username = null, password = null;
+			String username = null;
+			char[] password = null;
 			boolean isAdmin = false;
 			while (jsonParser.nextToken() != null) {
 				String key = jsonParser.currentName();
@@ -69,8 +71,28 @@ public class CreatingAccountFormConverter implements HttpMessageConverter<Creati
 					}
 					case "password" -> {
 						jsonParser.nextToken();
-						password = jsonParser.getValueAsString();
-						if (password != null) password = password.strip();
+
+						char[] stringCharacters = jsonParser.getStringCharacters();
+						int stringOffset = jsonParser.getStringOffset();
+						int stringLength = jsonParser.getStringLength();
+						int leftmostNonWhitespaceCharacterIndex = Integer.MAX_VALUE;
+						int rightmostNonWhitespaceCharacterIndex = -1;
+						for (int i = stringOffset; i < stringOffset + stringLength; i++) {
+							boolean notWhitespace = !Character.isWhitespace(stringCharacters[i]);
+							if (notWhitespace && i < leftmostNonWhitespaceCharacterIndex) {
+								leftmostNonWhitespaceCharacterIndex = i;
+							}
+							if (notWhitespace && i > rightmostNonWhitespaceCharacterIndex) {
+								rightmostNonWhitespaceCharacterIndex = i;
+							}
+						}
+						if (leftmostNonWhitespaceCharacterIndex <= rightmostNonWhitespaceCharacterIndex) {
+							password = Arrays.copyOfRange(
+								stringCharacters,
+								leftmostNonWhitespaceCharacterIndex,
+								rightmostNonWhitespaceCharacterIndex + 1
+							);
+						}
 					}
 					case "is_admin" -> {
 						jsonParser.nextToken();

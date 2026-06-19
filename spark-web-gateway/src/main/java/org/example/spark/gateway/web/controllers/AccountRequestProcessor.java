@@ -28,6 +28,7 @@ import org.example.spark.gateway.web.models.Account;
 import org.example.spark.gateway.web.models.Session;
 import org.example.spark.gateway.web.proxies.UserAccountServiceProxy;
 
+import java.util.Arrays;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Executor;
@@ -60,64 +61,70 @@ public class AccountRequestProcessor {
 	}
 
 	public void logIn(
-		@Nonnull String sessionId, @Nonnull String name, @Nonnull String password
+		@Nonnull String sessionId, @Nonnull String name, @Nonnull char[] password
 	) throws AuthenticationException {
-		Account account = accountDataAccess.getAccountByName(name);
-		if (
-			account == null ||
-			!account.getStatus().equals(Account.Status.ACTIVE) ||
-			!passwordEncoder.matches(password, account.getEncodedPassword())
-		) {
-			throw new AuthenticationException();
+		try {
+			Account account = accountDataAccess.getAccountByName(name);
+			if (
+				account == null ||
+					!account.getStatus().equals(Account.Status.ACTIVE) ||
+					!passwordEncoder.matches(password, account.getEncodedPassword())
+			) {
+				throw new AuthenticationException();
+			}
+			Session session = new Session(sessionId, account);
+			sessionDataAccess.persist(session);
+		} finally {
+			Arrays.fill(password, (char)0);
 		}
-		Session session = new Session(sessionId, account);
-		sessionDataAccess.persist(session);
 	}
 
 	public Future<?> signIn(
-		@Nonnull String sessionId, @Nonnull String name, @Nonnull String password, @Nonnull Role[] roles, long callerId
+		@Nonnull String sessionId, @Nonnull String name, @Nonnull char[] password, @Nonnull Role[] roles, long callerId
 	) throws Exception {
-		CompletableFuture<?> completableFuture = new CompletableFuture<>();
-
-		String encodedPassword = passwordEncoder.encode(password.toCharArray());
-		userAccountService.createAccount(
-			name,
-			encodedPassword,
-			rcr -> {
-				executor.execute(() -> {
-					if (rcr.isSuccessful()) {
-						Account account;
-						while (true) {
-							account = accountDataAccess.getAccountByName(name);
-							if (account != null) break;
-							if (completableFuture.isCancelled() || Thread.currentThread().isInterrupted()) return;
+		try {
+			CompletableFuture<?> completableFuture = new CompletableFuture<>();
+			userAccountService.createAccount(
+				name,
+				passwordEncoder.encode(password),
+				rcr -> {
+					executor.execute(() -> {
+						if (rcr.isSuccessful()) {
+							Account account;
+							while (true) {
+								account = accountDataAccess.getAccountByName(name);
+								if (account != null) break;
+								if (completableFuture.isCancelled() || Thread.currentThread().isInterrupted()) return;
+								try {
+									Thread.sleep(100);
+								} catch (InterruptedException e) {
+									return;
+								}
+							}
+							Session session = new Session(sessionId, account);
+							sessionDataAccess.persist(session);
+							completableFuture.complete(null);
+						} else {
+							String errorMessage =
+								Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
+							Class<? extends Exception> errorClass =
+								Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
 							try {
-								Thread.sleep(100);
-							} catch (InterruptedException e) {
-								return;
+								Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
+								completableFuture.completeExceptionally(error);
+							} catch (ReflectiveOperationException e) {
+								completableFuture.completeExceptionally(new ServerError(errorMessage));
 							}
 						}
-						Session session = new Session(sessionId, account);
-						sessionDataAccess.persist(session);
-						completableFuture.complete(null);
-					} else {
-						String errorMessage =
-							Objects.requireNonNullElse(rcr.getFormattedErrorMessage(), "Server Error");
-						Class<? extends Exception> errorClass =
-							Objects.requireNonNullElse(rcr.getErrorType(), ServerError.class);
-						try {
-							Exception error = errorClass.getConstructor(String.class).newInstance(errorMessage);
-							completableFuture.completeExceptionally(error);
-						} catch (ReflectiveOperationException e) {
-							completableFuture.completeExceptionally(new ServerError(errorMessage));
-						}
-					}
-				});
-			},
-			roles,
-			callerId
-		);
-		return completableFuture;
+					});
+				},
+				roles,
+				callerId
+			);
+			return completableFuture;
+		} finally {
+			Arrays.fill(password, (char) 0);
+		}
 	}
 
 	public void logOut(@Nonnull String sessionId) {

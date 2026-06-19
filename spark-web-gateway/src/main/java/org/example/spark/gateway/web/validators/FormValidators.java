@@ -28,12 +28,19 @@ import java.util.Comparator;
 
 public class FormValidators {
 
+	private static boolean isEmpty(char[] chars) {
+		for (char c: chars) {
+			if (!Character.isWhitespace(c)) return false;
+		}
+		return true;
+	}
+
 	@Nullable
 	public static String validateSignInForm(@Nonnull SignInForm signInForm) {
 		if (signInForm.getUsername() == null || signInForm.getUsername().isEmpty()) {
 			return "The username field is empty";
 		}
-		if (signInForm.getPassword() == null || signInForm.getPassword().isEmpty()) {
+		if (signInForm.getPassword() == null || isEmpty(signInForm.getPassword())) {
 			return "The password field is empty";
 		}
 		return null;
@@ -44,7 +51,7 @@ public class FormValidators {
 		if (logInForm.getUsername() == null || logInForm.getUsername().isEmpty()) {
 			return "The username field is empty";
 		}
-		if (logInForm.getPassword() == null || logInForm.getPassword().isEmpty()) {
+		if (logInForm.getPassword() == null || isEmpty(logInForm.getPassword())) {
 			return "The password field is empty";
 		}
 		return null;
@@ -180,7 +187,7 @@ public class FormValidators {
 		if (creatingAccountForm.getPassword() == null) {
 			return "The password is not specified";
 		}
-		if (creatingAccountForm.getPassword().isBlank()) {
+		if (isEmpty(creatingAccountForm.getPassword())) {
 			return "The password is blank";
 		}
 
