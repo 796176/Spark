@@ -98,11 +98,11 @@ and then open [http://localhost:8080](http://localhost:8080) in your browser.
 
   Creates a new account with roles `USER`
   
-  Message version: `1.0`
+  Message version: `2.0`
   
   Parameters:
   - `account_name` - the account's name, type: String
-  - `password` - the raw password, type: String
+  - `encoded_password` - the encoded password, type: String
 
 &nbsp;
 
@@ -110,11 +110,11 @@ and then open [http://localhost:8080](http://localhost:8080) in your browser.
 
   Creates a new account with roles `USER`, `ADMIN`
 
-  Message version: `1.0`
+  Message version: `2.0`
 
   Parameters:
     - `account_name` - the account's name, type: String
-    - `password` - the raw password, type: String
+    - `encoded_password` - the encoded password, type: String
 
 &nbsp;
 
