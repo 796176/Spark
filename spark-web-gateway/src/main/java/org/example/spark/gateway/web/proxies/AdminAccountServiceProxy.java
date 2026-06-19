@@ -36,14 +36,14 @@ public interface AdminAccountServiceProxy {
 	void createAccount(
 		@Nonnull Account account,
 		@Nonnull String name,
-		@Nonnull String password,
+		@Nonnull String encodedPassword,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception;
 
 	void createAdministratorAccount(
 		@Nonnull Account account,
 		@Nonnull String name,
-		@Nonnull String password,
+		@Nonnull String encodedPassword,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception;
 

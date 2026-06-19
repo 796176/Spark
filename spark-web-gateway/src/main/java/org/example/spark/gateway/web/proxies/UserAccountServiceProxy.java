@@ -29,7 +29,7 @@ public interface UserAccountServiceProxy {
 
 	void createAccount(
 		@Nonnull String name,
-		@Nonnull String password,
+		@Nonnull String encodedPassword,
 		@Nonnull Consumer<RemoteCallResult> consumer,
 		@Nonnull Role[] roles,
 		long callerId

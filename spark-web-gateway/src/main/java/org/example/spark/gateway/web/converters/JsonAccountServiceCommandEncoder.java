@@ -31,17 +31,17 @@ import java.util.Arrays;
 public class JsonAccountServiceCommandEncoder implements AccountServiceCommandEncoder {
 
 	@Override
-	public EncodedCommand encodeCreatingAccountCommand(@Nonnull String name, @Nonnull String password) {
+	public EncodedCommand encodeCreatingAccountCommand(@Nonnull String name, @Nonnull String encodedPassword) {
 		JsonFactory jsonFactory = new JsonFactory();
 		ByteArrayOutputStream os = new ByteArrayOutputStream();
 		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
 			jsonGenerator.writeStartObject();
 			jsonGenerator.writeStringProperty("account_name", name);
-			jsonGenerator.writeStringProperty("password", password);
+			jsonGenerator.writeStringProperty("encoded_password", encodedPassword);
 			jsonGenerator.writeEndObject();
 			jsonGenerator.flush();
 
-			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+			return new EncodedCommand("application/json", "2.0", os.toByteArray());
 		}
 	}
 
@@ -66,11 +66,11 @@ public class JsonAccountServiceCommandEncoder implements AccountServiceCommandEn
 		try (JsonGenerator jsonGenerator = jsonFactory.createGenerator(ObjectWriteContext.empty(), os)) {
 			jsonGenerator.writeStartObject();
 			jsonGenerator.writeStringProperty("account_name", name);
-			jsonGenerator.writeStringProperty("password", password);
+			jsonGenerator.writeStringProperty("encoded_password", password);
 			jsonGenerator.writeEndObject();
 			jsonGenerator.flush();
 
-			return new EncodedCommand("application/json", "1.0", os.toByteArray());
+			return new EncodedCommand("application/json", "2.0", os.toByteArray());
 		}
 	}
 

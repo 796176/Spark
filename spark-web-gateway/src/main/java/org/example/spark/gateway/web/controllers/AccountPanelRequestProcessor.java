@@ -42,14 +42,18 @@ public class AccountPanelRequestProcessor {
 
 	private final AccountServiceResponseParser accountServiceResponseParser;
 
+	private final PasswordEncoder passwordEncoder;
+
 	public AccountPanelRequestProcessor(
 		@Nonnull AdminAccountServiceProxy accountService,
 		@Nonnull SessionDataAccess sessionDataAccess,
-		@Nonnull AccountServiceResponseParser accountServiceResponseParser
+		@Nonnull AccountServiceResponseParser accountServiceResponseParser,
+		@Nonnull PasswordEncoder passwordEncoder
 	) {
 		this.accountService = accountService;
 		this.sessionDataAccess = sessionDataAccess;
 		this.accountServiceResponseParser = accountServiceResponseParser;
+		this.passwordEncoder = passwordEncoder;
 	}
 
 	public Future<Account[]> getAccounts(@Nonnull String sessionId) throws Exception {
@@ -110,8 +114,9 @@ public class AccountPanelRequestProcessor {
 		Session session = sessionDataAccess.getSession(sessionId);
 		if (session == null) throw new AuthenticationException();
 
+		String encodedPassword = passwordEncoder.encode(password.toCharArray());
 		CompletableFuture<?> completableFuture = new CompletableFuture<>();
-		accountService.createAccount(session.getAccount(), name, password, rcr -> {
+		accountService.createAccount(session.getAccount(), name, encodedPassword, rcr -> {
 			if (rcr.isSuccessful()) {
 				completableFuture.complete(null);
 			} else {
@@ -136,8 +141,9 @@ public class AccountPanelRequestProcessor {
 		Session session = sessionDataAccess.getSession(sessionId);
 		if (session == null) throw new AuthenticationException();
 
+		String encodedPassword = passwordEncoder.encode(password.toCharArray());
 		CompletableFuture<?> completableFuture = new CompletableFuture<>();
-		accountService.createAdministratorAccount(session.getAccount(), name, password, rcr -> {
+		accountService.createAdministratorAccount(session.getAccount(), name, encodedPassword, rcr -> {
 			if (rcr.isSuccessful()) {
 				completableFuture.complete(null);
 			} else {

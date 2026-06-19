@@ -25,11 +25,11 @@ public interface AccountServiceCommandEncoder {
 
 	record EncodedCommand(String contentType, String version, byte[] body) { }
 
-	EncodedCommand encodeCreatingAccountCommand(@Nonnull String name, @Nonnull String password);
+	EncodedCommand encodeCreatingAccountCommand(@Nonnull String name, @Nonnull String encodedPassword);
 
 	EncodedCommand encodeDeletingAccountCommand(long id);
 
-	EncodedCommand encodeCreatingAdministratorAccountCommand(@Nonnull String name, @Nonnull String password);
+	EncodedCommand encodeCreatingAdministratorAccountCommand(@Nonnull String name, @Nonnull String encodedPassword);
 
 	EncodedCommand encodeSuspendingAccountCommand(long id);
 

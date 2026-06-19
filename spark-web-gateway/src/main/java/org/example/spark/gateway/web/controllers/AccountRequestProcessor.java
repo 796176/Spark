@@ -79,9 +79,10 @@ public class AccountRequestProcessor {
 	) throws Exception {
 		CompletableFuture<?> completableFuture = new CompletableFuture<>();
 
+		String encodedPassword = passwordEncoder.encode(password.toCharArray());
 		userAccountService.createAccount(
 			name,
-			password,
+			encodedPassword,
 			rcr -> {
 				executor.execute(() -> {
 					if (rcr.isSuccessful()) {

@@ -349,10 +349,11 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 	AccountPanelRequestProcessor accountPanelRequestProcessor(
 		AdminAccountServiceProxy adminAccountServiceProxy,
 		SessionDataAccess sessionDataAccess,
-		AccountServiceResponseParser accountServiceResponseParser
+		AccountServiceResponseParser accountServiceResponseParser,
+		PasswordEncoder passwordEncoder
 	) {
 		return new AccountPanelRequestProcessor(
-			adminAccountServiceProxy, sessionDataAccess, accountServiceResponseParser
+			adminAccountServiceProxy, sessionDataAccess, accountServiceResponseParser, passwordEncoder
 		);
 	}
 

@@ -107,12 +107,12 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 	public synchronized void createAccount(
 		@Nonnull Account account,
 		@Nonnull String name,
-		@Nonnull String password,
+		@Nonnull String encodedPassword,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
 		AccountServiceCommandEncoder.EncodedCommand command =
-			accountServiceCommandEncoder.encodeCreatingAccountCommand(name, password);
+			accountServiceCommandEncoder.encodeCreatingAccountCommand(name, encodedPassword);
 		rmqConsumer.register(correlationId, callResultConsumer);
 		String encodedRoles = RoleEncoder.encode(account.getRoles());
 		AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()
@@ -136,12 +136,12 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 	public synchronized void createAdministratorAccount(
 		@Nonnull Account account,
 		@Nonnull String name,
-		@Nonnull String password,
+		@Nonnull String encodedPassword,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
 		AccountServiceCommandEncoder.EncodedCommand command =
-			accountServiceCommandEncoder.encodeCreatingAdministratorAccountCommand(name, password);
+			accountServiceCommandEncoder.encodeCreatingAdministratorAccountCommand(name, encodedPassword);
 		rmqConsumer.register(correlationId, callResultConsumer);
 		String encodedRoles = RoleEncoder.encode(account.getRoles());
 		AMQP.BasicProperties properties = new AMQP.BasicProperties.Builder()

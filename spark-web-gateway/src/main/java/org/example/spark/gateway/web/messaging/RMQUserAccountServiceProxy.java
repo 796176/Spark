@@ -53,7 +53,7 @@ public class RMQUserAccountServiceProxy implements UserAccountServiceProxy {
 	@Override
 	public synchronized void createAccount(
 		@Nonnull String name,
-		@Nonnull String password,
+		@Nonnull String encodedPassword,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer,
 		@Nonnull Role[] roles,
 		long callerId
@@ -62,7 +62,7 @@ public class RMQUserAccountServiceProxy implements UserAccountServiceProxy {
 		rmqConsumer.register(correlationId, callResultConsumer);
 		String encodedRoles = RoleEncoder.encode(roles);
 		AccountServiceCommandEncoder.EncodedCommand encodedCommand =
-			accountServiceCommandEncoder.encodeCreatingAccountCommand(name, password);
+			accountServiceCommandEncoder.encodeCreatingAccountCommand(name, encodedPassword);
 		AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder()
 			.deliveryMode(2)
 			.correlationId(correlationId)
