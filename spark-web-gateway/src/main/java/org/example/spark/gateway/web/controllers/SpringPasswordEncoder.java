@@ -21,9 +21,21 @@ package org.example.spark.gateway.web.controllers;
 import jakarta.annotation.Nonnull;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
+import java.nio.CharBuffer;
+
 public class SpringPasswordEncoder implements PasswordEncoder {
 
 	private final BCryptPasswordEncoder bCryptPasswordEncoder = new BCryptPasswordEncoder();
+
+	@Override
+	public String encode(@Nonnull char[] password) {
+		return bCryptPasswordEncoder.encode(CharBuffer.wrap(password));
+	}
+
+	@Override
+	public boolean matches(@Nonnull char[] rawPassword, @Nonnull String encodedPassword) {
+		return bCryptPasswordEncoder.matches(CharBuffer.wrap(rawPassword), encodedPassword);
+	}
 
 	@Override
 	public boolean matches(@Nonnull String rawPassword, @Nonnull String encodedPassword) {

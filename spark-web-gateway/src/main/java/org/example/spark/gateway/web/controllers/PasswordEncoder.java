@@ -22,5 +22,9 @@ import jakarta.annotation.Nonnull;
 
 public interface PasswordEncoder {
 
+	String encode(@Nonnull char[] password);
+
+	boolean matches(@Nonnull char[] rawPassword, @Nonnull String encodedPassword);
+
 	boolean matches(@Nonnull String rawPassword, @Nonnull String encodedPassword);
 }
