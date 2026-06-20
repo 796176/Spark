@@ -19,9 +19,9 @@
 package org.example.spark.gateway.web.messaging;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
 import org.example.spark.authorization.Role;
+import org.example.spark.gateway.web.controllers.MessageDispatcher;
 import org.example.spark.gateway.web.converters.AccountServiceCommandEncoder;
 import org.example.spark.gateway.web.converters.RoleEncoder;
 import org.example.spark.gateway.web.models.Account;
@@ -34,24 +34,24 @@ import java.util.function.Consumer;
 
 public class RMQUserAccountServiceProxy implements UserAccountServiceProxy {
 
-	private final Channel channel;
+	private final MessageDispatcher messageDispatcher;
 
 	private final RMQConsumer rmqConsumer;
 
 	private final AccountServiceCommandEncoder accountServiceCommandEncoder;
 
 	public RMQUserAccountServiceProxy(
-		@Nonnull Channel channel,
+		@Nonnull MessageDispatcher messageDispatcher,
 		@Nonnull RMQConsumer rmqConsumer,
 		@Nonnull AccountServiceCommandEncoder accountServiceCommandEncoder
 	) {
-		this.channel = channel;
+		this.messageDispatcher = messageDispatcher;
 		this.rmqConsumer = rmqConsumer;
 		this.accountServiceCommandEncoder = accountServiceCommandEncoder;
 	}
 
 	@Override
-	public synchronized void createAccount(
+	public void createAccount(
 		@Nonnull String name,
 		@Nonnull String encodedPassword,
 		@Nonnull Consumer<RemoteCallResult> callResultConsumer,
@@ -78,12 +78,13 @@ public class RMQUserAccountServiceProxy implements UserAccountServiceProxy {
 			.messageId(UUID.randomUUID().toString())
 			.contentType(encodedCommand.contentType())
 			.build();
-		channel.basicPublish("commands", "spark-account-service", basicProperties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", basicProperties, encodedCommand.body()
+		);
 	}
 
 	@Override
-	public synchronized void deleteAccount(
+	public void deleteAccount(
 		@Nonnull Account account, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception {
 		String correlationId = UUID.randomUUID().toString();
@@ -106,7 +107,8 @@ public class RMQUserAccountServiceProxy implements UserAccountServiceProxy {
 			.messageId(UUID.randomUUID().toString())
 			.contentType(encodedCommand.contentType())
 			.build();
-		channel.basicPublish("commands", "spark-account-service", basicProperties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", basicProperties, encodedCommand.body()
+		);
 	}
 }

@@ -205,15 +205,30 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 	}
 
 	@Bean
-	UserAccountServiceProxy userAccountServiceProxy(
-		Connection connection, RMQConsumer rmqConsumer, AccountServiceCommandEncoder accountServiceCommandEncoder
-	) throws IOException {
+	MessageDispatcher messageDispatcher(Connection connection) throws IOException {
 		Channel ch = connection.createChannel();
 		ch.confirmSelect();
-		ch.queueDeclare("spark-account-service", true, false, false, null);
 		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
+
+		ch.queueDeclare("spark-account-service", true, false, false, null);
 		ch.queueBind("spark-account-service", "commands", "spark-account-service");
-		return new RMQUserAccountServiceProxy(ch, rmqConsumer, accountServiceCommandEncoder);
+
+		ch.queueDeclare("spark-inventory-service", true, false, false, null);
+		ch.queueBind("spark-inventory-service", "commands", "spark-inventory-service");
+
+		ch.queueDeclare("spark-order-service", true, false, false, null);
+		ch.queueBind("spark-order-service", "commands", "spark-order-service");
+
+		return new MessageDispatcherImpl(ch);
+	}
+
+	@Bean
+	UserAccountServiceProxy userAccountServiceProxy(
+		MessageDispatcher messageDispatcher,
+		RMQConsumer rmqConsumer,
+		AccountServiceCommandEncoder accountServiceCommandEncoder
+	) {
+		return new RMQUserAccountServiceProxy(messageDispatcher, rmqConsumer, accountServiceCommandEncoder);
 	}
 
 	@Bean
@@ -273,14 +288,11 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 
 	@Bean
 	UserInventoryServiceProxy userInventoryServiceProxy(
-		Connection connection, RMQConsumer rmqConsumer, InventoryServiceCommandEncoder inventoryServiceCommandEncoder
-	) throws IOException {
-		Channel ch = connection.createChannel();
-		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
-		ch.queueDeclare("spark-inventory-service", true, false, false, null);
-		ch.queueBind("spark-inventory-service", "commands", "spark-inventory-service");
-		ch.confirmSelect();
-		return new RMQUserInventoryServiceProxy(ch, rmqConsumer, inventoryServiceCommandEncoder);
+		MessageDispatcher messageDispatcher,
+		RMQConsumer rmqConsumer,
+		InventoryServiceCommandEncoder inventoryServiceCommandEncoder
+	) {
+		return new RMQUserInventoryServiceProxy(messageDispatcher, rmqConsumer, inventoryServiceCommandEncoder);
 	}
 
 	@Bean
@@ -304,14 +316,11 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 
 	@Bean
 	UserOrderServiceProxy userOrderServiceProxy(
-		Connection connection, RMQConsumer rmqConsumer, OrderServiceCommandEncoder orderServiceCommandEncoder
-	) throws IOException {
-		Channel ch = connection.createChannel();
-		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
-		ch.queueDeclare("spark-order-service", true, false, false, null);
-		ch.queueBind("spark-order-service", "commands", "spark-order-service");
-		ch.confirmSelect();
-		return new RMQUserOrderServiceProxy(ch, rmqConsumer, orderServiceCommandEncoder);
+		MessageDispatcher messageDispatcher,
+		RMQConsumer rmqConsumer,
+		OrderServiceCommandEncoder orderServiceCommandEncoder
+	) {
+		return new RMQUserOrderServiceProxy(messageDispatcher, rmqConsumer, orderServiceCommandEncoder);
 	}
 
 	@Bean
@@ -335,14 +344,11 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 
 	@Bean
 	AdminAccountServiceProxy adminAccountServiceProxy(
-		Connection connection, RMQConsumer rmqConsumer, AccountServiceCommandEncoder accountServiceCommandEncoder
-	) throws IOException {
-		Channel ch = connection.createChannel();
-		ch.confirmSelect();
-		ch.queueDeclare("spark-account-service", true, false, false, null);
-		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
-		ch.queueBind("spark-account-service", "commands", "spark-account-service");
-		return new RMQAdminAccountServiceProxy(ch, rmqConsumer, accountServiceCommandEncoder);
+		 MessageDispatcher messageDispatcher,
+		 RMQConsumer rmqConsumer,
+		 AccountServiceCommandEncoder accountServiceCommandEncoder
+	) {
+		return new RMQAdminAccountServiceProxy(messageDispatcher, rmqConsumer, accountServiceCommandEncoder);
 	}
 
 	@Bean
@@ -359,14 +365,11 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 
 	@Bean
 	AdminInventoryServiceProxy adminInventoryServiceProxy(
-		Connection connection, RMQConsumer rmqConsumer, InventoryServiceCommandEncoder inventoryServiceCommandEncoder
-	) throws IOException {
-		Channel ch = connection.createChannel();
-		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
-		ch.queueDeclare("spark-inventory-service", true, false, false, null);
-		ch.queueBind("spark-inventory-service", "commands", "spark-inventory-service");
-		ch.confirmSelect();
-		return new RMQAdminInventoryServiceProxy(ch, rmqConsumer, inventoryServiceCommandEncoder);
+		MessageDispatcher messageDispatcher,
+		RMQConsumer rmqConsumer,
+		InventoryServiceCommandEncoder inventoryServiceCommandEncoder
+	) {
+		return new RMQAdminInventoryServiceProxy(messageDispatcher, rmqConsumer, inventoryServiceCommandEncoder);
 	}
 
 	@Bean
@@ -388,14 +391,11 @@ public class WebGatewayConfiguration extends SpringBootServletInitializer implem
 
 	@Bean
 	AdminOrderServiceProxy adminOrderServiceProxy(
-		Connection connection, RMQConsumer rmqConsumer, OrderServiceCommandEncoder orderServiceCommandEncoder
-	) throws IOException {
-		Channel ch = connection.createChannel();
-		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
-		ch.queueDeclare("spark-order-service", true, false, false, null);
-		ch.queueBind("spark-order-service", "commands", "spark-order-service");
-		ch.confirmSelect();
-		return new RMQAdminOrderServiceProxy(ch, rmqConsumer, orderServiceCommandEncoder);
+		MessageDispatcher messageDispatcher,
+		RMQConsumer rmqConsumer,
+		OrderServiceCommandEncoder orderServiceCommandEncoder
+	) {
+		return new RMQAdminOrderServiceProxy(messageDispatcher, rmqConsumer, orderServiceCommandEncoder);
 	}
 
 	@Bean

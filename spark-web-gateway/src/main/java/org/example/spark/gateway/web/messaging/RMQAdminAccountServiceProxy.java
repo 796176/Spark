@@ -19,9 +19,9 @@
 package org.example.spark.gateway.web.messaging;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
 import org.example.spark.authorization.Role;
+import org.example.spark.gateway.web.controllers.MessageDispatcher;
 import org.example.spark.gateway.web.converters.AccountServiceCommandEncoder;
 import org.example.spark.gateway.web.converters.RoleEncoder;
 import org.example.spark.gateway.web.models.Account;
@@ -35,24 +35,24 @@ import java.util.function.Consumer;
 
 public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 
-	private final Channel channel;
+	private final MessageDispatcher messageDispatcher;
 
 	private final RMQConsumer rmqConsumer;
 
 	private final AccountServiceCommandEncoder accountServiceCommandEncoder;
 
 	public RMQAdminAccountServiceProxy(
-		@Nonnull Channel channel,
+		@Nonnull MessageDispatcher messageDispatcher,
 		@Nonnull RMQConsumer rmqConsumer,
 		@Nonnull AccountServiceCommandEncoder accountServiceCommandEncoder
 	) {
-		this.channel = channel;
+		this.messageDispatcher = messageDispatcher;
 		this.rmqConsumer = rmqConsumer;
 		this.accountServiceCommandEncoder = accountServiceCommandEncoder;
 	}
 
 	@Override
-	public synchronized void getAccounts(
+	public void getAccounts(
 		@Nonnull Account account, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
@@ -73,12 +73,13 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 				"Caller-Id", Long.toString(account.getId())
 			))
 			.build();
-		channel.basicPublish("commands", "spark-account-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void getAccount(
+	public void getAccount(
 		@Nonnull Account account, long accountId, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
@@ -99,12 +100,13 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 				"Caller-Id", Long.toString(account.getId())
 			))
 			.build();
-		channel.basicPublish("commands", "spark-account-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void createAccount(
+	public void createAccount(
 		@Nonnull Account account,
 		@Nonnull String name,
 		@Nonnull String encodedPassword,
@@ -128,12 +130,13 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 				"Caller-Id", Long.toString(account.getId())
 			))
 			.build();
-		channel.basicPublish("commands", "spark-account-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void createAdministratorAccount(
+	public void createAdministratorAccount(
 		@Nonnull Account account,
 		@Nonnull String name,
 		@Nonnull String encodedPassword,
@@ -157,12 +160,13 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 				"Caller-Id", Long.toString(account.getId())
 			))
 			.build();
-		channel.basicPublish("commands", "spark-account-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void suspendAccount(
+	public void suspendAccount(
 		@Nonnull Account account, long accountId, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
@@ -183,12 +187,13 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 				"Caller-Id", Long.toString(account.getId())
 			))
 			.build();
-		channel.basicPublish("commands", "spark-account-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void restoreAccount(
+	public void restoreAccount(
 		@Nonnull Account account, long accountId, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws InterruptedException, IOException {
 		String correlationId = UUID.randomUUID().toString();
@@ -209,12 +214,13 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 				"Caller-Id", Long.toString(account.getId())
 			))
 			.build();
-		channel.basicPublish("commands", "spark-account-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void updateRoles(
+	public void updateRoles(
 		@Nonnull Account account,
 		long accountId,
 		@Nonnull Role[] roles,
@@ -238,7 +244,8 @@ public class RMQAdminAccountServiceProxy implements AdminAccountServiceProxy {
 				"Caller-Id", Long.toString(account.getId())
 			))
 			.build();
-		channel.basicPublish("commands", "spark-account-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-account-service", properties, command.body()
+		);
 	}
 }

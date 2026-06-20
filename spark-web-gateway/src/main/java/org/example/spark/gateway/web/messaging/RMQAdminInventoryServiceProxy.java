@@ -19,9 +19,9 @@
 package org.example.spark.gateway.web.messaging;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
 import jakarta.annotation.Nullable;
+import org.example.spark.gateway.web.controllers.MessageDispatcher;
 import org.example.spark.gateway.web.converters.InventoryServiceCommandEncoder;
 import org.example.spark.gateway.web.converters.RoleEncoder;
 import org.example.spark.gateway.web.models.Account;
@@ -36,24 +36,24 @@ import java.util.function.Consumer;
 
 public class RMQAdminInventoryServiceProxy implements AdminInventoryServiceProxy {
 
-	private final Channel channel;
+	private final MessageDispatcher messageDispatcher;
 
 	private final RMQConsumer rmqConsumer;
 
 	private final InventoryServiceCommandEncoder inventoryServiceCommandEncoder;
 
 	public RMQAdminInventoryServiceProxy(
-		@Nonnull Channel channel,
+		@Nonnull MessageDispatcher messageDispatcher,
 		@Nonnull RMQConsumer rmqConsumer,
 		@Nonnull InventoryServiceCommandEncoder inventoryServiceCommandEncoder
 	) {
-		this.channel = channel;
+		this.messageDispatcher = messageDispatcher;
 		this.rmqConsumer = rmqConsumer;
 		this.inventoryServiceCommandEncoder = inventoryServiceCommandEncoder;
 	}
 
 	@Override
-	public synchronized void getItems(
+	public void getItems(
 		@Nonnull Account account, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
@@ -76,12 +76,13 @@ public class RMQAdminInventoryServiceProxy implements AdminInventoryServiceProxy
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-inventory-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-inventory-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void getItem(
+	public void getItem(
 		@Nonnull Account account, long itemId, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
@@ -104,12 +105,13 @@ public class RMQAdminInventoryServiceProxy implements AdminInventoryServiceProxy
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-inventory-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-inventory-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void addItem(
+	public void addItem(
 		@Nonnull Account account,
 		@Nonnull String name,
 		@Nonnull Money price,
@@ -137,12 +139,13 @@ public class RMQAdminInventoryServiceProxy implements AdminInventoryServiceProxy
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-inventory-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-inventory-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void deleteItem(
+	public void deleteItem(
 		@Nonnull Account account, long itemId, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws IOException, InterruptedException {
 		String correlationId = UUID.randomUUID().toString();
@@ -165,12 +168,13 @@ public class RMQAdminInventoryServiceProxy implements AdminInventoryServiceProxy
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-inventory-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-inventory-service", properties, command.body()
+		);
 	}
 
 	@Override
-	public synchronized void updateItemAmount(
+	public void updateItemAmount(
 		@Nonnull Account account,
 		long itemId,
 		int amount,
@@ -197,7 +201,8 @@ public class RMQAdminInventoryServiceProxy implements AdminInventoryServiceProxy
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-inventory-service", properties, command.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-inventory-service", properties, command.body()
+		);
 	}
 }

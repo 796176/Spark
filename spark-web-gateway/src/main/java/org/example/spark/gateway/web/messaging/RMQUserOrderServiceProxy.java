@@ -19,8 +19,8 @@
 package org.example.spark.gateway.web.messaging;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
+import org.example.spark.gateway.web.controllers.MessageDispatcher;
 import org.example.spark.gateway.web.converters.OrderServiceCommandEncoder;
 import org.example.spark.gateway.web.converters.RoleEncoder;
 import org.example.spark.gateway.web.models.Account;
@@ -34,24 +34,24 @@ import java.util.function.Consumer;
 
 public class RMQUserOrderServiceProxy implements UserOrderServiceProxy {
 
-	private final Channel channel;
+	private final MessageDispatcher messageDispatcher;
 
 	private final RMQConsumer rmqConsumer;
 
 	private final OrderServiceCommandEncoder orderServiceCommandEncoder;
 
 	public RMQUserOrderServiceProxy(
-		@Nonnull Channel channel,
+		@Nonnull MessageDispatcher messageDispatcher,
 		@Nonnull RMQConsumer rmqConsumer,
 		@Nonnull OrderServiceCommandEncoder orderServiceCommandEncoder
 	) {
-		this.channel = channel;
+		this.messageDispatcher = messageDispatcher;
 		this.rmqConsumer = rmqConsumer;
 		this.orderServiceCommandEncoder = orderServiceCommandEncoder;
 	}
 
 	@Override
-	public synchronized void getOrders(
+	public void getOrders(
 		@Nonnull Account account, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception {
 		String correlationId = UUID.randomUUID().toString();
@@ -74,12 +74,13 @@ public class RMQUserOrderServiceProxy implements UserOrderServiceProxy {
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-order-service", properties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-order-service", properties, encodedCommand.body()
+		);
 	}
 
 	@Override
-	public synchronized void getOrder(
+	public void getOrder(
 		@Nonnull Account account, long orderId, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception {
 		String correlationId = UUID.randomUUID().toString();
@@ -102,12 +103,13 @@ public class RMQUserOrderServiceProxy implements UserOrderServiceProxy {
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-order-service", properties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-order-service", properties, encodedCommand.body()
+		);
 	}
 
 	@Override
-	public synchronized void cancelOrder(
+	public void cancelOrder(
 		@Nonnull Account account,
 		long orderId,
 		@Nonnull String version,
@@ -133,12 +135,13 @@ public class RMQUserOrderServiceProxy implements UserOrderServiceProxy {
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-order-service", properties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-order-service", properties, encodedCommand.body()
+		);
 	}
 
 	@Override
-	public synchronized void restoreOrder(
+	public void restoreOrder(
 		@Nonnull Account account,
 		long orderId,
 		@Nonnull String version,
@@ -164,12 +167,13 @@ public class RMQUserOrderServiceProxy implements UserOrderServiceProxy {
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-order-service", properties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-order-service", properties, encodedCommand.body()
+		);
 	}
 
 	@Override
-	public synchronized void placeOrder(
+	public void placeOrder(
 		@Nonnull Account account,
 		long orderTimestamp,
 		@Nonnull LineItem[] lineItems,
@@ -195,7 +199,8 @@ public class RMQUserOrderServiceProxy implements UserOrderServiceProxy {
 				)
 			)
 			.build();
-		channel.basicPublish("commands", "spark-order-service", properties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-order-service", properties, encodedCommand.body()
+		);
 	}
 }

@@ -19,9 +19,9 @@
 package org.example.spark.gateway.web.messaging;
 
 import com.rabbitmq.client.AMQP;
-import com.rabbitmq.client.Channel;
 import jakarta.annotation.Nonnull;
 import org.example.spark.authorization.Role;
+import org.example.spark.gateway.web.controllers.MessageDispatcher;
 import org.example.spark.gateway.web.converters.InventoryServiceCommandEncoder;
 import org.example.spark.gateway.web.converters.RoleEncoder;
 import org.example.spark.gateway.web.models.RemoteCallResult;
@@ -33,24 +33,24 @@ import java.util.function.Consumer;
 
 public class RMQUserInventoryServiceProxy implements UserInventoryServiceProxy {
 
-	private final Channel channel;
+	private final MessageDispatcher messageDispatcher;
 
 	private final RMQConsumer rmqConsumer;
 
 	private final InventoryServiceCommandEncoder inventoryServiceCommandEncoder;
 
 	public RMQUserInventoryServiceProxy(
-		@Nonnull Channel channel,
+		@Nonnull MessageDispatcher messageDispatcher,
 		@Nonnull RMQConsumer rmqConsumer,
 		@Nonnull InventoryServiceCommandEncoder inventoryServiceCommandEncoder
 	) {
-		this.channel = channel;
+		this.messageDispatcher = messageDispatcher;
 		this.rmqConsumer = rmqConsumer;
 		this.inventoryServiceCommandEncoder = inventoryServiceCommandEncoder;
 	}
 
 	@Override
-	public synchronized void getInventory(
+	public void getInventory(
 		long callerId, @Nonnull Role[] roles, @Nonnull Consumer<RemoteCallResult> callResultConsumer
 	) throws Exception {
 		String correlationId = UUID.randomUUID().toString();
@@ -71,7 +71,8 @@ public class RMQUserInventoryServiceProxy implements UserInventoryServiceProxy {
 			.messageId(UUID.randomUUID().toString())
 			.replyTo("spark-web-gateway")
 			.build();
-		channel.basicPublish("commands", "spark-inventory-service", properties, encodedCommand.body());
-		channel.waitForConfirms();
+		messageDispatcher.blockingSend(
+			"commands", "spark-inventory-service", properties, encodedCommand.body()
+		);
 	}
 }
