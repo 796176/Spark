@@ -26,9 +26,7 @@ public interface SagaState {
 
 	void setIdempotenceToken(@Nonnull String idempotenceToken);
 
-	long getSagaId();
-
-	SagaState initialize(@Nonnull Saga saga) throws Exception;
+	boolean initialize(@Nonnull Saga saga) throws Exception;
 
 	boolean canProcess(
 		@Nonnull Saga saga,
@@ -40,7 +38,7 @@ public interface SagaState {
 		@Nonnull byte[] body
 	);
 
-	SagaState executeNextStep(
+	void executeNextStep(
 		@Nonnull Saga saga,
 		@Nonnull String correlationId,
 		@Nonnull String messageType,

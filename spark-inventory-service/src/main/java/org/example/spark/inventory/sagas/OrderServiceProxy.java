@@ -22,5 +22,5 @@ import jakarta.annotation.Nonnull;
 
 public interface OrderServiceProxy {
 
-	void invalidateItem(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) throws Exception;
+	boolean invalidateItem(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) throws Exception;
 }

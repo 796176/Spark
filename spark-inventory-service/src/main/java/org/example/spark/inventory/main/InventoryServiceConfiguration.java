@@ -39,7 +39,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.persistence.autoconfigure.EntityScan;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Scope;
 import org.springframework.orm.jpa.JpaTransactionManager;
@@ -47,6 +46,7 @@ import org.springframework.transaction.TransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 import org.springframework.transaction.annotation.RollbackOn;
 
+import javax.sql.DataSource;
 import java.io.IOException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -57,8 +57,6 @@ import java.util.concurrent.TimeoutException;
 @EnableTransactionManagement(proxyTargetClass = true, rollbackOn = RollbackOn.ALL_EXCEPTIONS)
 @EntityScan({"org.example.spark.inventory.models"})
 public class InventoryServiceConfiguration {
-
-	record SagaConnection(Connection con) { }
 
 	@Bean
 	ItemEventConverter<String> itemEventConverter() {
@@ -73,12 +71,17 @@ public class InventoryServiceConfiguration {
 	}
 
 	@Bean
-	SagaDataAccess sagaDataAccess(JPAItemDataAccess jpaItemDataAccess, EntityManagerFactory entityManagerFactory) {
-		return new JPASagaDataAccess(jpaItemDataAccess, entityManagerFactory);
+	SagaDataAccess sagaDataAccess(
+		JPAItemDataAccess jpaItemDataAccess,
+		EntityManagerFactory entityManagerFactory,
+		SagaFactory sagaFactory
+	) {
+		return new JPASagaDataAccess(jpaItemDataAccess, entityManagerFactory, sagaFactory);
 	}
 
 	@Bean
-	TransactionManager jpaTransactionManager() {
+	TransactionManager jpaTransactionManager(DataSource dataSource) {
+		SchemaMigration.migrate(dataSource);
 		return new JpaTransactionManager();
 	}
 
@@ -124,25 +127,8 @@ public class InventoryServiceConfiguration {
 	}
 
 	@Bean
-	DefaultSagaManager sagaManager(SagaDataAccess sagaDataAccess, ApplicationContext applicationContext) {
-		return new DefaultSagaManager(
-			sagaDataAccess,
-			(c, l) -> {
-				if (c.equals(SagaStateInvalidatingItem.class)) {
-					OrderServiceProxy orderServiceProxy = applicationContext.getBean(OrderServiceProxy.class);
-					return new SagaStateInvalidatingItem(l, orderServiceProxy, sagaDataAccess);
-				} else if (c.equals(SagaStateConfirmingDeletion.class)) {
-					InventoryServiceProxy inventoryServiceProxy =
-						applicationContext.getBean(InventoryServiceProxy.class);
-					return new SagaStateConfirmingDeletion(l, inventoryServiceProxy);
-				} else if (c.equals(SagaStateAbortingDeletion.class)) {
-					InventoryServiceProxy inventoryServiceProxy =
-						applicationContext.getBean(InventoryServiceProxy.class);
-					return new SagaStateAbortingDeletion(l, inventoryServiceProxy);
-				}
-				throw new IllegalArgumentException();
-			}
-		);
+	DefaultSagaManager sagaManager(SagaDataAccess sagaDataAccess, Executor executor) {
+		return new DefaultSagaManager(sagaDataAccess, executor);
 	}
 
 	@Bean
@@ -150,28 +136,6 @@ public class InventoryServiceConfiguration {
 		SagaDataAccess sagaDataAccess, RMQSagaMessageConsumer rmqSagaMessageConsumer, SagaManager sagaManager
 	) {
 		return new SagaLoader(sagaDataAccess, rmqSagaMessageConsumer, sagaManager);
-	}
-
-	@Bean
-	SagaConnection sagaConnection(Connection connection) throws IOException {
-		Channel ch = connection.createChannel();
-		ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
-		ch.queueDeclare("spark-order-service", true, false, false, null);
-		ch.queueBind("spark-order-service", "commands", "spark-order-service");
-		return new SagaConnection(connection);
-	}
-
-	@Bean
-	@Scope("prototype")
-	OrderServiceProxy orderServiceProxy(SagaConnection sagaConnection) throws IOException {
-		Channel ch = sagaConnection.con().createChannel();
-		ch.confirmSelect();
-		return new RMQOrderService(ch, "spark-inventory-service-saga");
-	}
-
-	@Bean
-	InventoryServiceProxy inventoryServiceProxy(ItemDataAccess itemDataAccess, SagaManager sagaManager) {
-		return new LocalInventoryService(itemDataAccess, sagaManager);
 	}
 
 	@Bean
@@ -256,6 +220,26 @@ public class InventoryServiceConfiguration {
 		RMQOrderEventConsumer rmqOrderEventConsumer = new RMQOrderEventConsumer(orderEventListener, ch);
 		ch.basicConsume("spark-inventory-service-order-event-listener", rmqOrderEventConsumer);
 		return rmqOrderEventConsumer;
+	}
+
+	@Bean
+	OrderServiceProxy orderServiceProxy(Connection connection) throws IOException, TimeoutException {
+		try (Channel ch = connection.createChannel()) {
+			ch.exchangeDeclare("commands", BuiltinExchangeType.DIRECT, true, false, false, null);
+			ch.queueDeclare("spark-order-service", true, false, false, null);
+			ch.queueBind("spark-order-service", "commands", "spark-order-service");
+		}
+		return new RMQOrderService(connection, "spark-inventory-service-saga");
+	}
+
+	@Bean
+	InventoryServiceProxy inventoryServiceProxy(ItemDataAccess itemDataAccess) {
+		return new LocalInventoryService(itemDataAccess);
+	}
+
+	@Bean
+	SagaFactory sagaFactory(OrderServiceProxy orderService, InventoryServiceProxy inventoryService) {
+		return new SagaFactoryImpl(orderService, inventoryService);
 	}
 
 	static void main(String[] args) {

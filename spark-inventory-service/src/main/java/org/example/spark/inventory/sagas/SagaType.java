@@ -16,15 +16,27 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-package org.example.spark.inventory.models;
+package org.example.spark.inventory.sagas;
 
 import jakarta.annotation.Nonnull;
-import org.example.spark.inventory.sagas.Saga;
 
-public record SagaProperties(
-	long id,
-	@Nonnull String idempotenceToken,
-	int state,
-	long itemId,
-	@Nonnull Class<? extends Saga> sagaClass
-) { }
+public enum SagaType {
+	ITEM_DELETED("org.example.spark.saga.item-deleted");
+
+	private final String id;
+
+	SagaType(String id) {
+		this.id = id;
+	}
+
+	public String getId() {
+		return id;
+	}
+
+
+	public static SagaType fromId(@Nonnull String id) {
+		if (id.equals(SagaType.ITEM_DELETED.id)) return ITEM_DELETED;
+
+		throw new IllegalArgumentException();
+	}
+}

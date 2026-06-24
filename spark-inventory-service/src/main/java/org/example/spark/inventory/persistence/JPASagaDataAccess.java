@@ -31,6 +31,8 @@ import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.sagas.Saga;
 import org.example.spark.inventory.interactors.SagaDataAccess;
 import org.example.spark.inventory.models.*;
+import org.example.spark.inventory.sagas.SagaFactory;
+import org.example.spark.inventory.sagas.SagaType;
 import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -45,16 +47,21 @@ public class JPASagaDataAccess implements SagaDataAccess {
 
 	private final EntityManagerFactory entityManagerFactory;
 
+	private final SagaFactory sagaFactory;
+
 	public JPASagaDataAccess(
-		@Nonnull JPAItemDataAccess itemDataAccess, @Nonnull EntityManagerFactory entityManagerFactory
+		@Nonnull JPAItemDataAccess itemDataAccess,
+		@Nonnull EntityManagerFactory entityManagerFactory,
+		@Nonnull SagaFactory sagaFactory
 	) {
 		this.itemDataAccess = itemDataAccess;
 		this.entityManagerFactory = entityManagerFactory;
+		this.sagaFactory = sagaFactory;
 	}
 
 	@Transactional(isolation = Isolation.SERIALIZABLE, readOnly = true)
 	@Override
-	public SagaProperties[] getSagas() {
+	public Saga[] getSagas() {
 		// SELECT * FROM sagas;
 		CriteriaBuilder cb = entityManagerFactory.getCriteriaBuilder();
 		CriteriaQuery<SagaEntity> q = cb.createQuery(SagaEntity.class);
@@ -69,31 +76,25 @@ public class JPASagaDataAccess implements SagaDataAccess {
 		return sagaEntityList
 			.stream()
 			.map(sagaEntity -> {
-				try {
-					return new SagaProperties(
-						sagaEntity.getId(),
-						sagaEntity.getIdempotenceToken(),
-						sagaEntity.getState(),
-						sagaEntity.getItem().getId(),
-						(Class<? extends Saga>) Class.forName(sagaEntity.getClassName())
-					);
-				} catch (ClassNotFoundException e) {
-					e.printStackTrace();
-					return null;
-				}
+				return sagaFactory.instantiateSaga(
+					sagaEntity.getId(),
+					itemDataAccess.getItem(sagaEntity.getItem().getId()),
+					sagaEntity.getIdempotenceToken(),
+					SagaType.fromId(sagaEntity.getSagaType()),
+					sagaEntity.getState()
+				);
 			})
 			.filter(Objects::nonNull)
-			.toArray(SagaProperties[]::new);
+			.toArray(Saga[]::new);
 	}
 
 	@Override
-	public SagaProperties newSaga(
+	public Saga newSaga(
 		@Nonnull ItemAggregate item,
-		int initialState,
 		@Nonnull String idempotenceToken,
-		@Nonnull Class<? extends Saga> clazz
+		@Nonnull SagaType sagaType
 	) {
-		AtomicReference<SagaProperties> atomicSaga = new AtomicReference<>();
+		AtomicReference<Saga> atomicSaga = new AtomicReference<>();
 
 		entityManagerFactory.runInTransaction(entityManager -> {
 			if (entityManager.find(ProcessedMessage.class, idempotenceToken) != null) {
@@ -107,14 +108,15 @@ public class JPASagaDataAccess implements SagaDataAccess {
 				TypedQuery<SagaEntity> typedQuery = entityManager.createQuery(q);
 				SagaEntity sagaEntity = typedQuery.getSingleResultOrNull();
 
-				SagaProperties sagaProperties = new SagaProperties(
+
+				Saga instantiatedSaga = sagaFactory.instantiateSaga(
 					sagaEntity.getId(),
+					itemDataAccess.getItem(sagaEntity.getItem().getId()),
 					sagaEntity.getIdempotenceToken(),
-					sagaEntity.getState(),
-					sagaEntity.getItem().getId(),
-					clazz
+					SagaType.fromId(sagaEntity.getSagaType()),
+					sagaEntity.getState()
 				);
-				atomicSaga.set(sagaProperties);
+				atomicSaga.set(instantiatedSaga);
 				return;
 			}
 
@@ -125,24 +127,23 @@ public class JPASagaDataAccess implements SagaDataAccess {
 			versionedItem.item().setStatus(ItemAggregate.Status.BUSY);
 			itemDataAccess.persist(versionedItem.item(), versionedItem.version(),null);
 
-			SagaEntity saga = new SagaEntity(initialState, entityManager.find(ItemEntity.class, item.getId()), clazz);
-			entityManager.persist(saga);
-
-			SagaProperties sagaProperties = new SagaProperties(
-				saga.getId(),
-				saga.getIdempotenceToken(),
-				saga.getState(),
-				saga.getItem().getId(),
-				clazz
+			SagaEntity sagaEntity = new SagaEntity(
+				sagaFactory.getInitialState(sagaType).getId(),
+				entityManager.find(ItemEntity.class, item.getId()),
+				sagaType.getId()
 			);
-			atomicSaga.set(sagaProperties);
+			entityManager.persist(sagaEntity);
+
+			Saga saga = sagaFactory
+				.instantiateSaga(sagaEntity.getId(), item, sagaEntity.getIdempotenceToken(), sagaType);
+			atomicSaga.set(saga);
 		});
 
 		return atomicSaga.get();
 	}
 
 	@Override
-	public String updateState(long sagaId, int newState) {
+	public String updateState(long sagaId, long newState) {
 		AtomicReference<String> atomicString = new AtomicReference<>();
 		entityManagerFactory.runInTransaction(entityManager -> {
 			SagaEntity saga = entityManager.find(SagaEntity.class, sagaId);

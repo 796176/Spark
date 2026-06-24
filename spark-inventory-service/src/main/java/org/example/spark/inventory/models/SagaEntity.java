@@ -32,20 +32,20 @@ public class SagaEntity {
 
 	private String idempotenceToken;
 
-	private int state;
+	private long state;
 
 	private ItemEntity item;
 
-	private String className;
+	private String sagaType;
 
 	public SagaEntity() { }
 
-	public SagaEntity(int state, @Nonnull ItemEntity item, @Nonnull Class<? extends Saga> clazz) {
+	public SagaEntity(long state, @Nonnull ItemEntity item, @Nonnull String sagaType) {
 		this();
 		this.setIdempotenceToken(UUID.randomUUID().toString());
 		this.setState(state);
 		this.setItem(item);
-		this.setClassName(clazz.getName());
+		this.setSagaType(sagaType);
 	}
 
 	@Id
@@ -66,11 +66,11 @@ public class SagaEntity {
 		this.idempotenceToken = idempotenceToken;
 	}
 
-	public int getState() {
+	public long getState() {
 		return state;
 	}
 
-	public void setState(int state) {
+	public void setState(long state) {
 		this.state = state;
 	}
 
@@ -83,12 +83,12 @@ public class SagaEntity {
 		this.item = item;
 	}
 
-	public String getClassName() {
-		return className;
+	public String getSagaType() {
+		return sagaType;
 	}
 
-	public void setClassName(@Nonnull String className) {
-		this.className = className;
+	public void setSagaType(@Nonnull String sagaType) {
+		this.sagaType = sagaType;
 	}
 
 	public void generateNewIdempotenceToken() {

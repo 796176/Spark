@@ -24,7 +24,10 @@ import java.util.Map;
 
 public interface Saga {
 
-	interface StateEnumeration { }
+	interface StateEnumeration {
+
+		long getId();
+	}
 
 	long getId();
 
@@ -37,8 +40,6 @@ public interface Saga {
 	Map<StateEnumeration, SagaState> getStateObjects();
 
 	SagaState getStateObject();
-
-	void setStateObject(@Nonnull SagaState deleteItemSagaState);
 
 	void setCompleted();
 
@@ -62,5 +63,5 @@ public interface Saga {
 		@Nonnull byte[] body
 	) throws Exception;
 
-	void proceedNextState() throws Exception;
+	boolean proceedNextState() throws Exception;
 }

@@ -20,7 +20,7 @@ package org.example.spark.inventory.controllers;
 
 import jakarta.annotation.Nonnull;
 import org.example.spark.inventory.interactors.SagaDataAccess;
-import org.example.spark.inventory.models.SagaProperties;
+import org.example.spark.inventory.sagas.Saga;
 import org.example.spark.inventory.sagas.SagaManager;
 import org.springframework.beans.factory.SmartInitializingSingleton;
 
@@ -46,10 +46,10 @@ public class SagaLoader implements SmartInitializingSingleton {
 
 	@Override
 	public void afterSingletonsInstantiated() {
-		SagaProperties[] sagaProperties = sagaDataAccess.getSagas();
-		for (SagaProperties sp: sagaProperties) {
+		Saga[] sagas = sagaDataAccess.getSagas();
+		for (Saga saga: sagas) {
 			try {
-				sagaManager.loadSaga(sp);
+				sagaManager.loadSaga(saga);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

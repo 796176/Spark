@@ -24,33 +24,33 @@ import org.example.spark.inventory.aggregates.VersionedItemAggregate;
 import org.example.spark.inventory.events.ItemDeleted;
 import org.example.spark.inventory.interactors.ItemDataAccess;
 import org.example.spark.inventory.sagas.InventoryServiceProxy;
-import org.example.spark.inventory.sagas.SagaManager;
-import org.example.spark.inventory.sagas.SagaState;
+import org.example.spark.inventory.sagas.Saga;
 
 public class LocalInventoryService implements InventoryServiceProxy {
 
 	private final ItemDataAccess itemDataAccess;
 
-	private final SagaManager sagaManager;
-
-	public LocalInventoryService(@Nonnull ItemDataAccess itemDataAccess, @Nonnull SagaManager sagaManager) {
+	public LocalInventoryService(@Nonnull ItemDataAccess itemDataAccess) {
 		this.itemDataAccess = itemDataAccess;
-		this.sagaManager = sagaManager;
 	}
 
 	@Override
-	public void confirmDeletion( @Nonnull SagaState state, long itemId, @Nonnull String correlationId ) {
-		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(itemId);
+	public boolean confirmDeletion(Saga saga, @Nonnull String correlationId) {
+		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(saga.getItemId());
 		ItemDeleted event = versionedItem.item().delete();
-		itemDataAccess.persist(versionedItem.item(), versionedItem.version(), state.getIdempotenceToken(), event);
-		sagaManager.deleteSaga(state.getSagaId());
+		itemDataAccess.persist(
+			versionedItem.item(), versionedItem.version(), saga.getStateObject().getIdempotenceToken(), event
+		);
+		saga.setCompleted();
+		return true;
 	}
 
 	@Override
-	public void abortDeletion(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) {
-		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(itemId);
+	public boolean abortDeletion(Saga saga, @Nonnull String correlationId) {
+		VersionedItemAggregate versionedItem = itemDataAccess.getVersionedItem(saga.getItemId());
 		versionedItem.item().setStatus(ItemAggregate.Status.CREATED);
 		itemDataAccess.persist(versionedItem.item(), versionedItem.version(), null);
-		sagaManager.deleteSaga(state.getSagaId());
+		saga.setCompleted();
+		return true;
 	}
 }

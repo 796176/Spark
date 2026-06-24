@@ -22,7 +22,7 @@ import jakarta.annotation.Nonnull;
 
 public interface InventoryServiceProxy {
 
-	void confirmDeletion(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) throws Exception;
+	boolean confirmDeletion(Saga saga, @Nonnull String correlationId) throws Exception;
 
-	void abortDeletion(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) throws Exception;
+	boolean abortDeletion(Saga saga, @Nonnull String correlationId) throws Exception;
 }

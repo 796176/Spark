@@ -19,22 +19,21 @@
 package org.example.spark.inventory.sagas;
 
 import jakarta.annotation.Nonnull;
-import jakarta.annotation.Nullable;
 import org.example.spark.inventory.aggregates.ItemAggregate;
 
-public interface SagaManager {
+public interface SagaFactory {
 
-	void newDeleteItemSaga(@Nonnull ItemAggregate item, @Nonnull String idempotenceToken) throws Exception;
+	Saga instantiateSaga(
+		long sagaId, @Nonnull ItemAggregate item, @Nonnull String idempotenceToken, @Nonnull SagaType sagaType
+	);
 
-	void loadSaga(@Nonnull Saga saga) throws Exception;
+	Saga.StateEnumeration getInitialState(@Nonnull SagaType sagaType);
 
-	void deleteSaga(@Nullable Saga saga);
-
-	void deleteSaga(long sagaId);
-
-	void updateSagaState(@Nullable Saga saga, @Nonnull Saga.StateEnumeration state);
-
-	Saga[] getSagas();
-
-	void setInitializationCompleted();
+	Saga instantiateSaga(
+		long sagaId,
+		@Nonnull ItemAggregate item,
+		@Nonnull String idempotenceToken,
+		@Nonnull SagaType sagaType,
+		long sagaStateId
+	);
 }

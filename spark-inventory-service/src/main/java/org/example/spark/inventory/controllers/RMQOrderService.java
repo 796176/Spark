@@ -20,6 +20,7 @@ package org.example.spark.inventory.controllers;
 
 import com.rabbitmq.client.AMQP;
 import com.rabbitmq.client.Channel;
+import com.rabbitmq.client.Connection;
 import jakarta.annotation.Nonnull;
 import org.example.spark.authorization.Role;
 import org.example.spark.inventory.sagas.OrderServiceProxy;
@@ -29,17 +30,19 @@ import java.util.Map;
 
 public class RMQOrderService implements OrderServiceProxy {
 
-	private final Channel channel;
+	private final Connection connection;
 
 	private final String replyChannel;
 
-	public RMQOrderService(@Nonnull Channel channel, @Nonnull String replyChannel) {
-		this.channel = channel;
+	public RMQOrderService(@Nonnull Connection connection, @Nonnull String replyChannel) {
+		this.connection = connection;
 		this.replyChannel = replyChannel;
 	}
 
 	@Override
-	public void invalidateItem(@Nonnull SagaState state, long itemId, @Nonnull String correlationId) throws Exception {
+	public boolean invalidateItem(
+		@Nonnull SagaState state, long itemId, @Nonnull String correlationId
+	) throws Exception {
 		String encodedRole = Long.toString(Role.SERVICE.getId());
 		AMQP.BasicProperties basicProperties = new AMQP.BasicProperties.Builder()
 			.deliveryMode(2)
@@ -50,13 +53,17 @@ public class RMQOrderService implements OrderServiceProxy {
 			.replyTo(replyChannel)
 			.headers(Map.of("Version", "1.0", "Caller-Id", "-1", "Caller-Roles", encodedRole))
 			.build();
-		// TODO decouple this service proxy from command formating
-		channel.basicPublish(
-			"commands",
-			"spark-order-service",
-			basicProperties,
-			("{\"item_id\": \"" + itemId + "\"}").getBytes()
-		);
-		channel.waitForConfirms();
+		try (Channel channel = connection.createChannel()) {
+			channel.confirmSelect();
+			// TODO decouple this service proxy from command formating
+			channel.basicPublish(
+				"commands",
+				"spark-order-service",
+				basicProperties,
+				("{\"item_id\": \"" + itemId + "\"}").getBytes()
+			);
+			channel.waitForConfirms();
+			return false;
+		}
 	}
 }

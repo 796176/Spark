@@ -24,16 +24,13 @@ import java.util.UUID;
 
 public class SagaStateConfirmingDeletion implements SagaState {
 
-	private final long sagaId;
-
 	private final InventoryServiceProxy inventoryService;
 
 	private final String correlationId;
 
 	private String idempotenceToken;
 
-	public SagaStateConfirmingDeletion(long sagaId, @Nonnull InventoryServiceProxy inventoryService) {
-		this.sagaId = sagaId;
+	public SagaStateConfirmingDeletion(@Nonnull InventoryServiceProxy inventoryService) {
 		this.inventoryService = inventoryService;
 		this.correlationId = UUID.randomUUID().toString();
 	}
@@ -49,14 +46,8 @@ public class SagaStateConfirmingDeletion implements SagaState {
 	}
 
 	@Override
-	public long getSagaId() {
-		return sagaId;
-	}
-
-	@Override
-	public SagaState initialize(@Nonnull Saga saga) throws Exception {
-		inventoryService.confirmDeletion(this, saga.getItemId(), correlationId);
-		return this;
+	public boolean initialize(@Nonnull Saga saga) throws Exception {
+		return inventoryService.confirmDeletion(saga, correlationId);
 	}
 
 	@Override
@@ -73,7 +64,7 @@ public class SagaStateConfirmingDeletion implements SagaState {
 	}
 
 	@Override
-	public SagaState executeNextStep(
+	public void executeNextStep(
 		@Nonnull Saga saga,
 		@Nonnull String correlationId,
 		@Nonnull String messageType,
@@ -86,6 +77,5 @@ public class SagaStateConfirmingDeletion implements SagaState {
 		if (statusCode != 0) System.out.println("log error");
 
 		saga.setCompleted();
-		return new SagaStateNoOp(getSagaId());
 	}
 }

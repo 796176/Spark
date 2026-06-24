@@ -19,13 +19,10 @@
 package org.example.spark.inventory.sagas;
 
 import jakarta.annotation.Nonnull;
-import org.example.spark.inventory.interactors.SagaDataAccess;
 
 import java.util.UUID;
 
 public class SagaStateInvalidatingItem implements SagaState {
-
-	private final long sagaId;
 
 	private final String correlationId;
 
@@ -33,16 +30,8 @@ public class SagaStateInvalidatingItem implements SagaState {
 
 	private final OrderServiceProxy orderService;
 
-	private final SagaDataAccess sagaDataAccess;
-
-	public SagaStateInvalidatingItem(
-		long sagaId,
-		@Nonnull OrderServiceProxy orderService,
-		@Nonnull SagaDataAccess sagaDataAccess
-	) {
-		this.sagaId = sagaId;
+	public SagaStateInvalidatingItem(@Nonnull OrderServiceProxy orderService) {
 		this.orderService = orderService;
-		this.sagaDataAccess = sagaDataAccess;
 		correlationId = UUID.randomUUID().toString();
 	}
 
@@ -57,14 +46,8 @@ public class SagaStateInvalidatingItem implements SagaState {
 	}
 
 	@Override
-	public long getSagaId() {
-		return sagaId;
-	}
-
-	@Override
-	public SagaState initialize(@Nonnull Saga saga) throws Exception {
-		orderService.invalidateItem(this, saga.getItemId(), correlationId);
-		return this;
+	public boolean initialize(@Nonnull Saga saga) throws Exception {
+		return orderService.invalidateItem(this, saga.getItemId(), correlationId);
 	}
 
 	@Override
@@ -81,7 +64,7 @@ public class SagaStateInvalidatingItem implements SagaState {
 	}
 
 	@Override
-	public SagaState executeNextStep(
+	public void executeNextStep(
 		@Nonnull Saga saga,
 		@Nonnull String correlationId,
 		@Nonnull String messageType,
@@ -95,10 +78,6 @@ public class SagaStateInvalidatingItem implements SagaState {
 		DeleteItemSaga.State state = statusCode == 0 ?
 			DeleteItemSaga.State.CONFIRMING_DELETION :
 			DeleteItemSaga.State.ABORTING_DELETION;
-		String newIdempotenceToken = sagaDataAccess.updateState(getSagaId(), state.getId());
-		SagaState nextState = saga.getStateObjects().get(state);
-		nextState.setIdempotenceToken(newIdempotenceToken);
 		saga.setState(state);
-		return nextState;
 	}
 }

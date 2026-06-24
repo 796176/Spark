@@ -21,20 +21,19 @@ package org.example.spark.inventory.interactors;
 import jakarta.annotation.Nonnull;
 import org.example.spark.inventory.aggregates.ItemAggregate;
 import org.example.spark.inventory.sagas.Saga;
-import org.example.spark.inventory.models.SagaProperties;
+import org.example.spark.inventory.sagas.SagaType;
 
 public interface SagaDataAccess {
 
-	SagaProperties[] getSagas();
+	Saga[] getSagas();
 
-	SagaProperties newSaga(
+	Saga newSaga(
 		@Nonnull ItemAggregate item,
-		int initialState,
 		@Nonnull String idempotenceToken,
-		@Nonnull Class<? extends Saga> clazz
+		@Nonnull SagaType sagaType
 	);
 
-	String updateState(long sagaId, int newState);
+	String updateState(long sagaId, long newState);
 
 	void deleteSaga(long sagaId);
 }

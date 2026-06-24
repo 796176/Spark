@@ -28,11 +28,11 @@ public class SagaEntity_ {
 	public static volatile String IDEMPOTENCE_TOKEN = "idempotenceToken";
 	public static volatile String STATE = "state";
 	public static volatile String ITEM = "item";
-	public static volatile String CLASS_NAME = "className";
+	public static volatile String SAGA_TYPE = "sagaType";
 
 	public static volatile SingularAttribute<SagaEntity, Long> id;
 	public static volatile SingularAttribute<SagaEntity, String> idempotenceToken;
-	public static volatile SingularAttribute<SagaEntity, Integer> state;
+	public static volatile SingularAttribute<SagaEntity, Long> state;
 	public static volatile SingularAttribute<SagaEntity, ItemEntity> item;
-	public static volatile SingularAttribute<SagaEntity, String> className;
+	public static volatile SingularAttribute<SagaEntity, String> sagaType;
 }

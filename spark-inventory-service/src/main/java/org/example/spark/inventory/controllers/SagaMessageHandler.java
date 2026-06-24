@@ -51,8 +51,13 @@ public class SagaMessageHandler {
 					try {
 						saga.concludeCurrentState(correlationId, messageType, contentType, statusCode, version, body);
 						acknowledgeRunnable.run();
-						if (saga.hasCompleted()) sagaManager.deleteSaga(saga);
-						saga.proceedNextState();
+						do {
+							if (saga.hasCompleted()){
+								sagaManager.deleteSaga(saga);
+								break;
+							}
+							else sagaManager.updateSagaState(saga, saga.getState());
+						} while (saga.proceedNextState());
 					} catch (Exception e) {
 						sagaManager.deleteSaga(saga);
 						acknowledgeRunnable.run();

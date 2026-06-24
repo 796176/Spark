@@ -33,11 +33,11 @@ public class DeleteItemSaga implements Saga {
 			this.id = id;
 		}
 
-		public int getId() {
+		public long getId() {
 			return id;
 		}
 
-		public static State fromId(int id) {
+		public static State fromId(long id) {
 			if (id == 0) return INVALIDATING_ITEM;
 			if (id == 1) return CONFIRMING_DELETION;
 			if (id == 2) return ABORTING_DELETION;
@@ -61,14 +61,13 @@ public class DeleteItemSaga implements Saga {
 		long sagaId,
 		long itemId,
 		@Nonnull State state,
-		@Nonnull SagaState stateObject,
 		@Nonnull Map<StateEnumeration, SagaState> stateObjects
 	) {
 		this.sagaId = sagaId;
 		this.itemId = itemId;
 		this.state = state;
-		this.stateObject = stateObject;
 		this.stateObjects = stateObjects;
+		this.stateObject = stateObjects.get(state);
 	}
 
 	@Override
@@ -82,24 +81,21 @@ public class DeleteItemSaga implements Saga {
 	}
 
 	@Override
-	public DeleteItemSaga.State getState() {
+	public Saga.StateEnumeration getState() {
 		return state;
 	}
 
 	@Override
 	public void setState(@Nonnull StateEnumeration stateEnumeration) {
-		if (stateEnumeration instanceof DeleteItemSaga.State deleteItemSagaState)
+		if (stateEnumeration instanceof DeleteItemSaga.State deleteItemSagaState) {
 			this.state = deleteItemSagaState;
+			this.stateObject = stateObjects.get(getState());
+		}
 	}
 
 	@Override
 	public SagaState getStateObject() {
 		return stateObject;
-	}
-
-	@Override
-	public void setStateObject(@Nonnull SagaState deleteItemSagaState) {
-		stateObject = deleteItemSagaState;
 	}
 
 	@Override
@@ -138,12 +134,11 @@ public class DeleteItemSaga implements Saga {
 		@Nonnull String version,
 		@Nonnull byte[] body
 	) throws Exception {
-		stateObject =
-			stateObject.executeNextStep(this, correlationId, messageType, contentType, statusCode, version, body);
+		stateObject.executeNextStep(this, correlationId, messageType, contentType, statusCode, version, body);
 	}
 
 	@Override
-	public void proceedNextState() throws Exception {
-		stateObject.initialize(this);
+	public boolean proceedNextState() throws Exception {
+		return stateObject.initialize(this);
 	}
 }
