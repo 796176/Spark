@@ -17,10 +17,10 @@ INSERT INTO items(id, name, amount, price_currency_amount, price_cent_amount, it
 (-97, 'Pepperoni Pizza', 9999, 14, 99, 0, 'pizza.jpg');
 CREATE TABLE sagas (
 	id bigserial PRIMARY KEY,
-	item_id bigint REFERENCES items(id),
+	item_id bigint UNIQUE REFERENCES items(id),
 	idempotence_token text NOT NULL UNIQUE,
-	state integer NOT NULL,
-	class_name text NOT NULL
+	state bigint NOT NULL,
+	saga_type text NOT NULL
 );
 CREATE TABLE outbox (
 	seqnum bigserial PRIMARY KEY,
@@ -31,3 +31,6 @@ CREATE TABLE outbox (
 	event_body text NOT NULL
 );
 CREATE TABLE processed_messages ( id text PRIMARY KEY );
+
+CREATE TABLE table_schema ( table_name text, table_version bigint );
+INSERT INTO table_schema ( table_name, table_version ) VALUES ('sagas', 2);
