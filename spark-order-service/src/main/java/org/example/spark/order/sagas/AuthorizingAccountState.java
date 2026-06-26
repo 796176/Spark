@@ -74,7 +74,6 @@ public class AuthorizingAccountState implements SagaState {
 	public boolean canProcess(
 		@Nonnull Saga saga,
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,
@@ -87,7 +86,6 @@ public class AuthorizingAccountState implements SagaState {
 	public void executeNextStep(
 		@Nonnull Saga saga,
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,

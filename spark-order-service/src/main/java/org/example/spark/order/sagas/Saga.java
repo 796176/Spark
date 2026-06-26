@@ -49,7 +49,6 @@ public interface Saga {
 
 	boolean canProcess(
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,
@@ -58,7 +57,6 @@ public interface Saga {
 
 	void concludeCurrentState(
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,

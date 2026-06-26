@@ -116,25 +116,23 @@ public class DeleteItemSaga implements Saga {
 	@Override
 	public boolean canProcess(
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,
 		@Nonnull byte[] body
 	) {
-		return stateObject.canProcess(this, correlationId, messageType, contentType, statusCode, version, body);
+		return stateObject.canProcess(this, correlationId, contentType, statusCode, version, body);
 	}
 
 	@Override
 	public void concludeCurrentState(
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,
 		@Nonnull byte[] body
 	) throws Exception {
-		stateObject.executeNextStep(this, correlationId, messageType, contentType, statusCode, version, body);
+		stateObject.executeNextStep(this, correlationId, contentType, statusCode, version, body);
 	}
 
 	@Override

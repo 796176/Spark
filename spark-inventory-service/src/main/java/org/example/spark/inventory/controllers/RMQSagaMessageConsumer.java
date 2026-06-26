@@ -58,7 +58,6 @@ public class RMQSagaMessageConsumer implements Consumer {
 		String s, Envelope envelope, AMQP.BasicProperties basicProperties, byte[] body
 	) {
 		String correlationId = basicProperties.getCorrelationId();
-		String messageType = basicProperties.getType();
 		String contentType = basicProperties.getContentType();
 		int statusCode = Integer.parseInt(basicProperties.getHeaders().get("Status-Code").toString());
 		String version = basicProperties.getHeaders().get("Version").toString();
@@ -72,7 +71,7 @@ public class RMQSagaMessageConsumer implements Consumer {
 			}
 		};
 		sagaMessageHandler.handleMessage(
-			correlationId, messageType, contentType, statusCode, version, body, acknowledgementRunnable
+			correlationId, contentType, statusCode, version, body, acknowledgementRunnable
 		);
 	}
 

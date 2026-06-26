@@ -125,26 +125,24 @@ public class PlaceOrderSaga implements Saga {
 	@Override
 	public boolean canProcess(
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,
 		@Nonnull byte[] body
 	) {
 		return getStateObject()
-			.canProcess(this, correlationId, messageType, contentType, statusCode, version, body);
+			.canProcess(this, correlationId, contentType, statusCode, version, body);
 	}
 
 	@Override
 	public void concludeCurrentState(
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,
 		@Nonnull byte[] body
 	) throws Exception {
-		getStateObject().executeNextStep(this, correlationId, messageType, contentType, statusCode, version, body);
+		getStateObject().executeNextStep(this, correlationId, contentType, statusCode, version, body);
 	}
 
 	@Override

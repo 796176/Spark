@@ -37,7 +37,6 @@ public class SagaMessageHandler {
 
 	void handleMessage(
 		@Nonnull String correlationId,
-		@Nonnull String messageType,
 		@Nonnull String contentType,
 		int statusCode,
 		@Nonnull String version,
@@ -45,11 +44,11 @@ public class SagaMessageHandler {
 		Runnable acknowledgeRunnable
 	) {
 		for (Saga saga: sagaManager.getSagas()) {
-			boolean canProcess = saga.canProcess(correlationId, messageType, contentType, statusCode, version, body);
+			boolean canProcess = saga.canProcess(correlationId, contentType, statusCode, version, body);
 			if (canProcess) {
 				executor.execute(() -> {
 					try {
-						saga.concludeCurrentState(correlationId, messageType, contentType, statusCode, version, body);
+						saga.concludeCurrentState(correlationId, contentType, statusCode, version, body);
 						acknowledgeRunnable.run();
 						do {
 							if (saga.hasCompleted()){
