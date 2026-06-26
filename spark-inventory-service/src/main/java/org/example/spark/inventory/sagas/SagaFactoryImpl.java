@@ -69,6 +69,7 @@ public class SagaFactoryImpl implements SagaFactory {
 				stateObjects.put(DeleteItemSaga.State.CONFIRMING_DELETION, sagaStateConfirmingDeletion);
 				stateObjects.put(DeleteItemSaga.State.INVALIDATING_ITEM, sagaStateInvalidatingItem);
 
+				stateObjects.get(DeleteItemSaga.State.fromId(sagaStateId)).setIdempotenceToken(idempotenceToken);
 				yield new DeleteItemSaga(sagaId, item.getId(), DeleteItemSaga.State.fromId(sagaStateId), stateObjects);
 			}
 		};
